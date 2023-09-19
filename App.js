@@ -33,6 +33,7 @@ import data from './package.json';
 import StackNavigation from './navigation';
 import NotificationCenter from './NotificationCenter';
 
+
 const App = () => {
 
   const [isupdated, setisupdated] = React.useState(true);

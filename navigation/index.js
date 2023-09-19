@@ -57,15 +57,14 @@ function BottomNavigation() {
         <Tab.Navigator
             shifting={true}
             labeled={true}
-            screenOptions={{
-                tabBarShowLabel: false,
-            }}
             sceneAnimationEnabled={false}
             barStyle={{ backgroundColor: '#eff4fa' }}
-            tabBarOptions={{
+            screenOptions={{
+                tabBarShowLabel: false,
                 activeTintColor: '#20251e',
                 inactiveTintColor: '#20251e',
                 showLabel: true,
+                tabBarStyle: {},
                 style: {
                     borderTopColor: '#66666666',
                     backgroundColor: 'eff4fa',
@@ -151,22 +150,6 @@ function UserBottomNavigation() {
             shifting={true}
             labeled={true}
             sceneAnimationEnabled={false}
-            barStyle={{
-                // backgroundColor: '#000000',
-            }}
-            //Tab bar styles can be added here
-            tabBarOptions={{
-                style: {
-                    // backgroundColor: 'yellow',
-                }
-            }}
-            tabBarStyle={{
-                // paddingVertical: 5,
-                // borderRadius: 15,
-                // backgroundColor: 'white',
-                // position: 'absolute',
-                // height: 50,
-            }}
         >
             <Tab.Screen
                 name="UserHomeScreen"

@@ -44,6 +44,8 @@
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize"
+        android:showWhenLocked="true"
+        android:turnScreenOn="true"
         android:exported="true">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
@@ -53,6 +55,18 @@
         <meta-data
           android:name="com.google.android.geo.API_KEY"
           android:value="AIzaSyDIpZFQnU2tms1EdAqK-H9K4PfNN17zLdc"/>
+        <meta-data
+            android:name="com.supersami.foregroundservice.notification_channel_name"
+            android:value="Sticky Title"
+            />
+        <meta-data
+            android:name="com.supersami.foregroundservice.notification_channel_description"
+            android:value="Sticky Description."
+            />
+        <meta-data
+            android:name="com.supersami.foregroundservice.notification_color"
+            android:resource="@color/blue"
+            />
         <!-- notification -->
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions" />
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
@@ -72,6 +86,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
         <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" />
         <service android:name="com.supersami.foregroundservice.ForegroundService" />
         <service android:name="com.supersami.foregroundservice.ForegroundServiceTask" />

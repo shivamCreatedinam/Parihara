@@ -23,6 +23,7 @@ import {
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import Dialog, { SlideAnimation, DialogTitle, DialogContent, DialogFooter, DialogButton, } from 'react-native-popup-dialog';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapViewDirections from 'react-native-maps-directions';
 import MapView, {
@@ -42,6 +43,7 @@ const TripCreateScreen = () => {
     const navigate = useNavigation();
     const markerRef = React.useRef();
     const mapRef = React.useRef();
+    const [visible, setVisible] = React.useState(false);
     const [tripPrice, setTripPrice] = React.useState(0);
     const [Endname, setEndName] = React.useState([]); // React.useState(route.params.location?.pickup?.destinationCords.name);
     const [StartName, setStartName] = React.useState([]); //React.useState(route.params.location?.drop?.dropCords.name);
@@ -132,6 +134,7 @@ const TripCreateScreen = () => {
     const fetchTime = (d, t) => {
         setTime(t);
         setDistance(d);
+        calculateDistance(d);
     }
 
     // create trip
@@ -236,32 +239,34 @@ const TripCreateScreen = () => {
         let to_location = JSON.parse(valueX);
         let from_location = JSON.parse(valueXX);
         const pickup_point = {
-            latitude: from_location?.lat,
-            longitude: from_location?.lng
+            latitude: from_location?.latitude,
+            longitude: from_location?.longitude
         }
         const drop_point = {
             latitude: to_location?.latitude,
             longitude: to_location?.longitude
         }
+        console.log('purchasePackage', pickup_point);
+        console.log('purchasePackage', drop_point);
         setLoading(true)
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
             url: globle.API_BASE_URL + 'travel-request',
             data: {
-                'from_address': drop_point,
-                'to_address': drop_point,
-                'from_state': '1',
-                'from_city': '1',
-                'to_state': '1',
-                'to_city': '1',
-                'to_pincode': '123123',
-                'from_pincode': '123123',
+                'from_address': 'Office',
+                'to_address': 'Home',
+                'from_state': 1,
+                'from_city': 1,
+                'to_state': 1,
+                'to_city': 1,
+                'to_pincode': 110084,
+                'from_pincode': 110009,
                 'to_lat': to_location?.latitude,
                 'to_long': to_location?.longitude,
-                'from_lat': to_location?.latitude,
-                'from_long': to_location?.longitude,
-                'price': eventPrice,
+                'from_lat': from_location?.latitude,
+                'from_long': from_location?.longitude,
+                'price': Number(eventPrice),
                 'distance': Distance === '' ? 10 : Distance,
             },
             headers: {
@@ -271,19 +276,36 @@ const TripCreateScreen = () => {
         console.log('purchasePackage', config);
         axios.request(config)
             .then((response) => {
-                setLoading(false)
+                // setLoading(false)
                 console.log('purchasePackage', response.data);
-                Toast.show({
-                    type: 'success',
-                    text1: 'Buying Package Successfully',
-                    text2: response.data?.message,
-                });
+                if (response.data?.error) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Something went wrong!',
+                        text2: response.data?.error,
+                    });
+                } else {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Buying Package Successfully',
+                        text2: response.data?.message,
+                    });
+                    navigate.replace('MapComponent');
+                }
                 console.log('purchasePackage', JSON.stringify(response.data));
             })
             .catch((error) => {
-                setLoading(false)
+                // setLoading(false)
                 console.log(error);
             });
+    }
+
+    const applyCouponCode = () => {
+        Toast.show({
+            type: 'success',
+            text1: 'Comming Soon',
+            text2: 'Apply Coupons & Promocode Comming Soon.',
+        });
     }
 
 
@@ -340,7 +362,6 @@ const TripCreateScreen = () => {
                                     text1: 'Something went wrong!',
                                     text2: errorMessage,
                                 });
-
                             }}
                         />)}
                         <Marker key={1} draggable tracksViewChanges coordinate={Pickupstate} >
@@ -349,29 +370,74 @@ const TripCreateScreen = () => {
                         <Marker key={2} draggable tracksViewChanges coordinate={Destinationstate} >
                             <Image style={{ height: 30, width: 30, resizeMode: 'contain', marginRight: 10, tintColor: 'green' }} source={{ uri: 'https://www.pngkey.com/png/full/13-137571_map-marker-png-hd-marker-icon.png' }} />
                         </Marker>
-                        {/* <Circle
-                            key={1}
-                            center={Pickupstate}
-                            radius={100}
-                            options={{
-                                strokeColor: "#66009a",
-                                strokeOpacity: 0.2,
-                                strokeWeight: 2,
-                                fillColor: `#66009a`,
-                                fillOpacity: 0.1,
-                                zIndex: 1
-                            }}
-                        /> */}
                     </MapView>
                 </View> : <ActivityIndicator style={{ alignItems: 'center', marginTop: width / 1.5 }} size={'large'} color={'red'} />}
                 <View style={styles.innerContainer}>
-                    <View style={{ flex: 1 }}>
+                    <View style={{}}>
                         <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Booking Details</Text>
                     </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+                        <Image style={{ width: 40, height: 40, resizeMode: 'contain', marginRight: 20 }} source={require('../../assets/auto_icon.png')} />
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', marginRight: 10 }}>Auto</Text>
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', color: 'grey' }}>{Time} mins</Text>
+                        <View style={{ flex: 1 }} />
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', marginRight: 5 }}>₹{Number(eventPrice).toFixed(2)}</Text>
+                        <TouchableOpacity onPress={() => setVisible(true)}>
+                            <Image style={{ width: 14, height: 14, resizeMode: 'contain' }} source={require('../../assets/info_circle_icon.png')} />
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity onPress={() => applyCouponCode()} style={{ flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: 'grey', padding: 5 }}>
+                        <Image style={{ height: 70, width: 70, resizeMode: 'contain' }} source={require('../../assets/promocode.png')} />
+                        <Text style={{ textAlign: 'left', fontWeight: 'bold', marginRight: 10, marginLeft: 10, flex: 1 }}>Apply Coupon Code</Text>
+                        <Image style={{ height: 20, width: 20, resizeMode: 'contain' }} source={require('../../assets/next.png')} />
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => createNewTripForCustomer()} style={styles.buttonContainer}>
-                        <Text style={styles.buttonText}>Search Driver</Text>
+                        <Text style={styles.buttonText}>Book Auto</Text>
                     </TouchableOpacity>
                 </View>
+                <Dialog
+                    visible={visible}
+                    dialogAnimation={new SlideAnimation({
+                        slideFrom: 'bottom',
+                    })}
+                    dialogStyle={{ width: Dimensions.get('screen').width - 60, backgroundColor: '#fff' }}
+                    dialogTitle={<DialogTitle title="Fare Price Information" />}
+                    footer={
+                        <DialogFooter>
+                            <DialogButton
+                                text="Got it"
+                                onPress={() => setVisible(false)}
+                            />
+                        </DialogFooter>
+                    }
+                >
+                    <DialogContent>
+                        <View>
+                            <View>
+                                <View style={{ alignItems: 'center', marginTop: 20 }}>
+                                    <View style={{ padding: 20, backgroundColor: '#FFFF00', alignItems: 'center', borderRadius: 150 }}>
+                                        <Image style={{ width: 35, height: 35, resizeMode: 'contain' }} source={require('../../assets/auto_icon.png')} />
+                                    </View>
+                                </View>
+                                <View style={{ padding: 20 }}>
+                                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 18 }}>₹ {Number(eventPrice).toFixed(2)} *</Text>
+                                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 18 }}>KMs {Number(Distance).toFixed(2)}</Text>
+                                    <Text style={{ fontWeight: 'bold', textAlign: 'center', padding: 10 }}>Total Estimated fare price including taxes.</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10, borderTopWidth: 1, borderTopColor: '#b4b4b4', }}>
+                                        <Text style={{ fontWeight: 'bold', flex: 1 }}>Ride Fare</Text>
+                                        <Text style={{ fontWeight: 'bold' }}>₹ {Number(eventPrice).toFixed(2)}</Text>
+                                    </View>
+                                    <Text style={{ fontSize: 16, textAlign: 'center' }}>*<Text style={{ fontWeight: 'bold' }}>Price may vary if you change pickup or drop location, toll area.</Text>
+                                        Rs. 3.2/km till 3KMs, Rs. 5.70km <Text style={{ fontWeight: 'bold' }}>
+                                            till 8 KMs, </Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Rs.  6.80/km till 12 KMs </Text>, &
+                                        <Text style={{ fontWeight: 'bold' }}> and 7.90/km post</Text>
+                                        12 KMs</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </DialogContent>
+                </Dialog>
             </View>
         </KeyboardAvoidingView>
     );
@@ -419,8 +485,8 @@ const styles = StyleSheet.create({
         bottom: 20,
         marginLeft: 20,
         width: '100%',
-        paddingHorizontal: 10,
-        paddingVertical: 14,
+        paddingHorizontal: 15,
+        paddingVertical: 18,
         marginTop: 10,
         backgroundColor: 'black',
         borderRadius: 5,
@@ -439,7 +505,7 @@ const styles = StyleSheet.create({
     innerContainer: {
         padding: 20,
         height: 250,
-        width: Dimensions.get('screen').width - 20,
+        width: Dimensions.get('screen').width,
         backgroundColor: 'white',
         flexGrow: 1,
         borderRadius: 10,
@@ -447,7 +513,6 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         position: 'absolute',
         bottom: 0,
-        left: 10,
         zIndex: 999,
     }, item: {
         flex: 1,

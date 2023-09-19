@@ -24,7 +24,7 @@ export default class PushController extends React.Component {
                 }
             },
             // Android only
-            senderID: "1090501687137",
+            messagingSenderId: "1090501687137",
             // iOS only
             permissions: {
                 alert: true,

@@ -3298,6 +3298,7 @@ drawable src_assets_how_to_fix_no_locationfound
 drawable src_assets_ic_launcher_round
 drawable src_assets_icons_eye
 drawable src_assets_icons_refresh
+drawable src_assets_info_circle_icon
 drawable src_assets_left_icon
 drawable src_assets_loader_driver
 drawable src_assets_logo_main
@@ -3312,6 +3313,7 @@ drawable src_assets_previous
 drawable src_assets_privacy
 drawable src_assets_profile_icon
 drawable src_assets_profile_man
+drawable src_assets_promocode
 drawable src_assets_red_cross
 drawable src_assets_routes
 drawable src_assets_search_driver

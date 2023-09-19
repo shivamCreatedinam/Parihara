@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeReleaseResources-45:/values-az/values-az.xml",
+            "outputFile": "com.mapilocator.app-mergeReleaseResources-49:/values-az/values-az.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/3ac078317e5851c7b35e0699f635d82c/transformed/appcompat-1.6.1/res/values-az/values-az.xml",

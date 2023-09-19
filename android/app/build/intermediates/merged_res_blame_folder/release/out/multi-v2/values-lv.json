@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeReleaseResources-45:/values-lv/values-lv.xml",
+            "outputFile": "com.mapilocator.app-mergeReleaseResources-49:/values-lv/values-lv.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/b8b032a9f011549aa4242ce10998c5f2/transformed/jetified-play-services-basement-18.1.0/res/values-lv/values.xml",

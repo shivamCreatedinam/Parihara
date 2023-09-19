@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeDebugResources-45:/values-w480dp-port-v13/values-w480dp-port-v13.xml",
+            "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-w480dp-port-v13/values-w480dp-port-v13.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/dbeb72a4bccfecf0875df07f00e5d44c/transformed/material-1.9.0/res/values-w480dp-port-v13/values-w480dp-port-v13.xml",

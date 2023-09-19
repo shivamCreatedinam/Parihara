@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mapilocator"
-    android:versionCode="17"
-    android:versionName="Parihara: 1.2.17" >
+    android:versionCode="18"
+    android:versionName="Parihara: 1.2.18" >
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -56,7 +56,15 @@
         android:name="com.mapilocator.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.mapilocator.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- for android -->
+    <uses-permission android:name="com.mapilocator.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS"
+        android:maxSdkVersion="30" /> <!-- For Xiaomi devices to enable heads-up notifications as default (https://github.com/invertase/notifee/issues/296) -->
+    <uses-permission
+        android:name="android.permission.ACCESS_NOTIFICATION_POLICY"
+        android:minSdkVersion="23" /> <!-- for android -->
     <!-- <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS"/> -->
     <!-- <uses-permission android:name="com.android.launcher.permission.WRITE_SETTINGS"/> -->
     <!-- <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" /> -->
@@ -96,6 +104,8 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:exported="true"
             android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:windowSoftInputMode="adjustResize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -107,6 +117,15 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDIpZFQnU2tms1EdAqK-H9K4PfNN17zLdc" />
+        <meta-data
+            android:name="com.supersami.foregroundservice.notification_channel_name"
+            android:value="Sticky Title" />
+        <meta-data
+            android:name="com.supersami.foregroundservice.notification_channel_description"
+            android:value="Sticky Description." />
+        <meta-data
+            android:name="com.supersami.foregroundservice.notification_color"
+            android:resource="@color/blue" />
         <!-- notification -->
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions" />
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
@@ -130,6 +149,12 @@
         <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" />
         <service android:name="com.supersami.foregroundservice.ForegroundService" />
         <service android:name="com.supersami.foregroundservice.ForegroundServiceTask" />
+
+        <provider
+            android:name="io.invertase.notifee.NotifeeInitProvider"
+            android:authorities="com.mapilocator.notifee-init-provider"
+            android:exported="false"
+            android:initOrder="-100" />
 
         <meta-data
             android:name="firebase_analytics_collection_enabled"
@@ -478,7 +503,56 @@
             android:name="com.jakewharton.processphoenix.ProcessPhoenix"
             android:exported="false"
             android:process=":phoenix"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" /> <!-- Receiver Service -->
+        <service
+            android:name="app.notifee.core.ReceiverService"
+            android:exported="false" />
+
+        <activity
+            android:name="app.notifee.core.NotificationReceiverActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" /> <!-- Foreground Service -->
+        <service
+            android:name="app.notifee.core.ForegroundService"
+            android:exported="false" />
+
+        <receiver
+            android:name="app.notifee.core.RebootBroadcastReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="app.notifee.core.AlarmPermissionBroadcastReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="app.notifee.core.NotificationAlarmReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver> <!-- Broadcast Receiver -->
+        <receiver
+            android:name="app.notifee.core.BlockStateBroadcastReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.app.action.APP_BLOCK_STATE_CHANGED" />
+                <action android:name="android.app.action.NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED" />
+                <action android:name="android.app.action.NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

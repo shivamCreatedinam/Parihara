@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeReleaseResources-45:/values-pt-rPT/values-pt-rPT.xml",
+            "outputFile": "com.mapilocator.app-mergeReleaseResources-49:/values-pt-rPT/values-pt-rPT.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/269c9f868e782062e0af1d1dc0411f28/transformed/jetified-play-services-base-18.1.0/res/values-pt-rPT/values.xml",

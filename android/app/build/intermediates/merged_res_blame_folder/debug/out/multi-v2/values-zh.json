@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeDebugResources-45:/values-zh/values-zh.xml",
+            "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-zh/values-zh.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/aab2f0676f4047b13fde91f681801a56/transformed/jetified-ucrop-2.2.6-native/res/values-zh/values-zh.xml",

@@ -23,19 +23,206 @@ import globle from '../../../common/env';
 // const LATITUDE = 29.95539;
 // const LONGITUDE = 78.07513;
 const LATITUDE_DELTA = 0.009;
-const LONGITUDE_DELTA = 0.009; 
+const LONGITUDE_DELTA = 0.009;
+
+const mapDarkStyle = [
+    {
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#212121",
+            },
+        ],
+    },
+    {
+        elementType: "labels.icon",
+        stylers: [
+            {
+                visibility: "off",
+            },
+        ],
+    },
+    {
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#757575",
+            },
+        ],
+    },
+    {
+        elementType: "labels.text.stroke",
+        stylers: [
+            {
+                color: "#212121",
+            },
+        ],
+    },
+    {
+        featureType: "administrative",
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#757575",
+            },
+        ],
+    },
+    {
+        featureType: "administrative.country",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#9e9e9e",
+            },
+        ],
+    },
+    {
+        featureType: "administrative.land_parcel",
+        stylers: [
+            {
+                visibility: "off",
+            },
+        ],
+    },
+    {
+        featureType: "administrative.locality",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#bdbdbd",
+            },
+        ],
+    },
+    {
+        featureType: "poi",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#757575",
+            },
+        ],
+    },
+    {
+        featureType: "poi.park",
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#181818",
+            },
+        ],
+    },
+    {
+        featureType: "poi.park",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#616161",
+            },
+        ],
+    },
+    {
+        featureType: "poi.park",
+        elementType: "labels.text.stroke",
+        stylers: [
+            {
+                color: "#1b1b1b",
+            },
+        ],
+    },
+    {
+        featureType: "road",
+        elementType: "geometry.fill",
+        stylers: [
+            {
+                color: "#2c2c2c",
+            },
+        ],
+    },
+    {
+        featureType: "road",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#8a8a8a",
+            },
+        ],
+    },
+    {
+        featureType: "road.arterial",
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#373737",
+            },
+        ],
+    },
+    {
+        featureType: "road.highway",
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#3c3c3c",
+            },
+        ],
+    },
+    {
+        featureType: "road.highway.controlled_access",
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#4e4e4e",
+            },
+        ],
+    },
+    {
+        featureType: "road.local",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#616161",
+            },
+        ],
+    },
+    {
+        featureType: "transit",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#757575",
+            },
+        ],
+    },
+    {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [
+            {
+                color: "#000000",
+            },
+        ],
+    },
+    {
+        featureType: "water",
+        elementType: "labels.text.fill",
+        stylers: [
+            {
+                color: "#3d3d3d",
+            },
+        ],
+    },
+];
 
 export default class MapComponent extends React.Component {
-    
+
     constructor(props: any) {
         super(props);
         this.state = {
-            latitude: this.props.route.params.startPoint.latitude,
-            longitude: this.props.route.params.startPoint.longitude,
+            latitude: 28.6987867,
+            longitude: 77.2047205,
             routeCoordinates: [],
             tripEndPoint: {
-                latitude: this.props.route.params.endPoint.pickupCords.latitude,
-                longitude: this.props.route.params.endPoint.pickupCords.longitude
+                latitude: 28.752041,
+                longitude: 77.2008786
             },
             distanceTravelled: 0,
             Distance: '',
@@ -43,8 +230,8 @@ export default class MapComponent extends React.Component {
             prevLatLng: {},
             heading: 0,
             coordinate: new AnimatedRegion({
-                latitude: this.props.route.params.startPoint.latitude,
-                longitude: this.props.route.params.startPoint.longitude,
+                latitude: 28.6987867,
+                longitude: 77.2047205,
                 latitudeDelta: 0,
                 longitudeDelta: 0
             })
@@ -149,6 +336,7 @@ export default class MapComponent extends React.Component {
                     showUserLocation
                     followUserLocation
                     loadingEnabled
+                    customMapStyle={mapDarkStyle}
                     initialRegion={{
                         latitude: this.state.latitude,
                         longitude: this.state.longitude,
@@ -160,6 +348,7 @@ export default class MapComponent extends React.Component {
                         origin={{ latitude: this.state.latitude, longitude: this.state.longitude }}
                         destination={this.state?.tripEndPoint}
                         apikey={globle.GOOGLE_MAPS_APIKEY_V2}
+                        mode={'DRIVING'}
                         strokeWidth={6}
                         strokeColor="red"
                         optimizeWaypoints={true}

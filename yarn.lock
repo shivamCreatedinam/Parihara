@@ -1795,6 +1795,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@notifee/react-native@^7.8.0":
+  version "7.8.0"
+  resolved "https://registry.npmjs.org/@notifee/react-native/-/react-native-7.8.0.tgz"
+  integrity sha512-sx8h62U4FrR4pqlbN1rkgPsdamDt9Tad0zgfO6VtP6rNJq/78k8nxUnh0xIX3WPDcCV8KAzdYCE7+UNvhF1CpQ==
+
 "@npmcli/fs@^1.0.0":
   version "1.1.1"
   resolved "https://registry.npmjs.org/@npmcli/fs/-/fs-1.1.1.tgz"
@@ -8468,6 +8473,14 @@ react-native-location@^2.5.0:
   version "2.5.0"
   resolved "https://registry.npmjs.org/react-native-location/-/react-native-location-2.5.0.tgz"
   integrity sha512-myT54tZuFmN6d5RruMVfoa8eY+voJWkSd73xUVhjzJDnQr5uu5MFoH7hMg3trHF1CAkaY/2gIneOspUdGxv59Q==
+
+react-native-map-link@^2.11.2:
+  version "2.11.2"
+  resolved "https://registry.npmjs.org/react-native-map-link/-/react-native-map-link-2.11.2.tgz"
+  integrity sha512-Iw6ctKw6aGkFrYKnUFzkfzaIrXbRumVAdqGrspws6dp//xij1KFzQlONWcHjfzZeOa2Q7PR/TrlUfxPUdODrzw==
+  dependencies:
+    prop-types "^15.8.1"
+    react-native-modal "^13.0.1"
 
 react-native-maps-directions@^1.9.0:
   version "1.9.0"
