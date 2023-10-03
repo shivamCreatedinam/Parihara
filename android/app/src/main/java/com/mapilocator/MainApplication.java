@@ -1,13 +1,12 @@
 package com.mapilocator;
 
 import android.app.Application;
+import io.radar.sdk.Radar;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.reactnativerestart.RestartPackage;
-import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
-import io.xogus.reactnative.versioncheck.RNVersionCheckPackage;
+import io.xogus.reactnative.versioncheck.RNVersionCheckPackage;  // <--- HERE
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -15,6 +14,7 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 
 public class MainApplication extends Application implements ReactApplication {
+
 
   private final ReactNativeHost mReactNativeHost =
       new DefaultReactNativeHost(this) {
@@ -27,7 +27,8 @@ public class MainApplication extends Application implements ReactApplication {
         protected List<ReactPackage> getPackages() {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
-          // Packages that cannot be autolinked yet can be added manually here, for example:
+          // Packages that cannot be auto linked yet can be added manually here, for example:
+//            packages.add(new RNVersionCheckPackage());
           // packages.add(new MyReactNativePackage());
           return packages;
         }
@@ -57,6 +58,8 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
+      String publishableKey = "prj_live_pk_e084462b3ae1dceff7b08f650808b68f77f44aea";
+      Radar.initialize(this, publishableKey);
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       DefaultNewArchitectureEntryPoint.load();

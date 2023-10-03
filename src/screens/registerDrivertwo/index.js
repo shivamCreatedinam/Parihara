@@ -12,14 +12,15 @@ import {
     Image,
     TextInput,
     TouchableOpacity,
-    Platform
+    Platform,
+    PermissionsAndroid
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import Geolocation from 'react-native-geolocation-service';
+// import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+// import Geolocation from 'react-native-geolocation-service';
 import ImagePicker from 'react-native-image-crop-picker';
 
 const RegisterDriverTwoScreen = () => {
@@ -41,48 +42,48 @@ const RegisterDriverTwoScreen = () => {
     const [location, setLocation] = React.useState({ latitude: 60.1098678, longitude: 24.7385084, });
 
     const handleLocationPermission = async () => {
-        let permissionCheck = '';
-        if (Platform.OS === 'ios') {
-            permissionCheck = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+        // let permissionCheck = '';
+        // if (Platform.OS === 'ios') {
+        //     permissionCheck = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
 
-            if (permissionCheck === RESULTS.DENIED) {
-                const permissionRequest = await request(
-                    PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
-                );
-                permissionRequest === RESULTS.GRANTED ? console.warn('Location permission granted.') : console.warn('Location perrmission denied.');
-            }
-        }
+        //     if (permissionCheck === RESULTS.DENIED) {
+        //         const permissionRequest = await request(
+        //             PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
+        //         );
+        //         permissionRequest === RESULTS.GRANTED ? console.warn('Location permission granted.') : console.warn('Location perrmission denied.');
+        //     }
+        // }
 
-        if (Platform.OS === 'android') {
-            permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+        // if (Platform.OS === 'android') {
+        //     permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
 
-            if (permissionCheck === RESULTS.DENIED) {
-                const permissionRequest = await request(
-                    PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-                );
-                permissionRequest === RESULTS.GRANTED
-                    ? console.warn('Location permission granted.')
-                    : console.warn('Location perrmission denied.');
-            }
-        }
+        //     if (permissionCheck === RESULTS.DENIED) {
+        //         const permissionRequest = await request(
+        //             PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+        //         );
+        //         permissionRequest === RESULTS.GRANTED
+        //             ? console.warn('Location permission granted.')
+        //             : console.warn('Location perrmission denied.');
+        //     }
+        // }
     };
 
     React.useEffect(() => {
-        handleLocationPermission();
+        // handleLocationPermission();
     }, []);
 
-    React.useEffect(() => {
-        Geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setLocation({ latitude, longitude });
-            },
-            (error) => {
-                console.log(error.code, error.message);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-        );
-    }, []);
+    // React.useEffect(() => {
+    //     Geolocation.getCurrentPosition(
+    //         (position) => {
+    //             const { latitude, longitude } = position.coords;
+    //             setLocation({ latitude, longitude });
+    //         },
+    //         (error) => {
+    //             console.log(error.code, error.message);
+    //         },
+    //         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    //     );
+    // }, []);
 
     // Handle user state changes
     function onAuthStateChanged(user) {
@@ -91,37 +92,37 @@ const RegisterDriverTwoScreen = () => {
     }
 
     React.useEffect(() => {
-        requestPermission()
+        // requestPermission()
     }, [])
 
     const requestPermission = async () => {
-        try {
-            console.log('asking for permission')
-            const granted = await PermissionsAndroid.requestMultiple(
-                [PermissionsAndroid.PERMISSIONS.CAMERA,
-                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE]
-            )
-            if (granted['android.permission.CAMERA'] && granted['android.permission.WRITE_EXTERNAL_STORAGE']) {
-                console.log("You can use the camera");
-            } else {
-                console.log("Camera permission denied");
-            }
-        } catch (error) {
-            console.log('permission error', error)
-        }
+        // try {
+        //     console.log('asking for permission')
+        //     const granted = await PermissionsAndroid.requestMultiple(
+        //         [PermissionsAndroid.PERMISSIONS.CAMERA,
+        //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE]
+        //     )
+        //     if (granted['android.permission.CAMERA'] && granted['android.permission.WRITE_EXTERNAL_STORAGE']) {
+        //         console.log("You can use the camera");
+        //     } else {
+        //         console.log("Camera permission denied");
+        //     }
+        // } catch (error) {
+        //     console.log('permission error', error)
+        // }
     }
 
-    React.useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-        return subscriber; // unsubscribe on unmount
-    }, []);
+    // React.useEffect(() => {
+    //     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    //     return subscriber; // unsubscribe on unmount
+    // }, []);
 
-    React.useEffect(() => {
-        // AppState.addEventListener('change', _handleAppStateChange);
-        return () => {
-            // console.log('addEventListener');
-        };
-    }, [false]);
+    // React.useEffect(() => {
+    //     // AppState.addEventListener('change', _handleAppStateChange);
+    //     return () => {
+    //         // console.log('addEventListener');
+    //     };
+    // }, [false]);
 
     const showSuccessToast = () => {
         Toast.show({

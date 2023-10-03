@@ -5,12 +5,11 @@
  * @format
  */
 
-import React, { FC } from 'react';
+import React from 'react';
 import {
   AppState,
   SafeAreaView,
   StyleSheet,
-  View,
   StatusBar,
   Platform,
   Text,
@@ -45,6 +44,7 @@ const App = () => {
   React.useEffect(() => {
     checkPermission();
     messageListener();
+    forceUpdate();
   }, []);
 
   const checkPermission = async () => {
@@ -225,27 +225,28 @@ const App = () => {
   const forceUpdate = async () => {
     try {
       let updateNeeded = await VersionCheck.needUpdate();
-      // console.log('updateNeeded', JSON.stringify(updateNeeded));
-      if (updateNeeded && updateNeeded.isNeeded) {
-        setisupdated(false)
-        Alert.alert('Please update', 'You have to update the app to continue using',
-          [{
-            text: 'Update',
-            onPress: () => {
-              Linking.openURL(updateNeeded.storeUrl);
-              BackHandler.exitApp();
-            }
-          }
-          ], { cancelable: true })
-      }
-      else {
-        setisupdated(true)
-      }
+      console.log('updateNeeded------------->', JSON.stringify(updateNeeded));
+      // if (updateNeeded && updateNeeded.isNeeded) {
+      //   setisupdated(false)
+      //   Alert.alert('Please update', 'You have to update the app to continue using',
+      //     [{
+      //       text: 'Update',
+      //       onPress: () => {
+      //         Linking.openURL(updateNeeded.storeUrl)
+      //         BackHandler.exitApp()
+      //       }
+      //     }
+      //     ], { cancelable: false })
+      // }
+      // else {
+      //   setisupdated(true)
+      // }
     }
     catch (err) {
-      // console.log(err.message);
+      console.log(err);
     }
   }
+
 
   if (!isupdated) {
     return <ImageBackground

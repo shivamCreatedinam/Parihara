@@ -1,7 +1,7 @@
 /**
  * @format
  */
-import ReactNativeForegroundService from "@supersami/rn-foreground-service";
+import BackgroundTimer from 'react-native-background-timer';
 import 'react-native-gesture-handler';
 import { AppRegistry, LogBox } from 'react-native';
 import App from './App';
@@ -26,17 +26,20 @@ if (true) {
 
 LogBox.ignoreAllLogs(true);
 // Register the service
-ReactNativeForegroundService.register();
-ReactNativeForegroundService.add_task(() => console.log("I am Being Tested"), {
-    delay: 100,
-    onLoop: true,
-    taskId: "taskid",
-    onError: (e) => console.log(`Error logging:`, e),
-});
-ReactNativeForegroundService.start({
-    id: 144,
-    title: "Foreground Service",
-    message: "you are online!",
-});
+// ReactNativeForegroundService.register();
+// ReactNativeForegroundService.add_task(() => 
+//     console.log("I am Being Tested"), {
+//     delay: 100,
+//     onLoop: true,
+//     taskId: "taskid",
+//     onError: (e) => console.log(`Error logging:`, e),
+// });
+// ReactNativeForegroundService.start({
+//     id: 144,
+//     title: "Foreground Service",
+//     message: "you are online!",
+// });
+
+BackgroundTimer.start(5000);
 
 AppRegistry.registerComponent(appName, () => App);

@@ -18,11 +18,12 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import globle from '../../../common/env';
+import info from '../../../package.json';
 import Toast from 'react-native-toast-message';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { showMessage } from "react-native-flash-message";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
 
@@ -113,11 +114,11 @@ const ProfileScreen = () => {
 
     const logoutX = () => {
         Alert.alert(
-            'End Trip',
-            'Are you sure, want end the trip?',
+            'Logged Out',
+            'Are you sure, want to logged out?',
             [
-                { text: 'Cancel', onPress: () => console.log('cancel') },
-                { text: 'OK', onPress: () => loggoutUser() },
+                { text: 'No', onPress: () => console.log('cancel') },
+                { text: 'Yes', onPress: () => loggoutUser() },
             ]
         );
     }
@@ -197,10 +198,27 @@ const ProfileScreen = () => {
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/driver_profile.png')} />
                     <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Edit Profile</Text>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/badge.png')} />
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Reward & Offers</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/history.png')} />
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Booking History</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/privacy.png')} />
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Privacy Policy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/home_shield.png')} />
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Terms & Conditions</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={[styles.button, { width: '100%', borderRadius: 50, marginTop: 15 }]} onPress={() => logoutX()}>
                     <Text style={styles.buttonText}>Log Out</Text>
                 </TouchableOpacity>
             </View>
+            <Text style={{ flex: 1, textAlign: 'center', fontSize: 12, color: 'black', marginTop: 30, fontWeight: 'bold',marginBottom:50 }}>v {info.version}</Text>
         </ScrollView>
     );
 }

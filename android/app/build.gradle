@@ -91,7 +91,6 @@ def reactNativeArchitectures() {
 }
 
 android {
-
     ndkVersion rootProject.ext.ndkVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
     namespace "com.mapilocator"
@@ -99,8 +98,8 @@ android {
         applicationId "com.mapilocator"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 18
-        versionName "Parihara: 1.2.18"
+        versionCode 22
+        versionName "Parihara: 1.2.22"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -160,9 +159,9 @@ dependencies {
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
         exclude group:'com.squareup.okhttp3', module:'okhttp'
     }
+    implementation "com.google.android.gms:play-services-location:21.0.1"
     implementation project(':react-native-geocoder')
     implementation project(':react-native-geolocation-service')
-    implementation project(':react-native-version-check')
     implementation project(':react-native-restart')
     implementation project(':@voximplant_react-native-foreground-service')
     implementation "androidx.annotation:annotation:1.7.0"
@@ -171,7 +170,6 @@ dependencies {
     implementation 'com.facebook.fresco:webpsupport:2.0.0'
     implementation project(':react-native-maps')
     implementation project(':react-native-sensors')
-    implementation project(':react-native-background-timer')
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
     if (hermesEnabled.toBoolean()) {

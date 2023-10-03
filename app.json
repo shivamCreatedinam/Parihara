@@ -6,9 +6,16 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
-        }
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
+          "isAndroidBackgroundLocationEnabled": true
+        },
+        "@notifee/react-native"
       ]
+    ]
+  },
+  "android": {
+    "permissions": [
+      "ACCESS_FINE_LOCATION"
     ]
   }
 }

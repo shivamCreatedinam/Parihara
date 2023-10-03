@@ -2,6 +2,10 @@ import { StyleSheet } from "react-native";
 import Colors from "../../../common/Colour";
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginTop: 30
+    },
     mapContainer: {
         height: "50%"
     },
@@ -29,6 +33,31 @@ const styles = StyleSheet.create({
         shadowRadius: 4.65,
 
         elevation: 7,
+    },
+    map: {
+        width: "100%",
+        height: "100%",
+    },
+    markerRound: {
+        alignItems: "center",
+        justifyContent: "center",
+        width: 15,
+        height: 15,
+        borderRadius: 50,
+        backgroundColor: Colors.black,
+    },
+    markerRectangle: {
+        alignItems: "center",
+        justifyContent: "center",
+        width: 15,
+        height: 15,
+        backgroundColor: Colors.black,
+    },
+    markerCircle: {
+        width: 5,
+        height: 5,
+        borderRadius: 50,
+        backgroundColor: Colors.white
     }
 });
 

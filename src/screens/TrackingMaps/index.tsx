@@ -14,14 +14,15 @@ import MapView, {
     Marker,
     AnimatedRegion,
     Polyline,
-    PROVIDER_GOOGLE
+    PROVIDER_GOOGLE,
+    Animated
 } from "react-native-maps";
 import haversine from "haversine";
 import Geolocation from '@react-native-community/geolocation';
 import MapViewDirections from 'react-native-maps-directions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
 import globle from '../../../common/env';
-// const LATITUDE = 29.95539;
-// const LONGITUDE = 78.07513;
 const LATITUDE_DELTA = 0.009;
 const LONGITUDE_DELTA = 0.009;
 
@@ -217,12 +218,17 @@ export default class MapComponent extends React.Component {
     constructor(props: any) {
         super(props);
         this.state = {
+            loading: true,
+            TripOtp: this.props?.route?.params?.data?.trip_otp,
+            DriverName: this.props?.route?.params?.data?.drivername,
+            DriverImage: this.props?.route?.params?.data?.drv_image,
+            DriverVehicleNo: this.props?.route?.params?.data?.vehicle_no,
             latitude: 28.6987867,
             longitude: 77.2047205,
             routeCoordinates: [],
             tripEndPoint: {
                 latitude: 28.752041,
-                longitude: 77.2008786
+                longitude: 77.2008786,
             },
             distanceTravelled: 0,
             Distance: '',
@@ -233,13 +239,24 @@ export default class MapComponent extends React.Component {
                 latitude: 28.6987867,
                 longitude: 77.2047205,
                 latitudeDelta: 0,
-                longitudeDelta: 0
-            })
+                longitudeDelta: 0,
+            }),
+            driver_location: {
+                latitude: 0,
+                longitude: 0,
+            },
+            region: new AnimatedRegion({
+                latitude: 28.6987867,
+                longitude: 77.2047205,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }),
         };
         //  this.marker = React.createRef();
     }
 
     componentDidMount() {
+        this.getTripDetails();
         const { coordinate } = this.state;
         this.watchID = Geolocation.watchPosition(
             position => {
@@ -274,17 +291,44 @@ export default class MapComponent extends React.Component {
             },
             error => console.log(error),
             {
-                enableHighAccuracy: true,
-                timeout: 20000,
+                enableHighAccuracy: false,
+                // timeout: 20000,
                 maximumAge: 1000,
-                distanceFilter: 0
+                // distanceFilter: 0
             }
         );
-
+        this.startTracking();
         setInterval(() => {
             this.onCenter(this.state.latitude, this.state.longitude)
         }, 6000);
     }
+
+
+    startTracking = async () => {
+        // Set up a listener for your Firebase database reference
+        // const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        // let data = JSON.parse(valueX);
+        // console.log(data?.id);
+        // // const driverData = {
+        // //     lattitude: lattitude,
+        // //     longitude: longitude,
+        // // }
+        let reff = '/tracking/' + 1 + '';
+        database().ref(reff).on('value', (snapshot) => {
+            // Update the component state with the fetched data
+            let data = snapshot.val();
+            this.onCenter(data?.location?.lattitude, data?.location?.longitude);
+            console.log('location_has_been_update', JSON.stringify(data?.location?.longitude));
+        });
+    }
+
+    animateMarkerToLocation = (latitude, longitude) => {
+        Animated.timing(this.state?.coordinate, {
+            toValue: { latitude, longitude },
+            duration: 1000, // Animation duration in milliseconds
+            useNativeDriver: false, // Set to true if possible for better performance
+        }).start();
+    };
 
     componentWillUnmount() {
         Geolocation.clearWatch(this.watchID);
@@ -303,6 +347,7 @@ export default class MapComponent extends React.Component {
     };
 
     onCenter = (latitude: any, longitude: any) => {
+        console.log('onCenter-------------->')
         this.mapRef?.animateToRegion({
             latitude: latitude,
             longitude: longitude,
@@ -313,21 +358,74 @@ export default class MapComponent extends React.Component {
 
     goBackEndTrip() {
         Alert.alert(
-            'End Trip',
-            'Are you sure, want end the trip?',
+            'Go To Background',
+            'Are you sure, want go Background, Tracking enable in background.',
             [
                 { text: 'Cancel', onPress: () => console.log('cancel') },
-                { text: 'OK', onPress: () => this.props.navigation.navigate('HomeScreen') },
+                { text: 'OK', onPress: () => this.checkOrBack() },
             ]
         );
+    }
+
+    checkOrBack = async () => {
+        const autoUserGroup = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(autoUserGroup);
+        console.log('checkOrBack', JSON.stringify(data));
+        this.props.navigation.navigate('UserHomeScreen');
+    }
+
+    getTripDetails = async () => {
+        console.log('Tracking_Start', JSON.stringify(this.props?.route?.params?.data));
+        const autoUserGroup = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(autoUserGroup)?.token;
+        const valueX = await AsyncStorage.getItem('@autoEndTrip');
+        const valueXX = await AsyncStorage.getItem('@fromTrip');
+        let to_location = JSON.parse(valueX);
+        let from_location = JSON.parse(valueXX);
+        const pickup_point = {
+            latitude: from_location?.latitude,
+            longitude: from_location?.longitude
+        }
+        const drop_point = {
+            latitude: to_location?.latitude,
+            longitude: to_location?.longitude
+        }
+        console.log('getTripDetails', pickup_point);
+        console.log('getTripDetails', drop_point);
+        this.setState({
+            latitude: from_location?.latitude,
+            longitude: from_location?.longitude,
+            tripEndPoint: {
+                latitude: to_location?.latitude,
+                longitude: to_location?.longitude,
+            }, coordinate: new AnimatedRegion({
+                latitude: from_location?.latitude,
+                longitude: from_location?.longitude,
+                latitudeDelta: 0,
+                longitudeDelta: 0,
+            }),
+            loading: false,
+        })
+    }
+
+    handleOnMapsPress = () => {
+        if (Platform.OS === 'ios') {
+            //  Linking.openURL('maps://app?saddr=' + startinPointName + '&daddr=' + endingPointName+'&travelmode=car')
+            // startTrip();
+            // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startinPointName + '&destination=' + endingPointName + '&travelmode=driving&waypoints=' + 'Office to Home ')
+        }
+        if (Platform.OS === 'android') {
+            // startTrip();
+            // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startinPointName + '&destination=' + endingPointName + '&travelmode=driving&waypoints=' + DATA[1].name + DATA[2].name)
+        }
     }
 
 
     render() {
         return (
             <View style={styles.container}>
-                <Pressable onPress={() => this.goBackEndTrip()} style={{ position: 'absolute', top: 10, left: 10, zIndex: 9999 }} >
-                    <Image style={{ width: 25, height: 25, resizeMode: 'contain', tintColor: 'green' }} source={require('../../assets/previous.png')} />
+                <Pressable onPress={() => this.goBackEndTrip()} style={{ position: 'absolute', top: 50, left: 10, zIndex: 9999 }} >
+                    <Image style={{ width: 25, height: 25, resizeMode: 'contain', tintColor: 'white' }} source={require('../../assets/previous.png')} />
                 </Pressable>
                 <MapView
                     ref={mapRef => (this.mapRef = mapRef)}
@@ -341,16 +439,15 @@ export default class MapComponent extends React.Component {
                         latitude: this.state.latitude,
                         longitude: this.state.longitude,
                         latitudeDelta: LATITUDE_DELTA,
-                        longitudeDelta: LONGITUDE_DELTA
-                    }}
-                // region={this.getMapRegion()}
-                ><MapViewDirections
+                        longitudeDelta: LONGITUDE_DELTA,
+                    }}>
+                    <MapViewDirections
                         origin={{ latitude: this.state.latitude, longitude: this.state.longitude }}
                         destination={this.state?.tripEndPoint}
                         apikey={globle.GOOGLE_MAPS_APIKEY_V2}
                         mode={'DRIVING'}
                         strokeWidth={6}
-                        strokeColor="red"
+                        strokeColor="green"
                         optimizeWaypoints={true}
                         onStart={(params) => {
                             console.log(`Started routing between "${params.origin}" and "${params.destination}"`);
@@ -358,7 +455,7 @@ export default class MapComponent extends React.Component {
                         onReady={result => {
                             this.setState({
                                 Distance: result.distance,
-                                Duration: result.duration
+                                Duration: result.duration,
                             });
                         }}
                         onError={(errorMessage) => {
@@ -366,26 +463,45 @@ export default class MapComponent extends React.Component {
                         }}
                     />
                     <Polyline coordinates={this.state.routeCoordinates} strokeWidth={5} strokeColor="green" />
+                    <Marker coordinate={{ latitude: this.state.latitude, longitude: this.state.longitude }}>
+                        <Image style={{
+                            width: 55,
+                            height: 55,
+                        }} source={require('../../assets/user_icon.png')} />
+                    </Marker>
+                    <Marker coordinate={this.state?.tripEndPoint}>
+                        <Image style={{
+                            width: 55,
+                            height: 55,
+                        }} source={require('../../assets/end_icon.png')} />
+                    </Marker>
                     <Marker.Animated
-                        // ref={marker => {
-                        //   this.marker = marker;
-                        // }}
                         ref={marker => (this.marker = marker)}
-                        coordinate={this.state.coordinate}
-                    >
+                        coordinate={this.state.driver_location}>
                         <Image
                             source={require('../../assets/data/auto_rickshaw.png')}
                             style={{
-                                width: 55,
-                                height: 55,
+                                width: 45,
+                                height: 45,
                                 resizeMode: 'contain',
                                 transform: [{ rotate: `${this.state.heading}deg` }],
                             }}
                         />
                     </Marker.Animated>
                 </MapView>
-                <View style={styles.buttonContainer}>
-
+                <View style={{ position: 'absolute', bottom: 30, left: 20, right: 20, backgroundColor: '#ffffff', borderRadius: 10, elevation: 5 }}>
+                    <View style={{ padding: 20, alignItems: 'flex-end', flexDirection: 'row', }}>
+                        <Text>ENTER OTP TO START TRIP :</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16, borderColor: 'grey', borderWidth: 1, padding: 7 }}>{this.state.TripOtp}</Text>
+                    </View>
+                    <View>
+                        <Image style={{ height: 50, width: 50, borderRadius: 150, resizeMode: 'contain' }} source={{ uri: globle.IMAGE_BASE_URL + this.state?.DriverImage }} />
+                        <Text>{this.state.DriverName}</Text>
+                        <Text>{this.state.DriverVehicleNo}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => this.handleOnMapsPress()} style={[styles.bubble, styles.button]}>
+                        <Text style={styles.bottomBarContent}>Open Maps 🗺</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={[styles.bubble, styles.button]}>
                         <Text style={styles.bottomBarContent}>
                             {parseFloat(this.state.distanceTravelled).toFixed(2)} km

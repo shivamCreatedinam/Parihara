@@ -51,6 +51,7 @@
             <option value="$PROJECT_DIR$/../node_modules/react-native-pager-view/android" />
             <option value="$PROJECT_DIR$/../node_modules/react-native-permissions/android" />
             <option value="$PROJECT_DIR$/../node_modules/react-native-push-notification/android" />
+            <option value="$PROJECT_DIR$/../node_modules/react-native-radar/android" />
             <option value="$PROJECT_DIR$/../node_modules/react-native-restart/android" />
             <option value="$PROJECT_DIR$/../node_modules/react-native-safe-area-context/android" />
             <option value="$PROJECT_DIR$/../node_modules/react-native-screens/android" />

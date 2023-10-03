@@ -11,7 +11,6 @@ import {
     Text,
     TouchableOpacity,
     Platform,
-    Pressable,
     View,
     Dimensions,
     Animated,
@@ -19,23 +18,17 @@ import {
     ImageBackground,
     ActivityIndicator,
     FlatList,
+    Linking
 } from 'react-native';
-import {
-    setUpdateIntervalForType,
-    SensorTypes,
-} from 'react-native-sensors';
+import { setUpdateIntervalForType, SensorTypes } from 'react-native-sensors';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Geolocation from '@react-native-community/geolocation';
 import AddressPickup from '../../../common/AddressPickup';
 import getDistance from 'geolib/es/getPreciseDistance';
 import globle from '../../../common/env';
 import Geocoder from 'react-native-geocoder';
-import Geolocation from 'react-native-geolocation-service';
-import MapView, {
-    Marker,
-    AnimatedRegion
-} from 'react-native-maps';
-import styles from './styles';
+import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
 import {
     INPUT_RANGE_START,
     INPUT_RANGE_END,
@@ -71,11 +64,9 @@ const StartTripSearchingScreen = () => {
     const [Dropstate, setDropState] = React.useState({ dropCords: {} });
     const [markerLocation, serLocation] = React.useState({ latitude: null, longitude: null, additionDetails: null });
     const [marker, setMarker] = React.useState(false);
-
     console.log(JSON.stringify(routes.params));
 
     React.useEffect(() => {
-        getNearbyBars();
         const translate = () => {
             translateValue.setValue(initialValue);
             Animated.timing(translateValue, {
@@ -93,16 +84,28 @@ const StartTripSearchingScreen = () => {
             async function fetchData() {
                 console.log('just_focus');
                 //each count lasts for a second
-                getLocationData();
+                getNearbyBars();
                 //cleanup the interval on complete
             }
             fetchData();
         }, []),
     );
 
+    // React.useEffect(() => {
+    //     Geolocation.getCurrentPosition(
+    //         (position) => {
+    //             const { latitude, longitude } = position.coords;
+    //             console.log({ latitude, longitude });
+    //         },
+    //         (error) => {
+    //             console.log(error.code, error.message);
+    //         },
+    //         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    //     );
+    // }, []);
+
     const getLocationData = async () => {
         console.log('triggered!')
-
         setTimeout(async () => {
             // write your functions    
             if (routes.params?.type === 'ToDestination') {
@@ -124,10 +127,6 @@ const StartTripSearchingScreen = () => {
         }, 500);
     }
 
-    const translateAnimation = translateValue.interpolate({
-        inputRange: [INPUT_RANGE_START, INPUT_RANGE_END],
-        outputRange: [OUTPUT_RANGE_START, OUTPUT_RANGE_END],
-    });
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Radius of the Earth in kilometers
@@ -242,18 +241,18 @@ const StartTripSearchingScreen = () => {
     const AnimetedImage = Animated.createAnimatedComponent(ImageBackground);
 
     const fetchPickupCords = (locations) => {
-        // console.log('fetchPickupCords', JSON.stringify(locations));
-        // setDestinationState({
-        //     ...Destinationstate,
-        //     destinationCords: {
-        //         latitude: locations?.geometry?.location?.lat,
-        //         longitude: locations?.geometry?.location?.lng,
-        //         name: locations?.name,
-        //         icon: locations?.icon,
-        //         latitudeDelta: 0.1,
-        //         longitudeDelta: 0.1
-        //     }
-        // });
+        console.log('fetchPickupCords', JSON.stringify(locations));
+        setDestinationState({
+            ...Destinationstate,
+            destinationCords: {
+                latitude: locations?.geometry?.location?.lat,
+                longitude: locations?.geometry?.location?.lng,
+                name: locations?.name,
+                icon: locations?.icon,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1
+            }
+        });
         mapRef.current.animateCamera({
             center: {
                 latitude: locations?.geometry?.location?.lat,
@@ -287,6 +286,7 @@ const StartTripSearchingScreen = () => {
             setformattedAddress(res[0]?.formattedAddress);
             setformatteTodAddress(res[0]);
             saveToStorage(res[0]);
+            setLoading(true);
         }).catch(err => console.log(err));
     }
 
@@ -312,9 +312,21 @@ const StartTripSearchingScreen = () => {
             formatted_address: '',
             name: '',
         }
+        console.log('onMapPress', JSON.stringify(e.nativeEvent.coordinate));
         animate(e.nativeEvent.coordinate?.latitude, e.nativeEvent.coordinate?.longitude);
         serLocation({ latitude: e.nativeEvent.coordinate?.latitude, longitude: e.nativeEvent.coordinate?.longitude, additionDetails: additionDetails });
+        saveToFromStorage(e.nativeEvent.coordinate?.latitude, e.nativeEvent.coordinate?.longitude);
         setMarker(true);
+    }
+
+
+    const saveToFromStorage = async (latitude, longitude) => {
+        let save_from = {
+            latitude: latitude,
+            longitude: longitude,
+        }
+        await AsyncStorage.setItem('@fromTrip', JSON.stringify(save_from));
+        console.log('saveToStorage', save_from);
     }
 
     const getNearbyBars = async () => {
@@ -325,19 +337,21 @@ const StartTripSearchingScreen = () => {
                     name: '',
                 }
                 console.log('getNearbyBars', JSON.stringify(position));
-                getLocationAddress(position.coords.latitude, position.coords.longitude);
                 serLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude, additionDetails: additionDetails });
+                animate(position.coords.latitude, position.coords.longitude);
+                getLocationAddress(position.coords.latitude, position.coords.longitude);
                 setLoading(true);
                 setMarker(true);
-                animate(position.coords.latitude, position.coords.longitude);
             },
-            error => console.log('error', error),
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+            error => console.log('error--->', error),
+            {
+                enableHighAccuracy: false,
+                timeout: 10000,
+            },
         );
     };
 
     const animate = (latitude, longitude) => {
-        const newCoordinate = { latitude, longitude };
         if (Platform.OS == 'android') {
             if (markerRef.current) {
                 mapRef.current.animateCamera({
@@ -352,6 +366,17 @@ const StartTripSearchingScreen = () => {
         }
     }
 
+    const handleOnPress = () => {
+        if (Platform.OS === 'ios') {
+            //  Linking.openURL('maps://app?saddr=' + startinPointName + '&daddr=' + endingPointName+'&travelmode=car')
+            // startTrip();
+            Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startinPointName + '&destination=' + endingPointName + '&travelmode=driving&waypoints=' + DATA[1].name + DATA[2].name)
+        }
+        if (Platform.OS === 'android') {
+            // startTrip();
+            Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startinPointName + '&destination=' + endingPointName + '&travelmode=driving&waypoints=' + DATA[1].name + DATA[2].name)
+        }
+    }
 
 
     return (
@@ -359,32 +384,31 @@ const StartTripSearchingScreen = () => {
             <View style={{ marginTop: 35 }}>
                 <View style={{ position: 'absolute', top: 10, left: 22, zIndex: 9999, width: '90%', flexDirection: 'row', alignItems: 'center' }}>
                     <AddressPickup
+                        fetchDetails={true}
                         placheholderText={formattedAddress === '' ? 'Please enter Location' : formattedAddress}
                         fetchAddress={fetchPickupCords}
+                        query={{
+                            key: globle.GOOGLE_MAPS_APIKEY_V2,
+                            language: 'en',
+                        }}
+                        currentLocation={true}
+                        currentLocationLabel='Current location'
                     />
-                    {Object.keys(Destinationstate.destinationCords).length > 0 ?
-                        <Pressable onPress={() => setDestinationState({ destinationCords: {} })} style={{ position: 'absolute', right: 25, top: 33, zIndex: 9999, backgroundColor: '#fff', padding: 0 }}>
-                            <Image style={{ height: 20, width: 20, resizeMode: 'contain', }} source={require('../../assets/red_cross.png')} />
-                        </Pressable> : null}
-                    {Object.keys(Destinationstate.destinationCords).length > 0 ? null : <View style={{ left: -20, width: 10, height: 10, backgroundColor: 'green', borderRadius: 150, zIndex: 9999, top: 8 }} />}
                 </View>
                 <View style={{ height: height / 2, width: width }}>
-                    {loading ?
+                    {loading === true ?
                         <MapView
                             ref={mapRef}
                             style={{ height: height / 2, width: width }}
                             mapType={MapView.MAP_TYPES.TERRIN}
-                            // pitchEnabled={true}
-                            showScale={true}
+                            // pitchEnabled={true}  
                             showsIndoors={true}
-                            loadingEnabled
                             key={globle.GOOGLE_MAPS_APIKEY_V2}
                             minZoomLevel={18}
                             maxZoomLevel={18}
                             showsTraffic={false}
                             showsBuildings={false}
                             showsCompass={false}
-                            showsScale={true}
                             showsUserLocation={false}
                             initialRegion={{
                                 ...markerLocation,

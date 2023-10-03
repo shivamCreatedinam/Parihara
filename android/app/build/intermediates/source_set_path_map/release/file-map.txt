@@ -79,9 +79,10 @@ com.mapilocator.app-packaged_res-77 /Users/apple/Documents/MyApps/Parihara/node_
 com.mapilocator.app-packaged_res-78 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-pager-view/android/build/intermediates/packaged_res/release
 com.mapilocator.app-packaged_res-79 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-permissions/android/build/intermediates/packaged_res/release
 com.mapilocator.app-packaged_res-80 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-push-notification/android/build/intermediates/packaged_res/release
-com.mapilocator.app-packaged_res-81 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-restart/android/build/intermediates/packaged_res/release
-com.mapilocator.app-packaged_res-82 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-safe-area-context/android/build/intermediates/packaged_res/release
-com.mapilocator.app-packaged_res-83 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-screens/android/build/intermediates/packaged_res/release
-com.mapilocator.app-packaged_res-84 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-sensors/android/build/intermediates/packaged_res/release
-com.mapilocator.app-packaged_res-85 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-svg/android/build/intermediates/packaged_res/release
-com.mapilocator.app-packaged_res-86 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-version-check/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-81 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-radar/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-82 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-restart/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-83 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-safe-area-context/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-84 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-screens/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-85 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-sensors/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-86 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-svg/android/build/intermediates/packaged_res/release
+com.mapilocator.app-packaged_res-87 /Users/apple/Documents/MyApps/Parihara/node_modules/react-native-version-check/android/build/intermediates/packaged_res/release

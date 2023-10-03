@@ -31,6 +31,8 @@ import NotificationScreen from '../src/screens/notificationScreen';
 import StartTripSearchingScreen from '../src/screens/SearchStartTripLocation';
 import SearchDestinationScreen from '../src/screens/SearchDestination';
 import TripCreateScreen from '../src/screens/tripCreateScreen';
+// master notification
+import NotificationCenterScreen from '../src/screens/splash_screen';
 // Theme.
 const MyTheme = {
     dark: false,
@@ -427,9 +429,12 @@ function StackNavigation(initialRouts) {
                         headerTintColor: '#fff',
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
+                <Stack.Screen
+                    name="NotificationCenterScreen"
+                    component={NotificationCenterScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // TripCreateScreen
+export default StackNavigation; // NotificationCenterScreen

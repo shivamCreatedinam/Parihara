@@ -24,8 +24,11 @@ import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import Dialog, { SlideAnimation, DialogTitle, DialogContent, DialogFooter, DialogButton, } from 'react-native-popup-dialog';
+import { CountdownCircleTimer, useCountdown } from 'react-native-countdown-circle-timer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapViewDirections from 'react-native-maps-directions';
+import notifee, { AndroidColor } from '@notifee/react-native';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import MapView, {
     Camera,
     Marker,
@@ -44,8 +47,10 @@ const TripCreateScreen = () => {
     const markerRef = React.useRef();
     const mapRef = React.useRef();
     const [visible, setVisible] = React.useState(false);
+    const [BookingVisible, setBookingVisible] = React.useState(false);
+    const [message, setMessage,] = React.useState(null);
     const [tripPrice, setTripPrice] = React.useState(0);
-    const [Endname, setEndName] = React.useState([]); // React.useState(route.params.location?.pickup?.destinationCords.name);
+    const [Endname, setEndName] = React.useState([]);     // React.useState(route.params.location?.pickup?.destinationCords.name);
     const [StartName, setStartName] = React.useState([]); //React.useState(route.params.location?.drop?.dropCords.name);
     const [Time, setTime] = React.useState('');
     const [eventPrice, setEventPrice] = React.useState(0);
@@ -53,6 +58,45 @@ const TripCreateScreen = () => {
     const [Distance, setDistance] = React.useState('');
     const [Destinationstate, setDestinationState] = React.useState(null);
     const [Pickupstate, setPickupState] = React.useState(null);
+
+    React.useEffect(() => {
+        const unsubscribe = messaging().onMessage((remoteMessage) => {
+            if (remoteMessage.notification) {
+                console.log('NotificationCenter---->', JSON.stringify(remoteMessage.data));
+                setBookingVisible(false);
+                saveOrStartTripTracking(remoteMessage);
+                return () => {
+                    setMessage(null);
+                };
+            }
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    const saveOrStartTripTracking = async (remoteMessage) => {
+        setMessage(remoteMessage);
+        let saveTripDetails = {
+            tripEnable: true,
+            details: remoteMessage
+        }
+        await AsyncStorage.setItem('@saveTripDetails', JSON.stringify(saveTripDetails));
+        console.log('saveOrStartTripTracking', saveTripDetails);
+        // Go To Navigate
+        navigate.replace('MapComponent', remoteMessage);
+    }
+
+    const {
+        path,
+        pathLength,
+        stroke,
+        strokeDashoffset,
+        remainingTime,
+        elapsedTime,
+        size,
+        strokeWidth,
+    } = useCountdown({ isPlaying: true, duration: 7, colors: '#abc' });
 
     useFocusEffect(
         React.useCallback(() => {
@@ -100,10 +144,11 @@ const TripCreateScreen = () => {
             headers: { 'Content-Type': 'application/json' },
             json: true,
         };
+        console.log('getPriceFromWeb', JSON.stringify(authOptions))
         axios(authOptions).then((resp) => {
             setTripPrice(resp.data.data?.value);
             setLoading(true);
-        });
+        }).catch((e) => console.log(e));
     }
 
     const calculateDistance = (dis) => {
@@ -136,6 +181,23 @@ const TripCreateScreen = () => {
         setDistance(d);
         calculateDistance(d);
     }
+
+    // notifee.registerForegroundService((notification) => {
+    //     return new Promise(() => {
+    //         // Long running task...
+    //     });
+    // });
+
+    // notifee.displayNotification({
+    //     title: 'Foreground service',
+    //     body: 'This notification will exist for the lifetime of the service runner',
+    //     android: {
+    //         channelId,
+    //         asForegroundService: true,
+    //         color: AndroidColor.RED,
+    //         colorized: true,
+    //     },
+    // });
 
     // create trip
     // const createNewTripForCustomer = async () => {
@@ -290,7 +352,7 @@ const TripCreateScreen = () => {
                         text1: 'Buying Package Successfully',
                         text2: response.data?.message,
                     });
-                    navigate.replace('MapComponent');
+                    setBookingVisible(true);
                 }
                 console.log('purchasePackage', JSON.stringify(response.data));
             })
@@ -308,6 +370,24 @@ const TripCreateScreen = () => {
         });
     }
 
+    const getTimercomplete = () => {
+        console.log('getTimercomplete');
+        setBookingVisible(false);
+        setBookingVisible(false);
+        setBookingVisible(false);
+        setBookingVisible(false);
+        setBookingVisible(false);
+        setTimeout(() => {
+            // setTimeout
+            // resend trip
+            Toast.show({
+                type: 'success',
+                text1: 'Driver Not Available',
+                text2: 'Please Book Auto Again',
+            });
+            // navigate.replace('MapComponent');
+        }, 3000);
+    }
 
     return (
         <KeyboardAvoidingView
@@ -379,7 +459,7 @@ const TripCreateScreen = () => {
                     <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
                         <Image style={{ width: 40, height: 40, resizeMode: 'contain', marginRight: 20 }} source={require('../../assets/auto_icon.png')} />
                         <Text style={{ textAlign: 'center', fontWeight: 'bold', marginRight: 10 }}>Auto</Text>
-                        <Text style={{ textAlign: 'center', fontWeight: 'bold', color: 'grey' }}>{Time} mins</Text>
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', color: 'grey' }}>{Number(Time).toFixed(2)} mins</Text>
                         <View style={{ flex: 1 }} />
                         <Text style={{ textAlign: 'center', fontWeight: 'bold', marginRight: 5 }}>₹{Number(eventPrice).toFixed(2)}</Text>
                         <TouchableOpacity onPress={() => setVisible(true)}>
@@ -392,7 +472,7 @@ const TripCreateScreen = () => {
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain' }} source={require('../../assets/next.png')} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => createNewTripForCustomer()} style={styles.buttonContainer}>
-                        <Text style={styles.buttonText}>Book Auto</Text>
+                        {BookingVisible === true ? <ActivityIndicator color={'#ffffff'} /> : <Text style={styles.buttonText}>Book Auto</Text>}
                     </TouchableOpacity>
                 </View>
                 <Dialog
@@ -433,6 +513,38 @@ const TripCreateScreen = () => {
                                         <Text style={{ fontWeight: 'bold' }}>Rs.  6.80/km till 12 KMs </Text>, &
                                         <Text style={{ fontWeight: 'bold' }}> and 7.90/km post</Text>
                                         12 KMs</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </DialogContent>
+                </Dialog>
+                <Dialog
+                    visible={BookingVisible}
+                    dialogAnimation={new SlideAnimation({
+                        slideFrom: 'bottom',
+                    })}
+                    dialogStyle={{ width: Dimensions.get('screen').width - 60, backgroundColor: '#fff' }}
+                    dialogTitle={<DialogTitle title="Waiting for driver" />}
+                >
+                    <DialogContent>
+                        <View>
+                            <View>
+                                <View style={{ alignItems: 'center', marginTop: 20 }}>
+                                    <TouchableOpacity onPress={() => setBookingVisible(false)} style={{ padding: 20, backgroundColor: '#FFFF00', alignItems: 'center', borderRadius: 150 }}>
+                                        <Image style={{ width: 35, height: 35, resizeMode: 'contain' }} source={require('../../assets/auto_icon.png')} />
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={{ padding: 20, alignItems: 'center', alignSelf: 'center' }}>
+                                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 18, marginBottom: 20 }}>Waiting Time</Text>
+                                    <CountdownCircleTimer
+                                        isPlaying
+                                        duration={40}
+                                        colors={['#004777', '#F7B801', '#A30000', '#A30000']}
+                                        colorsTime={[300, 250, 200, 100]}
+                                        onComplete={() => getTimercomplete()}
+                                    >
+                                        {({ remainingTime }) => <Text>{remainingTime} sec</Text>}
+                                    </CountdownCircleTimer>
                                 </View>
                             </View>
                         </View>

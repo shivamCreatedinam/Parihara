@@ -67,6 +67,8 @@ import com.reactnativepagerview.PagerViewPackage;
 import com.zoontek.rnpermissions.RNPermissionsPackage;
 // react-native-push-notification
 import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
+// react-native-radar
+import io.radar.react.RNRadarPackage;
 // react-native-restart
 import com.reactnativerestart.RestartPackage;
 // react-native-safe-area-context
@@ -152,6 +154,7 @@ public class PackageList {
       new PagerViewPackage(),
       new RNPermissionsPackage(),
       new ReactNativePushNotificationPackage(),
+      new RNRadarPackage(),
       new RestartPackage(),
       new SafeAreaContextPackage(),
       new RNScreensPackage(),

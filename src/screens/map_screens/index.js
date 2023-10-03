@@ -25,7 +25,6 @@ import * as geolib from 'geolib';
 import Modal from "react-native-modal";
 import { Rating, AirbnbRating } from 'react-native-ratings';
 import MapViewDirections from 'react-native-maps-directions';
-import Geolocation from '@react-native-community/geolocation';
 import { ProgressView } from "@react-native-community/progress-view";
 // import database from '@react-native-firebase/database';
 import MapView, {

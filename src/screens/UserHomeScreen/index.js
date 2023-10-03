@@ -14,12 +14,17 @@ import {
     Dimensions,
     TouchableOpacity,
     FlatList,
-
+    DeviceEventEmitter,
+    NativeAppEventEmitter,
+    Image
 } from 'react-native';
 import axios from 'axios';
 import globle from '../../../common/env';
+import BackgroundJob from 'react-native-background-actions';
 import messaging from '@react-native-firebase/messaging';
+import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import Dialog, { SlideAnimation, DialogTitle, DialogContent, DialogFooter, DialogButton, } from 'react-native-popup-dialog';
@@ -27,15 +32,27 @@ import { showMessage } from "react-native-flash-message";
 import notifee, { AndroidImportance, AndroidBadgeIconType, AndroidVisibility, AndroidColor, AndroidCategory } from '@notifee/react-native';
 import Global from '../../../common/env';
 import Toast from 'react-native-toast-message';
-import { Image } from 'react-native-elements';
+
+const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
+
+
+const taskRandom = async taskData => {
+    if (Platform.OS === 'ios') {
+        console.warn('IOS', 'I closed My Self');
+    }
+}
 
 const UserHomeScreen = () => {
+
 
     const permModal = React.useRef();
     const navigate = useNavigation();
     let permissionCheck = '';
     const [visible, setVisible] = React.useState(false);
+    const [isPreviousTrip, setPreviousTrip] = React.useState(false);
     const [historyData, setHistoryData] = React.useState([]);
+    const [PreviousTripData, setPreviousTripData] = React.useState(null);
+    const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
     const [location, setLocation] = React.useState({ latitude: 60.1098678, longitude: 24.7385084, });
 
     const handleLocationPermission = async () => {
@@ -73,11 +90,74 @@ const UserHomeScreen = () => {
             updateUserTokenProfile();
             if (permissionCheck === RESULTS.GRANTED) {
                 setVisible(false);
+                checkPreviousTrips();
             } else {
                 setVisible(true);
             }
+            if (!BackgroundJob.isRunning()) {
+                onDisplayNotification();
+            }
         }, [visible])
     );
+
+    const options = {
+        taskName: 'Example',
+        taskTitle: 'ExampleTask title',
+        taskDesc: 'ExampleTask description',
+        taskIcon: {
+            name: 'ic_launcher_round',
+            type: 'drawable',
+            package: 'com.mapilocator'
+        },
+        color: '#ff00ff',
+        linkingURI: 'yourSchemeHere://chat/jane', // Add this
+        parameters: {
+            delay: 50000,
+        },
+    };
+
+    const veryIntensiveTask = async (taskDataArguments) => {
+        // Example of an infinite loop task
+        const { delay } = taskDataArguments;
+        await new Promise(async (resolve) => {
+            for (let i = 0; BackgroundJob.isRunning(); i++) {
+                driverLocationUpdate();
+                console.log('veryIntensiveTask', i);
+                await BackgroundJob.updateNotification({
+                    taskDesc: '',
+                    progressBar: 2,
+                })
+                await sleep(delay);
+            }
+        });
+    };
+
+    const checkPreviousTrips = async () => {
+        const valueX = await AsyncStorage.getItem('@saveTripDetails');
+        let data = JSON.parse(valueX);
+        console.log('updateUserTokenProfile', JSON.stringify(data?.details));
+        if (data?.tripEnable === true) {
+            setPreviousTrip(true);
+            setPreviousTripData(data?.details);
+        }
+    }
+
+    const onPressPreviousTrip = () => {
+        if (isPreviousTrip) {
+            navigate.replace('MapComponent', PreviousTripData);
+        }
+    }
+
+    const onDisplayNotification = async () => {
+        try {
+            console.log('start background job');
+            await BackgroundJob.start(veryIntensiveTask, options);
+            await BackgroundJob.updateNotification({ veryIntensiveTask: 'New ExampleTask description' });
+            console.log('successfully run');
+        } catch (ex) {
+            console.log(ex)
+        }
+    }
 
     // const requestLocationPermission = async () => {
     //     try {
@@ -134,6 +214,7 @@ const UserHomeScreen = () => {
     //     );
     // }
 
+
     const startTrip = () => {
         // StartTripSearchingScreen / TripStartScreen
         navigate.navigate('StartTripSearchingScreen');
@@ -158,13 +239,12 @@ const UserHomeScreen = () => {
             .then(response => response.json())
             .then(result => {
                 if (result.status) {
-                    console.log('updateUserTokenProfilex', result?.message);
+                    console.log('updateUserTokenProfilex', fcmToken);
                     Toast.show({
                         type: 'success',
                         text1: 'Status Update Successfully',
-                        text2: 'Update Successfully -> ' + fcmToken,
+                        text2: 'Update Successfully',
                     });
-
                 } else {
                     Toast.show({
                         type: 'success',
@@ -276,7 +356,7 @@ const UserHomeScreen = () => {
             });
     }
 
-    async function onDisplayNotification() {
+    async function onDisplayNotificationx() {
         // Request permissions (required for iOS)
         if (Platform.OS === 'ios') {
             await notifee.requestPermission()
@@ -319,6 +399,58 @@ const UserHomeScreen = () => {
         });
     }
 
+    notifee.registerForegroundService((notification) => {
+        return new Promise(async () => {
+            // Long running task...
+            const channelId = await notifee.createChannel({
+                id: 'default1',
+                name: 'Default Channel1',
+                sound: 'default',
+                importance: AndroidImportance.HIGH,
+                badge: true,
+                vibration: true,
+                vibrationPattern: [300, 700],
+                lights: true,
+                lightColor: AndroidColor.RED,
+            });
+            notifee.displayNotification({
+                title: 'Foreground service',
+                body: 'This notification will exist for the lifetime of the service runner',
+                android: {
+                    channelId,
+                    asForegroundService: true,
+                    color: AndroidColor.RED,
+                    colorized: true,
+                },
+            });
+        });
+    });
+
+    const driverLocationUpdate = async () => {
+        Geolocation.getCurrentPosition(info => {
+            TrackingDriverLocation(info?.coords?.latitude, info?.coords?.longitude);
+        });
+    }
+
+    const TrackingDriverLocation = async (lattitude, longitude) => {
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.id;
+        console.log(data);
+        const driverData = {
+            lattitude: lattitude,
+            longitude: longitude,
+        }
+        let reff = '/user_tracking/' + data + '';
+        database()
+            .ref(reff)
+            .set({
+                time: new Date().getTime(),
+                location: driverData
+            })
+            .then(() => console.log('Tracking_User_Location'));
+    }
+
+
     return (
         <View style={{ flex: 1, marginTop: 25, backgroundColor: '#000' }}>
             <View style={{ padding: 0, backgroundColor: '#000', height: Dimensions.get('screen').height }}>
@@ -328,7 +460,7 @@ const UserHomeScreen = () => {
                         <Image style={{ width: 80, height: 80, resizeMode: 'contain', tintColor: 'white' }} source={require('../../assets/weather_icon.png')} />
                         <Text style={{ fontSize: 24, marginLeft: -15, color: 'white' }}>24°c</Text>
                     </View>
-                    <TouchableOpacity style={{ width: 40, height: 40, borderRadius: 150, backgroundColor: 'white', alignItems: 'center', elevation: 5, position: 'absolute', right: 20, top: 50 }}>
+                    <TouchableOpacity onPress={() => handleLocationPermission()} style={{ width: 40, height: 40, borderRadius: 150, backgroundColor: 'white', alignItems: 'center', elevation: 5, position: 'absolute', right: 20, top: 50 }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain', marginTop: 10 }} source={require('../../assets/bell_notification.png')} />
                     </TouchableOpacity>
                 </ImageBackground>
@@ -380,6 +512,15 @@ const UserHomeScreen = () => {
                             </View>}
                     </View>
                 </View>
+                {isPreviousTrip === true ?
+                    <View style={{ position: 'absolute', bottom: 80, padding: 20, backgroundColor: '#fff', zIndex: 999, left: 15, right: 15, elevation: 5, borderRadius: 5 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', color: 'grey', flex: 1 }}>One Trip Is Running</Text>
+                            <TouchableOpacity onPress={() => onPressPreviousTrip()}>
+                                <Text style={{ fontWeight: 'bold', color: 'green' }}>Check Now</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View> : null}
             </View>
             <Dialog
                 visible={visible}

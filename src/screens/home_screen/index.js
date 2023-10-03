@@ -17,55 +17,24 @@ import {
     Dimensions,
     ImageBackground,
     AppState,
-    Alert,
+    Platform,
 } from 'react-native';
 import axios from 'axios';
-import Toast from 'react-native-toast-message';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import globle from '../../../common/env';
+import Toast from 'react-native-toast-message';
+import BackgroundJob from 'react-native-background-actions';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import Dialog, { SlideAnimation, DialogTitle, DialogContent, DialogFooter, DialogButton, } from 'react-native-popup-dialog';
-import Geolocation from 'react-native-geolocation-service';
+//import all the components we are going to use.
+import Geolocation from '@react-native-community/geolocation';
 import Spinner from 'react-native-loading-spinner-overlay';
 import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
-import BackgroundService from 'react-native-background-actions';
 import messaging from '@react-native-firebase/messaging';
-import RNLocation from 'react-native-location';
 import { getPreciseDistance } from 'geolib';
 
-
-RNLocation.configure({
-    distanceFilter: 10, // Meters
-    desiredAccuracy: {
-        ios: 'best',
-        android: 'balancedPowerAccuracy',
-    },
-    // Android only
-    androidProvider: 'auto',
-    interval: 5000, // Milliseconds
-    fastestInterval: 10000, // Milliseconds
-    maxWaitTime: 5000, // Milliseconds
-    // iOS Only
-    activityType: 'other',
-    allowsBackgroundLocationUpdates: true,
-    headingFilter: 1, // Degrees
-    headingOrientation: 'portrait',
-    pausesLocationUpdatesAutomatically: false,
-    showsBackgroundLocationIndicator: false,
-});
-
-const veryIntensiveTask = async (taskDataArguments) => {
-    // Example of an infinite loop task
-    const { delay } = taskDataArguments;
-    await new Promise(async (resolve) => {
-        for (let i = 0; BackgroundService.isRunning(); i++) {
-            console.log(i);
-            await sleep(delay);
-        }
-    });
-};
 
 const options = {
     taskName: 'Example',
@@ -87,10 +56,6 @@ const propertyData = [{ id: 1 }];
 const HomeScreen = () => {
 
     const navigate = useNavigation();
-    let RevertCxtUser = '/users/';
-    let MINUTE_MS = 60000;
-    let locationSubscription = null;
-    let locationTimeout = null;
     const [data, setData] = React.useState([]);
     const reference = database().ref('/users/123');
     const [searchText, setSearchText] = React.useState('');
@@ -107,9 +72,69 @@ const HomeScreen = () => {
     const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
 
     // You can do anything in your task such as network requests, timers and so on,
-    // as long as it doesn't touch UI. Once your task completes (i.e. the promise is resolved),
-    // React Native will go into "paused" mode (unless there are other tasks running,
+    // Watch for position updates 
+    const checkAndRequestLocationPermission = async () => {
+        const backgroundLocationPermissionStatus = await check(
+            Platform.OS === 'ios'
+                ? PERMISSIONS.IOS.LOCATION_ALWAYS
+                : PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION
+        );
 
+        if (backgroundLocationPermissionStatus === RESULTS.GRANTED) {
+            // Permission is already granted, you can proceed to use background location.
+        } else {
+            // Permission is not granted, request it.
+            const requestResult = await request(
+                Platform.OS === 'ios'
+                    ? PERMISSIONS.IOS.LOCATION_ALWAYS
+                    : PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION
+            );
+
+            if (requestResult === RESULTS.GRANTED) {
+                // Permission granted, you can proceed to use background location.
+            } else {
+                // Permission denied, handle accordingly (e.g., show a message or disable location features).
+            }
+        }
+    };
+
+    // For example, in a button press handler or component lifecycle method.
+    const handleLocationButtonPress = () => {
+        checkAndRequestLocationPermission();
+        // Now you can start using background location.
+    };
+
+    // as long as it doesn't touch UI. Once your task completes (i.e. the promise is resolved), 
+    const options = {
+        taskName: 'Example',
+        taskTitle: 'ExampleTask title',
+        taskDesc: 'ExampleTask description',
+        taskIcon: {
+            name: 'ic_launcher_round',
+            type: 'drawable',
+            package: 'com.mapilocator'
+        },
+        color: '#ff00ff',
+        linkingURI: 'yourSchemeHere://chat/jane', // Add this
+        parameters: {
+            delay: 50000,
+        },
+    };
+    // React Native will go into "paused" mode (unless there are other tasks running,
+    const veryIntensiveTask = async (taskDataArguments) => {
+        // Example of an infinite loop task
+        const { delay } = taskDataArguments;
+        await new Promise(async (resolve) => {
+            for (let i = 0; BackgroundJob.isRunning(); i++) {
+                driverLocationUpdate();
+                await BackgroundJob.updateNotification({
+                    taskDesc: 'Location Tracking is running..',
+                    progressBar: 2,
+                })
+                await sleep(delay);
+            }
+        });
+    };
     // or there is a foreground app).
 
     useFocusEffect(
@@ -118,9 +143,10 @@ const HomeScreen = () => {
             async function fetchData() {
                 permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
                 if (permissionCheck === RESULTS.GRANTED) {
+                    if (!BackgroundJob.isRunning()) {
+                        onDisplayNotification();
+                    }
                     updateUserTokenProfile();
-                    startBackGroundServices();
-                    getPriceFromWeb();
                     getProfileDriverData();
                     getProfileActiveStatus();
                     updateDriverLocation();
@@ -133,6 +159,33 @@ const HomeScreen = () => {
         }, []),
     );
 
+    // forground
+    React.useEffect(() => {
+        messageListener();
+    }, []);
+
+    const messageListener = async () => {
+        // Foreground State
+        messaging().onMessage(async remoteMessage => {
+            console.log('foreground', remoteMessage);
+            let infoTrip_ = JSON.stringify(remoteMessage);
+            AsyncStorage.setItem('@tripAddedKeys', infoTrip_);
+            console.log('trip_saved')
+            navigate.navigate('NotificationCenterScreen', remoteMessage)
+            // getUpcomingTrip();
+        });
+    }
+
+    const onDisplayNotification = async () => {
+        try {
+            console.log('start background job');
+            await BackgroundJob.start(veryIntensiveTask, options);
+            await BackgroundJob.updateNotification({ veryIntensiveTask: 'New ExampleTask description' });
+            console.log('successfully run');
+        } catch (ex) {
+            console.log(ex);
+        }
+    }
 
     const getUpcomingTrip = async () => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
@@ -152,7 +205,6 @@ const HomeScreen = () => {
         axios(authOptions)
             .then((response) => {
                 if (response.data.status) {
-                    console.log('loggedUsingSubmitMobileIn', response.data?.data);
                     setData(response.data?.data);
                     setLoading(false);
                 } else {
@@ -164,64 +216,6 @@ const HomeScreen = () => {
                 console.log('errors', error);
                 setLoading(false);
             });
-    }
-
-
-    // React.useEffect(() => {
-    //     async function fetchMyAPI() {
-    //         permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-    //         if (permissionCheck === RESULTS.GRANTED) {
-    //             updateUserTokenProfile();
-    //             startBackGroundServices();
-    //             getPriceFromWeb();
-    //             getProfileDriverData();
-    //             getProfileActiveStatus();
-    //             updateDriverLocation();
-    //             setVisible(false);
-    //         } else {
-    //             setVisible(true);
-    //         }
-    //     }
-    //     fetchMyAPI();
-    // }, [visible])
-
-    React.useEffect(() => {
-        Geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setLocation({ latitude, longitude });
-            },
-            (error) => {
-                console.log(error.code, error.message);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-        );
-    }, []);
-
-    const startBackGroundServices = async () => {
-        try {
-            console.log('startBackGroundServices')
-            await BackgroundService.start(veryIntensiveTask, options);
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const getPriceFromWeb = async () => {
-        // https://createdinam.in/Parihara/public/api/getPrice
-        // Optionally the request above could also be done as
-        setLoading(true)
-        var authOptions = {
-            method: 'GET',
-            url: globle.API_BASE_URL + 'getPrice',
-            headers: { 'Content-Type': 'application/json' },
-            json: true,
-        };
-        axios(authOptions).then((resp) => {
-            console.log(resp.data);
-            // Alert.alert(resp.data);
-            setLoading(false);
-        });
     }
 
     const handleAppStateChange = (nextAppState) => {
@@ -267,12 +261,13 @@ const HomeScreen = () => {
             .catch(error => console.log('error', error));
     }
 
-    const updateDriverLocation = async () => {
+    const updateDriverLocation = async (lattitude, longitude) => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
         let data = JSON.parse(valueX);
         console.log(data?.id);
         const driverData = {
-            driverData: driverData,
+            lattitude: lattitude,
+            longitude: longitude,
         }
         let reff = '/drivers/' + data?.id;
         database()
@@ -281,6 +276,7 @@ const HomeScreen = () => {
                 profile: data,
                 role: 'driver',
                 dutyStatus: dutyStatus,
+                location: driverData
             })
             .then(() => console.log('Data set.'));
     }
@@ -343,13 +339,15 @@ const HomeScreen = () => {
 
     React.useEffect(() => {
         if (dutyStatus === 'On') {
-            updateDriverLocation();
+            onDisplayNotification();
         } else {
-            updateDriverLocation();
+            onDisplayNotification();
         }
     }, [dutyStatus]);
 
+    // token update
     const updateUserTokenProfile = async () => {
+        setLoading(false)
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
         const fcmToken = await messaging().getToken();
         let data = JSON.parse(valueX)?.id;
@@ -373,7 +371,7 @@ const HomeScreen = () => {
                     Toast.show({
                         type: 'success',
                         text1: 'Status Update Successfully',
-                        text2: 'Update Successfully -> ' + fcmToken,
+                        text2: 'Update Successfully',
                     });
                 } else {
                     Toast.show({
@@ -390,56 +388,8 @@ const HomeScreen = () => {
                     text1: 'Something went wrong!',
                     text2: error,
                 });
-                setLoading(false)
             });
     }
-
-    const onPressHandler = () => {
-        let tripDetails = {
-            pickup: Pickupstate,
-            drop: Destinationstate
-        }
-        console.log('addEventListener', tripDetails);
-        navigate.navigate('MapScreens', { location: tripDetails });
-    };
-
-    const fetchPickupCords = (lat, lng, zipCode, cityText) => {
-        console.log("zip code==>>>", zipCode)
-        console.log('city texts', cityText)
-        setDestinationState({
-            ...Destinationstate,
-            destinationCords: {
-                latitude: lat,
-                longitude: lng
-            }
-        })
-    }
-
-    const jobOnnOff = (status) => {
-
-    }
-
-    const fetchDestinationCords = (lat, lng, zipCode, cityText) => {
-        console.log("zip code==>>>", zipCode)
-        console.log('city texts', cityText)
-        setPickupState({
-            ...Pickupstate,
-            pickupCords: {
-                latitude: lat,
-                longitude: lng,
-            }
-        });
-    }
-
-    const handleLocationSelect = (data, details) => {
-        // Extract the necessary information from the selected location
-        const { lat, lng } = details.geometry.location;
-        const formattedAddress = details.formatted_address;
-        console.log('Selected Location:', formattedAddress);
-        console.log('Latitude:', lat);
-        console.log('Longitude:', lng);
-        // Perform actions with the selected location
-    };
 
     const repeatLocationPermission = () => {
         Toast.show({
@@ -508,34 +458,96 @@ const HomeScreen = () => {
         console.log(disct);
     }
 
+    const startTrip = async (trip_id) => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        const fcmToken = await messaging().getToken();
+        let data = JSON.parse(valueX)?.id;
+        var formdata = new FormData();
+        formdata.append('driver_id', data);
+        formdata.append('request_id', trip_id);
+        formdata.append('driver_latitude', trip_id);
+        formdata.append('driver_longitude', trip_id);
+        var requestOptions = {
+            method: 'POST',
+            body: formdata,
+            redirect: 'follow',
+            headers: {
+                'Authorization': 'Bearer ' + data,
+            }
+        };
+        console.log('startTrip', JSON.stringify(requestOptions))
+        fetch(globle.API_BASE_URL + 'driver-nearest-user-accept-trip', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                console.log('startTrip', result);
+                if (result.status) {
+                    console.log('startTrip', result?.message);
+                    getUpcomingTrip();
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Status Update Successfully',
+                        text2: 'Update Successfully',
+                    });
+                } else {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Something went wrong!',
+                        text2: result?.message,
+                    });
+                }
+            })
+            .catch((error) => {
+                console.log('error', error);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Something went wrong!',
+                    text2: error,
+                });
+                setLoading(false)
+            });
+    }
+
     const renderItem = ({ item }) => (
         <View style={styles.card}>
-            {/* <Image source={{ uri: item.image }} style={styles.image} /> */}
             <View style={styles.cardFooter}>
                 <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/passenger.png')} />
                 <Text style={styles.beds}>{item.name}</Text>
                 <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/time_icon.png')} />
-                <Text style={styles.baths}>0:45Min</Text>
+                <Text style={styles.baths}>0:45 Min</Text>
                 <Image style={{ width: 20, height: 20, resizeMode: 'contain', tintColor: '#000' }} source={require('../../assets/trip.png')} />
-                <Text style={styles.parking}>{parseFloat(item?.distance).toFixed(3)}</Text>
+                <Text style={[styles.parking, { textAlign: 'center' }]}>{Number(item?.distance).toFixed(2)}</Text>
             </View>
             <View style={styles.cardBody}>
-                <Text style={styles.price}>{item?.from_address} To {item?.to_address}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image style={{ width: 17, height: 17, resizeMode: 'contain', tintColor: '#000' }} source={require('../../assets/clock.png')} />
-                    <Text style={[styles.address, { verticalAlign: 'center', marginTop: 2 }]}> 0:45 min</Text>
+                    <Image style={{ width: 50, height: 50, resizeMode: 'contain', borderRadius: 150, elevation: 5, marginLeft: 10 }} source={{ uri: globle.IMAGE_BASE_URL + item.user_image }} />
+                    <View style={{ marginLeft: 10 }}>
+                        <Text style={[styles.address, { verticalAlign: 'center', marginTop: 2, fontWeight: 'bold' }]}>{item?.name}</Text>
+                        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={[styles.address, { verticalAlign: 'center', marginTop: 0, fontSize: 12, fontSize: 14, width: '85%' }]}>  {item?.mobile}</Text>
+                            <Image style={{ width: 15, height: 15 }} source={require('../../assets/call.png')} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            </View>
+            <View>
+                <Text style={[styles.price, { marginLeft: 20 }]}>{item?.from_address} To {item?.to_address}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 5, marginTop: 0, marginLeft: 20, marginRight: 20, marginBottom: 20 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain', tintColor: '#000' }} source={require('../../assets/routes.png')} />
-                    <Text style={[styles.address, { verticalAlign: 'center', marginTop: 2 }]}> {parseFloat(item?.distance).toFixed(3)} km</Text>
+                    <Text style={[styles.address, { verticalAlign: 'center', marginTop: 2 }]}>  {Number(item?.distance).toFixed(2)} km</Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain', tintColor: '#000' }} source={require('../../assets/routes.png')} />
+                    <Text style={[styles.address, { verticalAlign: 'center', marginTop: 2, fontWeight: 'bold' }]}> {Number(Number(item?.distance).toFixed(2) * Number(20)).toFixed(2)} ₹</Text>
                 </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
-                <TouchableOpacity style={{ flex: 1, padding: 10, backgroundColor: '#22A699', elevation: 5, borderRadius: 60, marginRight: 15 }}>
-                    <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Accept</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => getDistance(item?.from_lat, item?.from_long, item?.to_lat, item?.to_long)} style={{ flex: 1, padding: 10, backgroundColor: '#F24C3D', elevation: 5, borderRadius: 60 }}>
+                <TouchableOpacity onPress={() => handleLocationButtonPress()} style={{ flex: 1, padding: 10, backgroundColor: '#F24C3D', elevation: 5, borderRadius: 60 }}>
                     <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Reject</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => startTrip(item?.id)} style={{ flex: 1, padding: 10, backgroundColor: '#22A699', elevation: 5, borderRadius: 60, marginRight: 15 }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Accept</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -558,13 +570,11 @@ const HomeScreen = () => {
                 if (response.data.message === 'Duty On Successfully.') {
                     setLoading(false);
                     setDutyStatus('On');
-                    setVisible(status);
                     statusOnOFF(response.data.message);
                 } else {
                     setDutyStatus('Off');
                     statusOnOFF(response.data.message);
                     setErrorMessage(response.data?.message);
-                    setVisible(!status);
                     setLoading(false);
                 }
             })
@@ -574,9 +584,89 @@ const HomeScreen = () => {
             });
     }
 
-    // const filteredData = propertyData.filter((item) => {
-    //     return item.address.toLowerCase().includes(searchText.toLowerCase());
-    // });
+    const driverLocationUpdate = async () => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let data = JSON.parse(valueX);
+        let url_driver_location_update = globle.API_BASE_URL + 'update-driver-lat-long';
+        return new Promise((resolve, reject) =>
+            Geolocation.watchPosition(
+                (position) => {
+                    console.log('location_status_update', position);
+                    var authOptions = {
+                        method: 'POST',
+                        url: url_driver_location_update,
+                        data: JSON.stringify({ 'driver_id': data?.id, 'latitude': position?.coords?.latitude, 'longitude': position?.coords?.longitude }),
+                        headers: { 'Content-Type': 'application/json' },
+                        json: true,
+                    };
+                    axios(authOptions)
+                        .then((response) => {
+                            if (response.data?.status) {
+                                TrackingDriverLocation(position?.coords?.latitude, position?.coords?.longitude, position?.coords?.heading, data?.id);
+                            } else {
+                                console.log('location status update fails' + JSON.stringify(response.data));
+                            }
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                        });
+                },
+                (error) => {
+                    console.log('location_status_update_error', error);
+                },
+                {
+                    enableHighAccuracy: false,
+                    timeout: 15000,
+                }
+            )
+        );
+    };
+
+    const getDeviceCurrentLocation = async () => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let data = JSON.parse(valueX);
+        let url_driver_location_update = globle.API_BASE_URL + 'update-driver-lat-long';
+
+        Geolocation.watchPosition(info => {
+            var authOptions = {
+                method: 'POST',
+                url: url_driver_location_update,
+                data: JSON.stringify({ 'driver_id': data?.id, 'latitude': info?.coords?.latitude, 'longitude': info?.coords?.longitude }),
+                headers: { 'Content-Type': 'application/json' },
+                json: true,
+            };
+            axios(authOptions)
+                .then((response) => {
+                    if (response.data?.status) {
+                        console.log('location status update', JSON.stringify(response?.data));
+                        TrackingDriverLocation(info?.coords?.latitude, info?.coords?.longitude);
+                    } else {
+                        console.log('location status update fails' + JSON.stringify(response.data));
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        });
+    }
+
+    const TrackingDriverLocation = async (lattitude, longitude, header, d_ids) => {
+        let reff = '/tracking/' + d_ids + '';
+        const driverData = {
+            lattitude: lattitude,
+            longitude: longitude,
+            heading: header,
+        }
+        database()
+            .ref(reff)
+            .set({
+                time: new Date().getTime(),
+                dutyStatus: dutyStatus,
+                location: driverData
+            })
+            .then(() => console.log('Tracking_Driver_Location', driverData));
+        setLocation({ latitude: lattitude, longitude: longitude });
+    }
 
     return (
         <View style={{ flex: 1, marginTop: 25, backgroundColor: '#000000' }}>
@@ -643,7 +733,7 @@ const HomeScreen = () => {
                     </View>
                     {propertyData.length > 0 ?
                         <FlatList
-                            contentContainerStyle={styles.propertyListContainer}
+                            style={{ padding: 15 }}
                             data={data}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
@@ -712,7 +802,6 @@ const styles = StyleSheet.create({
     },
     propertyListContainer: {
         paddingHorizontal: 20,
-        height: Dimensions.get('screen').height / 2,
         zIndex: 999999
     },
     card: {
@@ -747,7 +836,6 @@ const styles = StyleSheet.create({
     },
     address: {
         fontSize: 16,
-        marginBottom: 5
     },
     squareMeters: {
         fontSize: 14,
