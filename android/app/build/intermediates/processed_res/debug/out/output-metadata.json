@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "PROCESSED_RES",
+    "kind": "Directory"
+  },
+  "applicationId": "com.mapilocator",
+  "variantName": "debug",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 22,
+      "versionName": "Parihara: 1.2.22",
+      "outputFile": "resources-debug.ap_"
+    }
+  ],
+  "elementType": "File"
+}

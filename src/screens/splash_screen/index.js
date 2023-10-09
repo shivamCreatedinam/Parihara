@@ -45,6 +45,7 @@ const NotificationCenterScreen = () => {
     let [endPoint, setEndPoint] = React.useState({ latitude: routes.params?.data?.to_lat, longitude: routes.params?.data?.to_long, });
     const [marker, setMarker] = React.useState(false);
     const [TripStarted, setTripStarted] = React.useState(false);
+    const [isSubmitOTP, setIsSubmitOTP] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
 
     useFocusEffect(
@@ -57,6 +58,11 @@ const NotificationCenterScreen = () => {
             }, 1000);
         }, [])
     );
+
+    const getAddressFromLatLong = async () => {
+        // 
+
+    }
 
     const BookingReject = () => {
         Alert.alert(
@@ -236,10 +242,20 @@ const NotificationCenterScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+            <View style={{ position: 'absolute', alignItems: 'center', zIndex: 9999, }}>
+                <Text> popup OTP View</Text>
+            </View>
             <View style={{ padding: 20, backgroundColor: '#008000', position: 'absolute', bottom: 30, left: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
-                <TouchableOpacity onPress={() => FolloweOnGoogleMaps()} style={[styles.bubble, styles.button]}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 20, color: '#ffffff' }}>Start Tracking Open Maps 🗺</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View>
+                        <TouchableOpacity onPress={() => setIsSubmitOTP(false)} style={{ padding: 15, elevation: 5, backgroundColor: '#ffffff', borderRadius: 5 }}>
+                            <Text>Start Ride</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity onPress={() => FolloweOnGoogleMaps()} style={[styles.bubble, styles.button]}>
+                        <Text style={{ fontWeight: 'bold', fontSize: 20, color: '#ffffff' }}>Start Tracking Open Maps 🗺</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
