@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -13,7 +13,8 @@ import {
     TextInput,
     TouchableOpacity,
     Platform,
-    PermissionsAndroid
+    PermissionsAndroid,
+    Alert
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
@@ -22,6 +23,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 // import Geolocation from 'react-native-geolocation-service';
 import ImagePicker from 'react-native-image-crop-picker';
+import Modal from 'react-native-modal';
+import IconI from "react-native-vector-icons/Ionicons";
 
 const RegisterDriverTwoScreen = () => {
 
@@ -32,7 +35,7 @@ const RegisterDriverTwoScreen = () => {
     const [user, setUser] = React.useState();
     const [VehicleNumber, setVehicleNumber] = React.useState('');
     const [AadharNumber, setAadharNumber] = React.useState('');
-    const [Address, setAddress] = React.useState('');
+    const [Address, setAddress] = React.useState();
     const [DrivingLicence, setDrivingLicence] = React.useState('');
     const [AadharFront, setAadharFront] = React.useState('');
     const [AadharBack, setAadharBack] = React.useState('');
@@ -40,6 +43,7 @@ const RegisterDriverTwoScreen = () => {
     const [uploadProfile, setuploadProfile] = React.useState(null);
     const [errors, setErrors] = React.useState('');
     const [location, setLocation] = React.useState({ latitude: 60.1098678, longitude: 24.7385084, });
+    const [isModalVisible, setModalVisible] = useState(false);
 
     const handleLocationPermission = async () => {
         // let permissionCheck = '';
@@ -67,6 +71,29 @@ const RegisterDriverTwoScreen = () => {
         //     }
         // }
     };
+    const ImagePickerModal = ({ isVisible, onClose, onCameraPress, onGalleryPress }) => {
+        return (
+            <Modal isVisible={isVisible}>
+
+                <View style={{ alignSelf: 'center', justifyContent: 'center', backgroundColor: '#fff', width: '90%', height: '28%', borderRadius: 10, alignItems: 'center' }}>
+                    <TouchableOpacity style={{ display: 'flex', alignSelf: 'flex-end', right: 25 }} onPress={onClose}>
+                    <Image style={{ height: 20, width: 20, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center' }} source={require('../../assets/cross.png')}/>
+                    </TouchableOpacity>
+                    <Text style={{ fontWeight: '700', color: '#000' }}>Select an image source</Text>
+                    <TouchableOpacity onPress={onCameraPress} style={{ borderRadius: 10, padding: 7, borderColor: "#000", width: '50%', borderWidth: 1, justifyContent: 'center', alignSelf: 'center', marginTop: 20 }}>
+                        <Text style={{ justifyContent: 'center', alignSelf: 'center' }}>Camera</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onGalleryPress} style={{ borderRadius: 10, padding: 7, borderColor: "#000", width: '50%', borderWidth: 1, justifyContent: 'center', alignSelf: 'center', marginTop: 15 }}>
+                        <Text style={{ justifyContent: 'center', alignSelf: 'center' }}>Gallery</Text>
+                    </TouchableOpacity>
+                    {/* <TouchableOpacity >
+                        <Text>Cancel</Text>
+                    </TouchableOpacity> */}
+                </View>
+            </Modal>
+        );
+    };
+
 
     React.useEffect(() => {
         // handleLocationPermission();
@@ -96,6 +123,25 @@ const RegisterDriverTwoScreen = () => {
     }, [])
 
     const requestPermission = async () => {
+      
+            try {
+              const cameraPermission = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.CAMERA
+              );
+              const storagePermission = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+              );
+          
+              if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED && 
+                  storagePermission === PermissionsAndroid.RESULTS.GRANTED) {
+                // Permissions granted, you can now access the camera and gallery.
+              } else {
+                // Handle permission denied by the user.
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          
         // try {
         //     console.log('asking for permission')
         //     const granted = await PermissionsAndroid.requestMultiple(
@@ -152,6 +198,9 @@ const RegisterDriverTwoScreen = () => {
             console.log('validation4');
             if (strongRegex.test(AadharNumber)) {
                 console.log('validation5');
+                // if (Address?.length === null || Address?.length === 0) {
+                //     showErrorToast('Please Enter Valid Address!');
+                // }
                 if (AadharBack !== null) {
                     if (AadharFront !== null) {
                         if (DrivingLicence !== null) {
@@ -165,7 +214,10 @@ const RegisterDriverTwoScreen = () => {
                 } else {
                     showErrorToast('Upload Aadhar Card Back Image');
                 }
-            } else {
+            } else if (AadharNumber?.length !== 12) {
+                showErrorToast('Please Enter Valid Aadhar Number!');
+            }
+            else {
                 console.log('validation6');
                 showErrorToast('Enter Correct Aadhar Card Number');
             }
@@ -210,6 +262,8 @@ const RegisterDriverTwoScreen = () => {
             .then(() => console.log('User signed out!'));
     }
 
+
+
     const uplodDrivingCard = () => {
         ImagePicker.openCamera({
             width: 300,
@@ -217,6 +271,17 @@ const RegisterDriverTwoScreen = () => {
             cropping: true
         }).then(image => {
             console.log(image.path);
+            setDrivingLicence(image.path)
+        });
+    }
+
+    const openGallery = () => {
+        ImagePicker.openPicker({
+            width: 300,
+            height: 400,
+            cropping: true
+        }).then(image => {
+            console.log(image);
             setDrivingLicence(image.path)
         });
     }
@@ -261,14 +326,14 @@ const RegisterDriverTwoScreen = () => {
         formdata.append('email', routes.params.email);
         formdata.append('name', routes.params.name);
         formdata.append('vehicle_no', VehicleNumber);
-        formdata.append('address', 'haryana');
+        formdata.append('address', Address);
         formdata.append('latitude', location.latitude);
         formdata.append('longitude', location.longitude);
         formdata.append('password', routes.params.password);
         formdata.append("aadhar_front", { uri: AadharFront, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
         formdata.append("aadhar_back", { uri: AadharBack, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
         formdata.append("drv_licence", { uri: DrivingLicence, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
-
+        console.log("formdata", JSON.stringify(formdata))
         var requestOptions = {
             method: 'POST',
             body: formdata,
@@ -328,29 +393,29 @@ const RegisterDriverTwoScreen = () => {
                 </View>
                 <View style={{ marginTop: 25 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Aadhar Number</Text>
-                    <TextInput inputMode='numeric' placeholder='####-####-####' style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setAadharNumber(e)} />
+                    <TextInput inputMode='numeric' placeholder='####-####-####' style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setAadharNumber(e)} maxLength={12} />
                 </View>
                 <View style={{ marginTop: 25 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Address</Text>
-                    <TextInput autoCapitalize="none" autoCorrect={false} placeholder='Enter driver address' style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setAddress(e)} />
+                    <TextInput autoCapitalize="none" autoCorrect={false} placeholder='Enter driver address' style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setAddress(e)} value={Address} />
                 </View>
                 <View style={{ marginTop: 25 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Driving Licence</Text>
                     <TextInput placeholder='Upload Driving Licence' defaultValue={DrivingLicence} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
-                    <TouchableOpacity onPress={() => uplodDrivingCard()} style={{ position: 'absolute', right: 15, top: 15, backgroundColor: '#FFEEBB' }}>
+                    <TouchableOpacity onPress={() => setModalVisible(!isModalVisible)} style={{ position: 'absolute', right: 15, top: 15, backgroundColor: '#FFEEBB' }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ marginTop: 25 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Aadhar Front</Text>
-                    <TextInput placeholder='Upload Driving Licence' defaultValue={AadharFront} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
+                    <TextInput placeholder='Upload Aadhar Front' defaultValue={AadharFront} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
                     <TouchableOpacity onPress={() => uplodAadharFrontCard()} style={{ position: 'absolute', right: 15, top: 15 }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ marginTop: 25 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Aadhar Back</Text>
-                    <TextInput placeholder='Upload Driving Licence' defaultValue={AadharBack} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
+                    <TextInput placeholder='Upload Aadhar Back' defaultValue={AadharBack} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
                     <TouchableOpacity onPress={() => uplodAadharBackCard()} style={{ position: 'absolute', right: 15, top: 15 }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </TouchableOpacity>
@@ -388,6 +453,12 @@ const RegisterDriverTwoScreen = () => {
                     <Text>Welcome {user?.email}</Text>
                     <Text>Welcome {JSON.stringify(user?.uid)}</Text>
                 </View> */}
+                <ImagePickerModal
+                    isVisible={isModalVisible}
+                    onClose={() => setModalVisible(false)}
+                    onCameraPress={uplodDrivingCard}
+                    onGalleryPress={openGallery}
+                />
             </View>
         </View>
     );

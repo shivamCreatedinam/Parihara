@@ -4,7 +4,11 @@
             "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-v25/values-v25.xml",
             "map": [
                 {
+<<<<<<< HEAD
                     "source": "/Users/apple/.gradle/caches/transforms-3/3ac078317e5851c7b35e0699f635d82c/transformed/appcompat-1.6.1/res/values-v25/values-v25.xml",
+=======
+                    "source": "/Users/pooja/.gradle/caches/transforms-3/3ac078317e5851c7b35e0699f635d82c/transformed/appcompat-1.6.1/res/values-v25/values-v25.xml",
+>>>>>>> d6be4e293cfa0599b3ffeec601a50f8aa7387ee2
                     "from": {
                         "startLines": "2,3,4,6",
                         "startColumns": "4,4,4,4",

@@ -4,7 +4,11 @@
             "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-zh/values-zh.xml",
             "map": [
                 {
+<<<<<<< HEAD
                     "source": "/Users/apple/.gradle/caches/transforms-3/aab2f0676f4047b13fde91f681801a56/transformed/jetified-ucrop-2.2.6-native/res/values-zh/values-zh.xml",
+=======
+                    "source": "/Users/pooja/.gradle/caches/transforms-3/aab2f0676f4047b13fde91f681801a56/transformed/jetified-ucrop-2.2.6-native/res/values-zh/values-zh.xml",
+>>>>>>> d6be4e293cfa0599b3ffeec601a50f8aa7387ee2
                     "from": {
                         "startLines": "2,3,4",
                         "startColumns": "4,4,4",

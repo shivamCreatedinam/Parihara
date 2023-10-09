@@ -4,7 +4,11 @@
             "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-ldrtl-v17/values-ldrtl-v17.xml",
             "map": [
                 {
+<<<<<<< HEAD
                     "source": "/Users/apple/.gradle/caches/transforms-3/dbeb72a4bccfecf0875df07f00e5d44c/transformed/material-1.9.0/res/values-ldrtl-v17/values-ldrtl-v17.xml",
+=======
+                    "source": "/Users/pooja/.gradle/caches/transforms-3/dbeb72a4bccfecf0875df07f00e5d44c/transformed/material-1.9.0/res/values-ldrtl-v17/values-ldrtl-v17.xml",
+>>>>>>> d6be4e293cfa0599b3ffeec601a50f8aa7387ee2
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",

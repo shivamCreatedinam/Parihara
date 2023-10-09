@@ -230,7 +230,10 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:exported="true"
             android:launchMode="singleTask"
+<<<<<<< HEAD
             android:screenOrientation="portrait"
+=======
+>>>>>>> d6be4e293cfa0599b3ffeec601a50f8aa7387ee2
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:windowSoftInputMode="adjustResize" >
