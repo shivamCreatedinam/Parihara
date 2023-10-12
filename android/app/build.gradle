@@ -98,8 +98,8 @@ android {
         applicationId "com.mapilocator"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
-        versionName "Parihara: 1.2.22"
+        versionCode 23
+        versionName "Parihara: 1.2.23"
         vectorDrawables.useSupportLibrary = true
     }
 

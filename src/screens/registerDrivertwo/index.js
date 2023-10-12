@@ -20,11 +20,8 @@ import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-// import Geolocation from 'react-native-geolocation-service';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
-import IconI from "react-native-vector-icons/Ionicons";
 
 const RegisterDriverTwoScreen = () => {
 
@@ -77,7 +74,7 @@ const RegisterDriverTwoScreen = () => {
 
                 <View style={{ alignSelf: 'center', justifyContent: 'center', backgroundColor: '#fff', width: '90%', height: '28%', borderRadius: 10, alignItems: 'center' }}>
                     <TouchableOpacity style={{ display: 'flex', alignSelf: 'flex-end', right: 25 }} onPress={onClose}>
-                    <Image style={{ height: 20, width: 20, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center' }} source={require('../../assets/cross.png')}/>
+                        <Image style={{ height: 20, width: 20, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center' }} source={require('../../assets/cross.png')} />
                     </TouchableOpacity>
                     <Text style={{ fontWeight: '700', color: '#000' }}>Select an image source</Text>
                     <TouchableOpacity onPress={onCameraPress} style={{ borderRadius: 10, padding: 7, borderColor: "#000", width: '50%', borderWidth: 1, justifyContent: 'center', alignSelf: 'center', marginTop: 20 }}>
@@ -123,25 +120,25 @@ const RegisterDriverTwoScreen = () => {
     }, [])
 
     const requestPermission = async () => {
-      
-            try {
-              const cameraPermission = await PermissionsAndroid.request(
+
+        try {
+            const cameraPermission = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.CAMERA
-              );
-              const storagePermission = await PermissionsAndroid.request(
+            );
+            const storagePermission = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-              );
-          
-              if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED && 
-                  storagePermission === PermissionsAndroid.RESULTS.GRANTED) {
+            );
+
+            if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED &&
+                storagePermission === PermissionsAndroid.RESULTS.GRANTED) {
                 // Permissions granted, you can now access the camera and gallery.
-              } else {
+            } else {
                 // Handle permission denied by the user.
-              }
-            } catch (err) {
-              console.error(err);
             }
-          
+        } catch (err) {
+            console.error(err);
+        }
+
         // try {
         //     console.log('asking for permission')
         //     const granted = await PermissionsAndroid.requestMultiple(

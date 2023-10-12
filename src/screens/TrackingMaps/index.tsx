@@ -15,7 +15,6 @@ import MapView, {
     AnimatedRegion,
     Polyline,
     PROVIDER_GOOGLE,
-    Animated
 } from "react-native-maps";
 import haversine from "haversine";
 import Geolocation from '@react-native-community/geolocation';
@@ -265,14 +264,14 @@ export default class MapComponent extends React.Component {
 
                 const newCoordinate = {
                     latitude,
-                    longitude
+                    longitude,
                 };
 
                 if (Platform.OS === "android") {
                     if (this.marker) {
                         this.marker.animateMarkerToCoordinate(
                             newCoordinate,
-                            1200
+                            1200,
                         );
                     }
                 } else {
@@ -284,9 +283,8 @@ export default class MapComponent extends React.Component {
                     longitude,
                     heading,
                     routeCoordinates: routeCoordinates.concat([newCoordinate]),
-                    distanceTravelled:
-                        distanceTravelled + this.calcDistance(newCoordinate),
-                    prevLatLng: newCoordinate
+                    distanceTravelled: distanceTravelled + this.calcDistance(newCoordinate),
+                    prevLatLng: newCoordinate,
                 });
             },
             error => console.log(error),
@@ -318,6 +316,14 @@ export default class MapComponent extends React.Component {
             // Update the component state with the fetched data
             let data = snapshot.val();
             this.onCenter(data?.location?.lattitude, data?.location?.longitude);
+            this.setState({
+                coordinate: new AnimatedRegion({
+                    latitude: data?.location?.lattitude,
+                    longitude: data?.location?.longitude,
+                    latitudeDelta: LATITUDE_DELTA,
+                    longitudeDelta: LONGITUDE_DELTA,
+                })
+            })
             console.log('location_has_been_update', JSON.stringify(data?.location?.longitude));
         });
     }
@@ -491,23 +497,26 @@ export default class MapComponent extends React.Component {
                 </MapView>
                 <View style={{ position: 'absolute', bottom: 30, left: 20, right: 20, backgroundColor: '#ffffff', borderRadius: 10, elevation: 5 }}>
                     <View style={{ padding: 20, alignItems: 'flex-end', flexDirection: 'row', }}>
-                        <Text>ENTER OTP TO START TRIP :</Text>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, borderColor: 'grey', borderWidth: 1, padding: 7 }}>{this.state.TripOtp}</Text>
+                        <Text style={{ flex: 1, alignItems: 'center', marginBottom: 5, fontWeight: 'bold', color: 'grey' }}>SHARE OTP WITH DRIVER TO START TRIP</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16, borderColor: 'grey', borderWidth: 1, padding: 7, borderRadius: 5, letterSpacing: 5 }}>{this.state.TripOtp}</Text>
                     </View>
-                    <View>
-                        <Image style={{ height: 50, width: 50, borderRadius: 150, resizeMode: 'contain' }} source={{ uri: globle.IMAGE_BASE_URL + this.state?.DriverImage }} />
-                        <Text>{this.state.DriverName}</Text>
-                        <Text>{this.state.DriverVehicleNo}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10, marginLeft: 10, marginRight: 10 }}>
+                        <View style={{ flex: 1, marginBottom: 2 }}>
+                            <Image style={{ height: 50, width: 50, borderRadius: 150, resizeMode: 'contain', marginLeft: 7 }} source={{ uri: globle.IMAGE_BASE_URL + this.state?.DriverImage }} />
+                            <Text style={{ fontWeight: 'bold' }}>{this.state.DriverName}</Text>
+                            <Text style={{ fontWeight: 'bold' }}>{this.state.DriverVehicleNo}</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => this.handleOnMapsPress()} style={{}}>
+                            <Image style={{ width: 50, height: 50, resizeMode: 'contain' }} source={require('../../assets/map_icon.png')} />
+                            <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'center' }}>Open Map</Text>
+                        </TouchableOpacity>
                     </View>
-                    <TouchableOpacity onPress={() => this.handleOnMapsPress()} style={[styles.bubble, styles.button]}>
-                        <Text style={styles.bottomBarContent}>Open Maps 🗺</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.bubble, styles.button]}>
-                        <Text style={styles.bottomBarContent}>
-                            {parseFloat(this.state.distanceTravelled).toFixed(2)} km
-                        </Text>
-                    </TouchableOpacity>
                 </View>
+                <TouchableOpacity style={{ position: 'absolute', top: 150, right: 10, backgroundColor: '#fff', padding: 10, borderRadius: 150 }}>
+                    <Text style={{ fontSize: 12, fontWeight: 'bold' }}>
+                        {parseFloat(this.state.distanceTravelled).toFixed(2)} km
+                    </Text>
+                </TouchableOpacity>
             </View>
         );
     }

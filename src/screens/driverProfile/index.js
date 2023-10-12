@@ -20,6 +20,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { showMessage } from "react-native-flash-message";
+import ImagePicker from 'react-native-image-crop-picker';
 import RNRestart from 'react-native-restart';
 import info from '../../../package.json';
 import globle from '../../../common/env';
@@ -34,6 +35,7 @@ const DriverProfileScreen = () => {
     const routes = useRoute();
     const [loading, setLoading] = React.useState(false);
     let [driverData, setDriverData] = React.useState(false);
+    const [uploadProfile, setuploadProfile] = React.useState(null);
     let [verified, setVerified] = React.useState('No');
 
     React.useEffect(() => {
@@ -127,6 +129,65 @@ const DriverProfileScreen = () => {
         console.log('Done');
     }
 
+    const updateUserProfile = async () => {
+        setLoading(true)
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let data = JSON.parse(valueX)?.id;
+        var formdata = new FormData();
+        formdata.append("image", { uri: uploadProfile, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
+        formdata.append("driver_id", data);
+        console.log('uploadProfile', valueX)
+        var requestOptions = {
+            method: 'POST',
+            body: formdata,
+            redirect: 'follow',
+        };
+        console.log('uploadProfile', requestOptions)
+        fetch(globle.API_BASE_URL + 'driver-profile-image', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                console.log('uploadProfileX', result)
+                if (result.status) {
+                    setLoading(false)
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Congratulations!',
+                        text2: result?.message,
+                    });
+                    getProfileDriverData();
+                } else {
+                    // setLoading(false);
+                    updateUserProfile();
+                    // Toast.show({
+                    //     type: 'success',
+                    //     text1: 'Something went wrong!',
+                    //     text2: result?.message,
+                    // });
+                }
+            })
+            .catch((error) => {
+                console.log('error', error);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Something went wrong!',
+                    text2: error,
+                });
+                setLoading(false)
+            });
+    }
+
+    const uplodProfilePhotoCard = () => {
+        ImagePicker.openCamera({
+            width: 400,
+            height: 400,
+            cropping: true
+        }).then(image => {
+            console.log(image.path);
+            setuploadProfile(image.path);
+            updateUserProfile();
+        });
+    }
+
     return (
         <View style={styles.container}>
             <Spinner
@@ -145,10 +206,10 @@ const DriverProfileScreen = () => {
             </View>
             <View style={{ padding: 20, alignItems: 'center' }}>
                 <TouchableOpacity
-                    onPress={() => showSuccessToast('Coming soon!')}
+                    onPress={() => uplodProfilePhotoCard()}
                     style={{ paddingTop: 20 }}>
                     <Image
-                        style={{ width: 100, height: 100, resizeMode: 'contain' }}
+                        style={{ width: 110, height: 110, resizeMode: 'contain', borderRadius: 150, elevation: 5 }}
                         source={{ uri: globle.IMAGE_BASE_URL + driverData?.drv_image }} />
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>

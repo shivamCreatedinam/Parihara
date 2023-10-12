@@ -16,16 +16,19 @@ import {
     Image,
     ActivityIndicator,
     Linking,
-    Platform
+    Platform,
+    TextInput,
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import MapViewDirections from 'react-native-maps-directions';
+import BottomSheet from "react-native-gesture-bottom-sheet";
 import Toast from 'react-native-toast-message';
 import globle from '../../../common/env';
 import styles from './styles';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.012;
@@ -37,6 +40,9 @@ const NotificationCenterScreen = () => {
     const routes = useRoute();
     const markerRef = React.useRef();
     const mapRef = React.useRef();
+    const bottomSheet = React.useRef();
+    const [loader, serLoader] = React.useState(false);
+    const [RequestId, setTripRequestId] = React.useState(routes.params?.data?.id);
     const [distance, setDistance] = React.useState(routes.params?.data?.distance);
     const [from_address, setFaddress] = React.useState(routes.params?.data?.from_address);
     const [to_address, setTaddress] = React.useState(routes.params?.data?.to_address);
@@ -45,7 +51,8 @@ const NotificationCenterScreen = () => {
     let [endPoint, setEndPoint] = React.useState({ latitude: routes.params?.data?.to_lat, longitude: routes.params?.data?.to_long, });
     const [marker, setMarker] = React.useState(false);
     const [TripStarted, setTripStarted] = React.useState(false);
-    const [isSubmitOTP, setIsSubmitOTP] = React.useState(false);
+    const [isTripStartedStatus, setTripStartedStatus] = React.useState(false);
+    const [StartTripOTP, setStartTripOTP] = React.useState('');
     const [loading, setLoading] = React.useState(false);
 
     useFocusEffect(
@@ -150,6 +157,101 @@ const NotificationCenterScreen = () => {
         }
     }
 
+    const startTripSubmitOTP = async () => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let data = JSON.parse(valueX)?.id;
+        if (StartTripOTP.length === 4) {
+            serLoader(true);
+            var authOptions = {
+                method: 'post',
+                url: 'https://createdinam.in/Parihara/public/api/driver-verify-trip-otp',
+                data: JSON.stringify({ "request_id": RequestId, 'otp': StartTripOTP, 'driver_id': data }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            };
+            console.log('startTripSubmitOTP', JSON.stringify(authOptions));
+            axios(authOptions)
+                .then((response) => {
+                    if (response.data.status) {
+                        console.log('loggedUsingSubmitMobileIn', response.data);
+                        bottomSheet.current.close();
+                        saveTripDetails();
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Something went wrong!',
+                            text2: response?.data?.message
+                        });
+                        console.log('errors', response?.data?.message);
+                        serLoader(false);
+                    }
+                })
+                .catch((error) => {
+                    // alert(error)
+                    console.log('errors', error);
+                    serLoader(false);
+                });
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Please Enter 4 Digit OTP',
+                text2: 'Invalid OTP, Please Enter Valid OTP!'
+            });
+        }
+    }
+
+    const saveTripDetails = async () => {
+        let infoTrip_ = JSON.stringify(routes.params);
+        AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
+        AsyncStorage.setItem('@tripStartedStatusKeys', true);
+        console.log('trip_saved');
+        Toast.show({
+            type: 'success',
+            text1: 'Trip Start Successfully',
+            text2: 'Your Trip has been started!'
+        });
+        setTripStartedStatus(true);
+        serLoader(false);
+    }
+
+    const setTripEnd = async () => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let data = JSON.parse(valueX)?.id;
+        serLoader(true);
+        var authOptions = {
+            method: 'post',
+            url: 'https://createdinam.in/Parihara/public/api/end-trip',
+            data: JSON.stringify({ "request_id": RequestId, 'driver_id': data }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            json: true
+        };
+        console.log('setTripEnd', JSON.stringify(authOptions));
+        axios(authOptions)
+            .then((response) => {
+                if (response.data.status) {
+                    console.log('setTripEnd', response.data);
+                    navigate.navigate('HomeScreen');
+                } else {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Something went wrong!',
+                        text2: response?.data?.message
+                    });
+                    console.log('errors', response?.data?.message);
+                    serLoader(false);
+                }
+            })
+            .catch((error) => {
+                // alert(error)
+                console.log('errors', error);
+                serLoader(false);
+            });
+    }
+
     return (
         <View style={styles.container}>
             {loading === true ?
@@ -230,33 +332,91 @@ const NotificationCenterScreen = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
                     <TouchableOpacity onPress={() => BookingReject()}
                         style={{ flex: 1, marginRight: 2 }}>
-                        <Text style={{ textAlign: 'center', padding: 10, backgroundColor: 'orange', color: 'white', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                        <Text style={{ textAlign: 'center', padding: 10, backgroundColor: 'orange', color: 'white', fontWeight: 'bold', textTransform: 'uppercase', fontSize: 12, borderRadius: 5 }}>
                             Cancel Booking
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => BookingAccept()}
                         style={{ flex: 1 }}>
-                        <Text style={{ textAlign: 'center', padding: 10, backgroundColor: 'green', color: 'white', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                        <Text style={{ textAlign: 'center', padding: 10, backgroundColor: 'green', color: 'white', fontWeight: 'bold', textTransform: 'uppercase', fontSize: 12, borderRadius: 5 }}>
                             Accept Booking
                         </Text>
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ position: 'absolute', alignItems: 'center', zIndex: 9999, }}>
+            {/* <View style={{ position: 'absolute', alignItems: 'center', zIndex: 9999, width: '70%', marginTop: Dimensions.get('screen').width, backgroundColor: '#ffffff', alignSelf: 'center', elevation: 5, padding: 20 }}>
                 <Text> popup OTP View</Text>
-            </View>
-            <View style={{ padding: 20, backgroundColor: '#008000', position: 'absolute', bottom: 30, left: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
+                <OTPInputView
+                    style={{ width: '80%', height: 100 }}
+                    pinCount={4}
+                    code={StartTripOTP} //You can supply this prop or not. The component will be used as a controlled / uncontrolled component respectively.
+                    onCodeChanged={(code) => setStartTripOTP(code)}
+                    autoFocusOnLoad={true}
+                    codeInputFieldStyle={styles.underlineStyleBase}
+                    codeInputHighlightStyle={styles.underlineStyleHighLighted}
+                    onCodeFilled={(code) => {
+                        console.log(`Code is ${code}, you are good to go!`)
+                    }}
+                />
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <View>
-                        <TouchableOpacity onPress={() => setIsSubmitOTP(false)} style={{ padding: 15, elevation: 5, backgroundColor: '#ffffff', borderRadius: 5 }}>
-                            <Text>Start Ride</Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsSubmitOTP(false)} style={{ padding: 15, elevation: 5, backgroundColor: '#000000', borderRadius: 5, marginRight: 5 }}>
+                        <Text style={{ color: '#ffffff', textTransform: 'uppercase', fontSize: 12 }}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsSubmitOTP(false)} style={{ padding: 15, elevation: 5, backgroundColor: '#000000', borderRadius: 5 }}>
+                        <Text style={{ color: '#ffffff', textTransform: 'uppercase', fontSize: 12 }}>Start Trip</Text>
+                    </TouchableOpacity>
+                </View>
+            </View> */}
+            <View style={{ padding: 20, backgroundColor: '#ffffff', position: 'absolute', bottom: 50, left: 20, right: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
+                <TouchableOpacity style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }} onPress={() => bottomSheet.current.show()}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>Trip Details ↑</Text>
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flex: 1, marginRight: 15 }}>
+                        {isTripStartedStatus === true ? <TouchableOpacity onPress={() => setTripEnd()} style={{ padding: 15, elevation: 5, backgroundColor: '#913831', borderRadius: 5 }}>
+                            <Text style={{ color: '#fff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>End Trip 🛺</Text>
+                        </TouchableOpacity> : <TouchableOpacity onPress={() => bottomSheet.current.show()} style={{ padding: 15, elevation: 5, backgroundColor: '#008000', borderRadius: 5 }}>
+                            <Text style={{ color: '#fff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>Start Trip 🛺</Text>
+                        </TouchableOpacity>}
                     </View>
-                    <TouchableOpacity onPress={() => FolloweOnGoogleMaps()} style={[styles.bubble, styles.button]}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 20, color: '#ffffff' }}>Start Tracking Open Maps 🗺</Text>
+                    <TouchableOpacity onPress={() => FolloweOnGoogleMaps()} style={{ elevation: 5 }}>
+                        <Image style={{ width: 60, height: 60, resizeMode: 'contain' }} source={require('../../assets/map_icon.png')} />
                     </TouchableOpacity>
                 </View>
             </View>
+            <BottomSheet
+                hasDraggableIcon
+                radius={20}
+                ref={bottomSheet}
+                height={350} >
+                <View style={{ padding: 20 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', marginBottom: 20 }}>
+                        <Text>{from_address} </Text>
+                        <Text style={{ fontWeight: 'bold' }}>To</Text>
+                        <Text> {to_address}</Text>
+                    </View>
+                    <View style={{ alignSelf: 'center', marginBottom: 20 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
+                            <Text style={{ fontWeight: 'bold' }}>Total Distance </Text>
+                            <Text style={{ fontWeight: 'bold' }}>{Number(distance)} KMs</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
+                            <Text style={{ fontWeight: 'bold' }}>Trip Cost </Text>
+                            <Text style={{ fontWeight: 'bold' }}>{trip_cost}/- ₹</Text>
+                        </View>
+                    </View>
+                    <TextInput onChangeText={(e) => setStartTripOTP(e)} placeholder='Enter OTP' style={{ padding: 15, alignSelf: 'center', borderWidth: 1, textAlign: 'center', marginBottom: 15 }} maxLength={4} keyboardType='number-pad' autoFocus />
+                    <Text style={{ fontSize: 10, textAlign: 'center', marginBottom: 20, color: 'grey' }}>Please Enter 4 Digit OTP</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
+                        <TouchableOpacity onPress={() => bottomSheet.current.close()} style={{ padding: 15, elevation: 5, backgroundColor: '#000000', borderRadius: 5, marginRight: 5, flex: 1 }}>
+                            <Text style={{ color: '#ffffff', textTransform: 'uppercase', fontSize: 12, textAlign: 'center' }}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => startTripSubmitOTP()} style={{ padding: 15, elevation: 5, backgroundColor: '#008000', borderRadius: 5, flex: 1 }}>
+                            {loader === true ? <ActivityIndicator color={'#fff'} /> : <Text style={{ color: '#ffffff', textTransform: 'uppercase', fontSize: 12, textAlign: 'center' }}>Start Trip</Text>}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </BottomSheet>
         </View>
     );
 };

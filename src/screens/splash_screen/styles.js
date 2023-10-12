@@ -58,7 +58,23 @@ const styles = StyleSheet.create({
         height: 5,
         borderRadius: 50,
         backgroundColor: Colors.white
-    }
+    },
+    borderStyleBase: {
+        width: 30,
+        height: 45
+    },
+    borderStyleHighLighted: {
+        borderColor: "#03DAC6",
+    },
+    underlineStyleBase: {
+        width: 30,
+        height: 45,
+        borderWidth: 0,
+        borderBottomWidth: 1,
+    },
+    underlineStyleHighLighted: {
+        borderColor: "#03DAC6",
+    },
 });
 
 export default styles;

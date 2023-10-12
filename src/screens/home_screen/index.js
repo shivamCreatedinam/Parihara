@@ -724,14 +724,14 @@ const HomeScreen = () => {
                             onChangeText={handleSearch}
                             value={searchText}
                         />
-                        <TouchableOpacity style={{ position: 'absolute', right: 35, top: 12 }}>
+                        <TouchableOpacity style={{ position: 'absolute', right: 45, top: 20, zIndex: 999 }}>
                             <Image style={{ width: 16, height: 16, resizeMode: 'contain' }} source={require('../../assets/search_icon.png')} />
                         </TouchableOpacity>
                     </View>
                     <View style={{ borderBottomWidth: 0, borderColor: 'grey', marginLeft: 24, marginRight: 24 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#b4b4b4' }}>Upcoming Trip Request</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 10, color: 'grey' }}>Upcoming Trip Request</Text>
                     </View>
-                    {propertyData.length > 0 ?
+                    {data.length > 0 ?
                         <FlatList
                             style={{ padding: 15 }}
                             data={data}
@@ -740,7 +740,7 @@ const HomeScreen = () => {
                         />
                         :
                         <View style={{ flex: 1, alignItems: 'center' }}>
-                            <Image style={{ width: 20, height: 20, resizeMode: 'contain', }} source={require('../../assets/search_result_not_found.png')} />
+                            <Image style={{ width: 220, height: 220, resizeMode: 'cover', marginTop: 120 }} source={require('../../assets/search_result_not_found.png')} />
                             <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>No Upcoming Trip</Text>
                         </View>}
                 </View>
@@ -790,7 +790,7 @@ const styles = StyleSheet.create({
         borderBottomColor: 'grey',
     },
     searchInput: {
-        height: 40,
+        height: 55,
         borderWidth: 1,
         borderColor: '#dcdcdc',
         backgroundColor: '#fff',
@@ -798,7 +798,8 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         fontSize: 11,
-        paddingLeft: 20,
+        paddingLeft: 25,
+        elevation: 5
     },
     propertyListContainer: {
         paddingHorizontal: 20,
