@@ -13,11 +13,17 @@ import {
     ScrollView,
     TextInput,
     TouchableOpacity,
+    Linking,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import globle from '../../../common/env';
 import axios from 'axios';
+// change language 
+const coorg = require('../../../common/coorg.json');
+const eng = require('../../../common/eng.json');
 
 const LoginScreen = () => {
 
@@ -28,25 +34,22 @@ const LoginScreen = () => {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [errors, setErrors] = React.useState('');
+    const [selectedLanguage, setSelectedLanguage] = React.useState(null);
 
-    // Handle user state changes
-    function onAuthStateChanged(user) {
-        setUser(user);
-        setUserData(user);
-        if (initializing) setInitializing(false);
+    useFocusEffect(
+        React.useCallback(() => {
+            getLanguageStatus();
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
+
+    const getLanguageStatus = async () => {
+        const valueX = await AsyncStorage.getItem('@appLanguage');
+        setSelectedLanguage(valueX);
+        console.log('getLanguageStatus', valueX);
     }
-
-    React.useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-        return subscriber; // unsubscribe on unmount
-    }, []);
-
-    React.useEffect(() => {
-        // AppState.addEventListener('change', _handleAppStateChange);
-        return () => {
-            // console.log('addEventListener');
-        };
-    }, [false]);
 
     const showSuccessToast = (msg) => {
         Toast.show({
@@ -56,7 +59,7 @@ const LoginScreen = () => {
         });
         setTimeout(() => {
             // setTimeout
-            navigation.replace('OTPSubmitScreen', { mobileNumber: email });
+            navigation.navigate('OTPSubmitScreen', { mobileNumber: email });
         }, 2000);
     }
 
@@ -83,7 +86,7 @@ const LoginScreen = () => {
     const loggedUsingMobileIn = () => {
         var authOptions = {
             method: 'post',
-            url: 'https://createdinam.in/Parihara/public/api/requesting_for_otp',
+            url: globle.API_BASE_URL + 'requesting_for_otp',
             data: JSON.stringify({ "mobile": email }),
             headers: {
                 'Content-Type': 'application/json'
@@ -92,8 +95,9 @@ const LoginScreen = () => {
         };
         axios(authOptions)
             .then((response) => {
+                console.log('loggedUsingMobileIn', JSON.stringify(response.data));
                 if (response.status) {
-                    console.log(response.data);
+                    console.log('loggedUsingMobileIn', response);
                     showSuccessToast(response.data.message + '\n your OTP is: ' + response.data.otp);
                 } else {
                     console.log(response.data);
@@ -140,6 +144,16 @@ const LoginScreen = () => {
             .then(() => console.log('User signed out!'));
     }
 
+    const openLinkToAnotherTabs = (info) => {
+        Linking.canOpenURL(info).then(supported => {
+            if (supported) {
+                Linking.openURL(info);
+            } else {
+                console.log("Don't know how to open URI: " + info);
+            }
+        });
+    }
+
     const moveToLogin = () => {
         navigation.navigate('RegisterScreen');
     }
@@ -156,8 +170,14 @@ const LoginScreen = () => {
                     <Image style={{ height: 200, width: 200, resizeMode: 'cover', marginBottom: 20, borderRadius: 150 }} source={require('../../assets/ic_launcher_round.jpg')} />
                 </View>
                 <View>
-                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Mobile</Text>
-                    <TextInput autoCapitalize="none" autoCorrect={false} inputMode='tel' maxLength={10} placeholder='Enter 10 digit mobile number' style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, fontWeight: 'bold' }} onChangeText={(e) => setEmail(e)} />
+                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>{selectedLanguage === 'Coorg' ? coorg.crg.mobile : eng.en.mobile}</Text>
+                    <TextInput
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        inputMode='tel'
+                        maxLength={10}
+                        placeholder={selectedLanguage === 'Coorg' ? coorg.crg.enter_digit_mobile_number : eng.en.enter_digit_mobile_number}
+                        style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, fontWeight: 'bold' }} onChangeText={(e) => setEmail(e)} />
                 </View>
                 {/* <View style={{ marginTop: 25 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Password</Text>
@@ -168,7 +188,7 @@ const LoginScreen = () => {
                 </View> */}
                 <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center' }}>
                     <Image style={{ tintColor: 'green', width: 20, height: 20, marginRight: 5 }} source={{ uri: 'https://icons.veryicon.com/png/o/miscellaneous/8atour/check-box-4.png' }} />
-                    <Text style={{ fontSize: 8 }} >by clicking the button you agree with the <Text style={{ fontWeight: 'bold' }}>Terms & Conditions and Privacy Policy</Text></Text>
+                    <Text style={{ fontSize: 12, letterSpacing: 1.5 }} >{selectedLanguage === 'Coorg' ? coorg.crg.button_you_agree_with_the : eng.en.button_you_agree_with_the} <TouchableOpacity style={{}} onPress={() => openLinkToAnotherTabs('https://theparihara.com/privacy_policy.html')}><Text style={{ fontWeight: 'bold', fontSize: 12, letterSpacing: 1.5 }}>{selectedLanguage === 'Coorg' ? coorg.crg.button_you_agree_with_the : eng.en.button_you_agree_with_the}</Text></TouchableOpacity></Text>
                 </View>
                 <TouchableOpacity style={{
                     width: '100%',
@@ -184,24 +204,18 @@ const LoginScreen = () => {
                         fontWeight: 'bold',
                         textTransform: 'uppercase',
                         textAlign: 'center',
-                    }}>Send OTP</Text>
+                    }}>{selectedLanguage === 'Coorg' ? coorg.crg.send_OTP : eng.en.send_OTP}</Text>
                 </TouchableOpacity>
                 <View style={{ marginTop: 20 }}>
                     <Text style={{ color: '#FE0000', fontWeight: 'bold', fontSize: 10 }}>{errors}</Text>
                 </View>
                 <View style={{ marginTop: 20, alignSelf: 'center', marginRight: 10, flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity style={{ alignItems: 'center', marginRight: 5 }} onPress={() => moveToLogin()}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#000000' }}>Partner with us</Text>
+                        <Text
+                            style={{ fontWeight: 'bold', fontSize: 12, color: '#000000' }}>{selectedLanguage === 'Coorg' ? coorg.crg.partner_with_us : eng.en.partner_with_us}</Text>
                     </TouchableOpacity>
                     <Image style={{ width: 12, height: 12, resizeMode: 'contain' }} source={require('../../assets/driver_icon.png')} />
                 </View>
-                {/* <Pressable onPress={() => logOut()}>
-                    <Text>Logout</Text>
-                </Pressable>
-                <View>
-                    <Text>Welcome {user?.email}</Text>
-                    <Text>Welcome {JSON.stringify(user?.uid)}</Text>
-                </View> */}
             </View>
         </ScrollView>
     );

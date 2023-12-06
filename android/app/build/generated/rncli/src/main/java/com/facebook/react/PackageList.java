@@ -43,10 +43,14 @@ import com.microsoft.appcenter.reactnative.appcenter.AppCenterReactNativePackage
 import com.microsoft.appcenter.reactnative.analytics.AppCenterReactNativeAnalyticsPackage;
 // appcenter-crashes
 import com.microsoft.appcenter.reactnative.crashes.AppCenterReactNativeCrashesPackage;
+// otpless-react-native
+import com.otplessreactnative.OtplessReactNativePackage;
 // react-native-background-actions
 import com.asterinet.react.bgactions.BackgroundActionsPackage;
 // react-native-background-timer
 import com.ocetnik.timer.BackgroundTimerPackage;
+// react-native-device-info
+import com.learnium.RNDeviceInfo.RNDeviceInfo;
 // react-native-geocoder
 import com.devfd.RNGeocoder.RNGeocoderPackage;
 // react-native-geolocation-service
@@ -61,6 +65,8 @@ import com.reactnativeloaderkit.LoaderKitPackage;
 import com.github.reactnativecommunity.location.RNLocationPackage;
 // react-native-maps
 import com.airbnb.android.react.maps.MapsPackage;
+// react-native-otp-verify
+import com.faizal.OtpVerify.OtpVerifyPackage;
 // react-native-pager-view
 import com.reactnativepagerview.PagerViewPackage;
 // react-native-permissions
@@ -69,6 +75,8 @@ import com.zoontek.rnpermissions.RNPermissionsPackage;
 import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
 // react-native-radar
 import io.radar.react.RNRadarPackage;
+// react-native-razorpay
+import com.razorpay.rn.RazorpayPackage;
 // react-native-restart
 import com.reactnativerestart.RestartPackage;
 // react-native-safe-area-context
@@ -81,6 +89,8 @@ import com.sensors.RNSensorsPackage;
 import com.horcrux.svg.SvgPackage;
 // react-native-version-check
 import io.xogus.reactnative.versioncheck.RNVersionCheckPackage;
+// react-native-webview
+import com.reactnativecommunity.webview.RNCWebViewPackage;
 
 public class PackageList {
   private Application application;
@@ -142,8 +152,10 @@ public class PackageList {
       new AppCenterReactNativePackage(getApplication()),
       new AppCenterReactNativeAnalyticsPackage(getApplication(), getResources().getString(com.mapilocator.R.string.appCenterAnalytics_whenToEnableAnalytics)),
       new AppCenterReactNativeCrashesPackage(getApplication(), getResources().getString(com.mapilocator.R.string.appCenterCrashes_whenToSendCrashes)),
+      new OtplessReactNativePackage(),
       new BackgroundActionsPackage(),
       new BackgroundTimerPackage(),
+      new RNDeviceInfo(),
       new RNGeocoderPackage(),
       new RNFusedLocationPackage(),
       new RNGestureHandlerPackage(),
@@ -151,16 +163,19 @@ public class PackageList {
       new LoaderKitPackage(),
       new RNLocationPackage(),
       new MapsPackage(),
+      new OtpVerifyPackage(),
       new PagerViewPackage(),
       new RNPermissionsPackage(),
       new ReactNativePushNotificationPackage(),
       new RNRadarPackage(),
+      new RazorpayPackage(),
       new RestartPackage(),
       new SafeAreaContextPackage(),
       new RNScreensPackage(),
       new RNSensorsPackage(),
       new SvgPackage(),
-      new RNVersionCheckPackage()
+      new RNVersionCheckPackage(),
+      new RNCWebViewPackage()
     ));
   }
 }

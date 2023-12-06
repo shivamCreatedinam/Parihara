@@ -120,4 +120,5 @@
     <string name="ucrop_label_edit_photo">Foto editieren</string>
     <string name="ucrop_label_original">Original</string>
     <string name="ucrop_menu_crop">Zuschneiden</string>
+    <string name="wallet_buy_button_place_holder">Über Google kaufen</string>
 </resources>

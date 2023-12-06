@@ -18,6 +18,7 @@ import Toast from 'react-native-toast-message';
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'react-native-elements';
+import globle from '../../../common/env';
 import axios from 'axios';
 
 const DriverLoginScreen = () => {
@@ -88,38 +89,10 @@ const DriverLoginScreen = () => {
     }
 
     const driverLoginApp = () => {
-        setLoading(true);
-        // var authOptions = {
-        //     method: 'post',
-        //     url: 'https://createdinam.in/Parihara/public/api/driver-login',
-        //     data: JSON.stringify({ "email": email, "password": password }),
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     json: true
-        // };
-        // axios(authOptions)
-        //     .then((response) => {
-        //         if (response.data.status) {
-        //             console.log('check:', response.data?.driver);
-        //             setLoading(false);
-        //             storeData(response.data?.driver);
-        //             // showSuccessToast(response.data.message + '\n your OTP is: ' + response.data.otp);
-        //         } else {
-        //             setLoading(false);
-        //             console.log(response.data.message);
-        //             showErrorToast(response.data.message);
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         setLoading(false);
-        //         console.log(error);
-        //         showErrorToast(error);
-        //     });
-
+        setLoading(true); 
         var authOptions = {
             method: 'post',
-            url: 'https://createdinam.in/Parihara/public/api/driver-login',
+            url: globle.API_BASE_URL + 'driver-login',
             data: JSON.stringify({ "email": email, "password": password }),
             headers: {
                 'Content-Type': 'application/json'

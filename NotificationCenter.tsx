@@ -27,8 +27,7 @@ const NotificationCenter: FC<Props> = () => {
 
     React.useEffect(() => {
         const unsubscribe = messaging().onMessage((remoteMessage) => {
-            if (remoteMessage.notification) {
-                console.log('NotificationCenter---->', JSON.stringify(remoteMessage));
+            if (remoteMessage.notification) { 
                 transition.setValue(300);
                 const enterAnim = Animated.spring(transition, {
                     toValue: 0,
@@ -76,7 +75,7 @@ const NotificationCenter: FC<Props> = () => {
         console.log(info)
     }
 
-    if (message.notification.title === 'Driver accepted your bookingx') {
+    if (message.notification.title === 'Driver accepted your booking') {
         return (
             <View style={{ padding: 20, position: 'absolute', bottom: 50, left: 0, right: 0, zIndex: 9999, backgroundColor: '#FEFCFF', alignItems: 'center', borderRadius: 10, margin: 5, elevation: 5 }}>
                 <Animated.View style={{ padding: 20, flex: 1, alignItems: 'center' }}>

@@ -251,7 +251,7 @@ export default class MapComponent extends React.Component {
                 longitudeDelta: 0.0421,
             }),
         };
-        //  this.marker = React.createRef();
+        // this.marker = React.createRef();
     }
 
     componentDidMount() {
@@ -297,7 +297,6 @@ export default class MapComponent extends React.Component {
         );
         this.startTracking();
         setInterval(() => {
-            this.onCenter(this.state.latitude, this.state.longitude)
         }, 6000);
     }
 
@@ -315,37 +314,55 @@ export default class MapComponent extends React.Component {
         database().ref(reff).on('value', (snapshot) => {
             // Update the component state with the fetched data
             let data = snapshot.val();
-            this.onCenter(data?.location?.lattitude, data?.location?.longitude);
-            this.setState({
-                coordinate: new AnimatedRegion({
-                    latitude: data?.location?.lattitude,
-                    longitude: data?.location?.longitude,
-                    latitudeDelta: LATITUDE_DELTA,
-                    longitudeDelta: LONGITUDE_DELTA,
-                })
-            })
+            console.log('------>', JSON.stringify(data));
+            this.animateMarker(data?.location?.lattitude, data?.location?.longitude)
+            // this.setState({
+            //     coordinate: new AnimatedRegion({
+            //         latitude: data?.location?.lattitude,
+            //         longitude: data?.location?.longitude,
+            //         latitudeDelta: LATITUDE_DELTA,
+            //         longitudeDelta: LONGITUDE_DELTA,
+            //     })
+            // })
             console.log('location_has_been_update', JSON.stringify(data?.location?.longitude));
         });
     }
 
-    animateMarkerToLocation = (latitude, longitude) => {
-        Animated.timing(this.state?.coordinate, {
-            toValue: { latitude, longitude },
-            duration: 1000, // Animation duration in milliseconds
-            useNativeDriver: false, // Set to true if possible for better performance
-        }).start();
+    animateMarker = (Lt, Ln) => {
+        const newCoordinate = {
+            latitude: Lt,
+            longitude: Ln,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA,
+        };
+
+        // if (Platform.OS === 'android') {
+        //     if (this.marker) {
+        //         this.marker.animateMarkerToCoordinate(newCoordinate, 15000);
+        //     }
+        // } else {
+        //     coordinate.timing(newCoordinate).start();
+        // }
     };
+
+    // animateMarkerToLocation = (latitude, longitude) => {
+    //     Animated.timing(this.state?.coordinate, {
+    //         toValue: { latitude, longitude },
+    //         duration: 1000, // Animation duration in milliseconds
+    //         useNativeDriver: false, // Set to true if possible for better performance
+    //     }).start();
+    // };
 
     componentWillUnmount() {
         Geolocation.clearWatch(this.watchID);
     }
 
-    getMapRegion = () => ({
-        latitude: this.state.latitude,
-        longitude: this.state.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA
-    });
+    // getMapRegion = () => ({
+    //     latitude: this.state.latitude,
+    //     longitude: this.state.longitude,
+    //     latitudeDelta: LATITUDE_DELTA,
+    //     longitudeDelta: LONGITUDE_DELTA
+    // });
 
     calcDistance = newLatLng => {
         const { prevLatLng } = this.state;
@@ -468,7 +485,7 @@ export default class MapComponent extends React.Component {
                             console.log('GOT_AN_ERROR', JSON.stringify(errorMessage));
                         }}
                     />
-                    <Polyline coordinates={this.state.routeCoordinates} strokeWidth={5} strokeColor="green" />
+                    {/* <Polyline coordinates={this.state.routeCoordinates} strokeWidth={5} strokeColor="green" /> */}
                     <Marker coordinate={{ latitude: this.state.latitude, longitude: this.state.longitude }}>
                         <Image style={{
                             width: 55,
@@ -483,7 +500,7 @@ export default class MapComponent extends React.Component {
                     </Marker>
                     <Marker.Animated
                         ref={marker => (this.marker = marker)}
-                        coordinate={this.state.driver_location}>
+                        coordinate={this.state?.coordinate}>
                         <Image
                             source={require('../../assets/data/auto_rickshaw.png')}
                             style={{

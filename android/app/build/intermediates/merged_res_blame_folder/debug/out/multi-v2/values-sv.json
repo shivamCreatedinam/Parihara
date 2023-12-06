@@ -1,8 +1,25 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-sv/values-sv.xml",
+            "outputFile": "com.mapilocator.app-mergeDebugResources-52:/values-sv/values-sv.xml",
             "map": [
+                {
+                    "source": "/Users/apple/.gradle/caches/transforms-3/51523299b862454926548e78f123f226/transformed/jetified-play-services-wallet-18.1.3/res/values-sv/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "202",
+                        "endColumns": "69",
+                        "endOffsets": "271"
+                    },
+                    "to": {
+                        "startLines": "119",
+                        "startColumns": "4",
+                        "startOffsets": "10662",
+                        "endColumns": "73",
+                        "endOffsets": "10731"
+                    }
+                },
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/58f201ae8d58e6730b260f80337be765/transformed/browser-1.4.0/res/values-sv/values-sv.xml",
                     "from": {
@@ -38,7 +55,7 @@
                     }
                 },
                 {
-                    "source": "/Users/apple/.gradle/caches/transforms-3/b8b032a9f011549aa4242ce10998c5f2/transformed/jetified-play-services-basement-18.1.0/res/values-sv/values.xml",
+                    "source": "/Users/apple/.gradle/caches/transforms-3/15a57b7be4a044055cfebf45f345142e/transformed/jetified-play-services-basement-18.2.0/res/values-sv/values.xml",
                     "from": {
                         "startLines": "4",
                         "startColumns": "0",

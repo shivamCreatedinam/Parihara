@@ -2,8 +2,9 @@ import * as React from 'react';
 import { Image, Text, View, } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // firebase 
 import database from '@react-native-firebase/database';
 // screens
@@ -32,7 +33,24 @@ import StartTripSearchingScreen from '../src/screens/SearchStartTripLocation';
 import SearchDestinationScreen from '../src/screens/SearchDestination';
 import TripCreateScreen from '../src/screens/tripCreateScreen';
 // master notification
+import PurchasePackageList from '../src/screens/packageList';
 import NotificationCenterScreen from '../src/screens/splash_screen';
+import DriverTrackToMapsScreen from '../src/screens/trackingDrivertoTrip';
+import TransactionHistoryScreen from '../src/screens/transactionHistoryScreen';
+import BookingTripHistoryScreen from '../src/screens/TripHistory';
+// new imports
+import FoodHomeScreen from '../src/screens/Foods/FoodHome/';
+import BookingHistoryScreen from '../src/screens/BookingHistory';
+import EarningHistoryScreen from '../src/screens/EarninHistory';
+import DriverEditScreen from '../src/screens/EditDriverProfile';
+import VehicalDetailsScreen from '../src/screens/VehicalDetailsScreen';
+import EnterDropLocationScreen from '../src/screens/EnterDropLocationScreen';
+import RatingAndReviewScreen from '../src/screens/RatingAndReviewScreen';
+import SettingScreen from '../src/screens/SettingScreen';
+import ChangeLanguage from '../src/screens/ChnageLanguage';
+// change language 
+const coorg = require('../common/coorg.json');
+const eng = require('../common/eng.json');
 // Theme.
 const MyTheme = {
     dark: false,
@@ -127,6 +145,25 @@ function BottomNavigation() {
 }
 
 function UserBottomNavigation() {
+
+
+    const [selectedLanguage, setSelectedLanguage] = React.useState(null);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            getLanguageStatus();
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
+
+    const getLanguageStatus = async () => {
+        const valueX = await AsyncStorage.getItem('@appLanguage');
+        setSelectedLanguage(valueX);
+        console.log('getLanguageStatus', valueX);
+    }
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -135,15 +172,6 @@ function UserBottomNavigation() {
                 tabBarInactiveTintColor: 'gray',
                 //Tab bar styles can be added here
                 tabBarStyle: {
-                    // paddingVertical: 5,
-                    // borderRadius: 15,
-                    // backgroundColor: 'white',
-                    // position: 'absolute',
-                    // height: 55,
-                    // bottom: 35,
-                    // left: 35,
-                    // right: 35,
-                    // zIndex: 9999,
                 },
                 tabBarLabelStyle: {
                     paddingBottom: 3,
@@ -151,8 +179,7 @@ function UserBottomNavigation() {
             })}
             shifting={true}
             labeled={true}
-            sceneAnimationEnabled={false}
-        >
+            sceneAnimationEnabled={false} >
             <Tab.Screen
                 name="UserHomeScreen"
                 component={UserHomeScreen}
@@ -164,9 +191,91 @@ function UserBottomNavigation() {
                             <View style={{ alignItems: 'center' }}>
                                 <Image
                                     style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
-                                    source={require('../src/assets/home.png')}
+                                    source={require('../src/assets/auto_home_icon.png')}
                                 />
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>Home</Text>
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.auto : eng.en.auto}</Text>
+                            </View>
+                        );
+                    },
+                }}
+            />
+            <Tab.Screen
+                name="Parhmacy"
+                component={FoodHomeScreen}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: () => { return 'Ekart' },
+                    tabBarIcon: ({ size, focused, color }) => {
+                        return (
+                            <View style={{ alignItems: 'center' }}>
+                                <Image
+                                    style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'cover', }}
+                                    source={require('../src/assets/pharmacy_icon.png')}
+                                />
+                                <View style={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'orange', height: 18, width: 18, borderRadius: 150 }}>
+                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 12, top: 1 }}>0</Text>
+                                </View>
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.phramacy : eng.en.phramacy}</Text>
+                            </View>
+                        );
+                    },
+                }}
+            />
+            <Tab.Screen
+                name="Hotel"
+                component={FoodHomeScreen}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: () => { return 'Ekart' },
+                    tabBarIcon: ({ size, focused, color }) => {
+                        return (
+                            <View style={{ alignItems: 'center' }}>
+                                <Image
+                                    style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
+                                    source={require('../src/assets/hotel_icon.png')}
+                                />
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.hotel : eng.en.hotel}</Text>
+                            </View>
+                        );
+                    },
+                }}
+            />
+            <Tab.Screen
+                name="Vegitables"
+                component={FoodHomeScreen}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: () => { return 'Ekart' },
+                    tabBarIcon: ({ size, focused, color }) => {
+                        return (
+                            <View style={{ alignItems: 'center' }}>
+                                <Image
+                                    style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
+                                    source={require('../src/assets/super_market_icon.png')}
+                                />
+                                <View style={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'orange', height: 18, width: 18, borderRadius: 150 }}>
+                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 12, top: 1 }}>0</Text>
+                                </View>
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.market : eng.en.market}</Text>
+                            </View>
+                        );
+                    },
+                }}
+            />
+            <Tab.Screen
+                name="Super Market"
+                component={FoodHomeScreen}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: () => { return 'Ekart' },
+                    tabBarIcon: ({ size, focused, color }) => {
+                        return (
+                            <View style={{ alignItems: 'center' }}>
+                                <Image
+                                    style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
+                                    source={require('../src/assets/food_icon.png')}
+                                />
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.food : eng.en.food}</Text>
                             </View>
                         );
                     },
@@ -185,7 +294,7 @@ function UserBottomNavigation() {
                                     style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
                                     source={require('../src/assets/profile_icon.png')}
                                 />
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>Profile</Text>
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.profile : eng.en.profile}</Text>
                             </View>
                         );
                     },
@@ -430,11 +539,119 @@ function StackNavigation(initialRouts) {
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
                 <Stack.Screen
+                    name="DriverTrackToMapsScreen"
+                    component={DriverTrackToMapsScreen}
+                    options={{
+                        title: 'DriverTrackToMapsScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="PurchasePackageList"
+                    component={PurchasePackageList}
+                    options={{
+                        title: 'PurchasePackageList',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="TransactionHistoryScreen"
+                    component={TransactionHistoryScreen}
+                    options={{
+                        title: 'TransactionHistoryScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="BookingTripHistoryScreen"
+                    component={BookingTripHistoryScreen}
+                    options={{
+                        title: 'BookingTripHistoryScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
                     name="NotificationCenterScreen"
                     component={NotificationCenterScreen} />
+                <Stack.Screen
+                    name="BookingHistoryScreen"
+                    component={BookingHistoryScreen}
+                    options={{
+                        title: 'BookingHistoryScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="EarningHistoryScreen"
+                    component={EarningHistoryScreen}
+                    options={{
+                        title: 'EarningHistoryScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="DriverEditScreen"
+                    component={DriverEditScreen}
+                    options={{
+                        title: 'DriverEditScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="VehicalDetailsScreen"
+                    component={VehicalDetailsScreen}
+                    options={{
+                        title: 'VehicalDetailsScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="EnterDropLocationScreen"
+                    component={EnterDropLocationScreen}
+                    options={{
+                        title: 'EnterDropLocationScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="RatingAndReviewScreen"
+                    component={RatingAndReviewScreen}
+                    options={{
+                        title: 'RatingAndReviewScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="SettingScreen"
+                    component={SettingScreen}
+                    options={{
+                        title: 'SettingScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="ChangeLanguage"
+                    component={ChangeLanguage}
+                    options={{
+                        title: 'ChangeLanguage',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // NotificationCenterScreen
+export default StackNavigation; // ChangeLanguage

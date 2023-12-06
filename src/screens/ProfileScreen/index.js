@@ -7,12 +7,11 @@
 
 import React from 'react';
 import {
-    StyleSheet,
+    Linking,
     View,
     Alert,
     Text,
     TouchableOpacity,
-    Dimensions,
     ScrollView,
     Image
 } from 'react-native';
@@ -24,63 +23,42 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { showMessage } from "react-native-flash-message";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import RazorpayCheckout from 'react-native-razorpay';
+// change language 
+const coorg = require('../../../common/coorg.json');
+const eng = require('../../../common/eng.json');
 
 const ProfileScreen = () => {
 
     const navigate = useNavigation();
     const [data, setData] = React.useState({});
+    const [WalletData, setWalletData] = React.useState({});
     const [loading, setLoading] = React.useState(false);
+    const [selectedLanguage, setSelectedLanguage] = React.useState(null);
 
-    // React.useEffect(() => {
-    //     const dataRef = database().ref('/users/');
-    //     dataRef.on('value', snapshot => {
-    //         const newData = [];
-    //         snapshot.forEach(childSnapshot => {
-    //             newData.push(childSnapshot.val());
-    //         });
-    //         setData(newData);
-    //     });
+    useFocusEffect(
+        React.useCallback(() => {
+            getLanguageStatus();
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
 
-    //     return () => {
-    //         dataRef.off(); // Clean up the listener when the component unmounts
-    //     };
-    // }, []);
+    const getLanguageStatus = async () => {
+        const valueX = await AsyncStorage.getItem('@appLanguage');
+        setSelectedLanguage(valueX);
+        console.log('getLanguageStatus', valueX);
+    }
 
     function trackMaps(data) {
         navigate.navigate('TrackingMapsScreen', data);
     }
 
-    // Function to update profile info
-    // const updateProfileInfo = async (user) => {
-    //     console.log('Profile updated successfully.');
-    //     try {
-    //         await user.updateProfile({
-    //             displayName: 'John Doe',
-    //             photoURL: 'https://example.com/profile-image.jpg',
-    //         });
-    //         console.log('Profile updated successfully.');
-    //     } catch (error) {
-    //         console.error('Error updating profile:', error.message);
-    //     }
-    // };
-
-    // const handleEditPress = async () => {
-    //     // Set up a listener to handle authentication state changes
-    //     auth().onAuthStateChanged((user) => {
-    //         if (user) {
-    //             console.log('unsubscribeAuthListener successfully.');
-    //             // The user is signed in, proceed with profile update
-    //             updateProfileInfo(user);
-    //         } else {
-    //             console.log('Profile unsubscribeAuthListener');
-    //             // The user is signed out, handle the sign-in flow or redirect to the sign-in screen
-    //         }
-    //     });
-    // }
-
     useFocusEffect(
         React.useCallback(() => {
             loadProfile();
+            loadWalletProfile();
             return () => {
                 // Useful for cleanup functions
             };
@@ -112,13 +90,37 @@ const ProfileScreen = () => {
             });
     }
 
+    const loadWalletProfile = async () => {
+        setLoading(true)
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: globle.API_BASE_URL + 'my-wallet',
+            headers: {
+                'Authorization': 'Bearer ' + data
+            }
+        };
+        axios.request(config)
+            .then((response) => {
+                setLoading(false)
+                setWalletData(response.data);
+                console.log('wallet', JSON.stringify(response.data));
+            })
+            .catch((error) => {
+                setLoading(false)
+                console.log(error);
+            });
+    }
+
     const logoutX = () => {
         Alert.alert(
-            'Logged Out',
-            'Are you sure, want to logged out?',
+            selectedLanguage === 'Coorg' ? coorg.crg.logged_out : eng.en.logged_out,
+            selectedLanguage === 'Coorg' ? coorg.crg.logged_out_alert : eng.en.logged_out_alert,
             [
-                { text: 'No', onPress: () => console.log('cancel') },
-                { text: 'Yes', onPress: () => loggoutUser() },
+                { text: selectedLanguage === 'Coorg' ? coorg.crg.no : eng.en.no, onPress: () => console.log('cancel') },
+                { text: selectedLanguage === 'Coorg' ? coorg.crg.yes : eng.en.yes, onPress: () => loggoutUser() },
             ]
         );
     }
@@ -129,21 +131,23 @@ const ProfileScreen = () => {
         //     text1: 'Login Success',
         //     text2: msg,
         // });
-        navigate.replace('UserEditProfileScreen', { screenType: 'OldUser' });
+        Linking.openURL(msg);
+        // navigate.replace('UserEditProfileScreen', { screenType: 'OldUser' });
     }
 
     const loggoutUser = async () => {
         let keys = [];
         try {
             keys = await AsyncStorage.getAllKeys();
-            console.log(`Keys: ${keys}`) // Just to see what's going on
+            console.log(`Keys: ${keys}`)
+            // Just to see what's going on
             await AsyncStorage.multiRemove(keys);
-            navigate.navigate('SplashAppScreen');
             showMessage({
-                message: "Loggout Successfull!",
-                description: "Congratulations, Loggout successfully!",
+                message: selectedLanguage === 'Coorg' ? coorg.crg.loggout_successfull : eng.en.loggout_successfull,
+                description: selectedLanguage === 'Coorg' ? coorg.crg.congratulations_loggout_successfully : eng.en.congratulations_loggout_successfully,
                 type: "success",
             });
+            navigate.replace('SplashAppScreen');
             navigate.reset();
         } catch (e) {
             console.log(e)
@@ -166,6 +170,36 @@ const ProfileScreen = () => {
             </TouchableOpacity>
         );
     };
+
+    const onPayPress = () => {
+        navigate.navigate('PurchasePackageList');
+    }
+
+    const onPayRazorPayPress = () => {
+        var options = {
+            description: 'Credits towards consultation',
+            image: globle.IMAGE_BASE_URL + data?.user?.user_image,
+            currency: 'INR',
+            key: 'rzp_test_ab2tkx2iprYBt8',
+            amount: (Number(45) * 100),
+            name: 'foo',
+            prefill: {
+                email: data?.user?.email,
+                contact: data?.user?.mobile,
+                name: data?.user?.name,
+            },
+            theme: {
+                color: '#0066cc',
+            }
+        }
+        RazorpayCheckout.open(options).then((data) => {
+            // handle success
+            Alert.alert(`Success: ${data.razorpay_payment_id}`);
+        }).catch((error) => {
+            // handle failure
+            Alert.alert(`Error: ${error.code} | ${error.description}`);
+        });
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -191,34 +225,51 @@ const ProfileScreen = () => {
             <View style={styles.bioContainer}>
                 <Text style={styles.bioText}>{data?.user?.email}</Text>
             </View>
+            <View style={{ padding: 20, backgroundColor: '#0066cc', margin: 20, marginBottom: 0, borderRadius: 15, flexDirection: 'row', alignItems: 'center', elevation: 5 }}>
+                <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center', }}>
+                    <Image style={{ width: 25, height: 25, resizeMode: 'contain', marginRight: 10, tintColor: '#ffffff' }} source={require('../../assets/wallet_icon.png')} />
+                    <Text style={{ fontSize: 15, color: '#ffffff', fontWeight: 'bold', flex: 1 }}>₹ {JSON.stringify(WalletData?.user?.wallet_amount)}.00</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onPayPress()} style={{ width: 25, height: 25, borderRadius: 150, backgroundColor: '#ffffff', elevation: 5, padding: 5 }}>
+                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: -4, fontWeight: 'bold', color: '#0066cc' }} >+</Text>
+                </TouchableOpacity>
+            </View>
             <View style={{ padding: 20, alignItems: 'center' }}>
                 <TouchableOpacity
-                    onPress={() => showSuccessToast('Coming soon!')}
+                    onPress={() => navigate.navigate('UserEditProfileScreen')}
                     style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 5 }}>
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/driver_profile.png')} />
-                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Edit Profile</Text>
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.edit_profile : eng.en.edit_profile}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/badge.png')} />
-                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Reward & Offers</Text>
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.reward_offer : eng.en.reward_offer}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                <TouchableOpacity onPress={() => navigate.navigate('TransactionHistoryScreen')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/history.png')} />
-                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Booking History</Text>
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.transaction_history : eng.en.transaction_history}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                <TouchableOpacity onPress={() => navigate.navigate('BookingTripHistoryScreen')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/history.png')} />
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.booking_history : eng.en.booking_history}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigate.navigate('SettingScreen')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/setting.png')} />
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.settings : eng.en.settings}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => showSuccessToast('https://theparihara.com/privacy_policy.html')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/privacy.png')} />
-                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Privacy Policy</Text>
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.privacy_policy : eng.en.privacy_policy}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => showSuccessToast('Coming soon!')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
+                <TouchableOpacity onPress={() => showSuccessToast('https://theparihara.com/privacy_policy.html')} style={{ flexDirection: 'row', alignItems: 'center', padding: 15, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 50, marginTop: 20 }}>
                     <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/home_shield.png')} />
-                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>Terms & Conditions</Text>
+                    <Text style={{ fontWeight: 'bold', color: '#000000', marginLeft: 10 }}>{selectedLanguage === 'Coorg' ? coorg.crg.term_sconditions : eng.en.term_sconditions}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, { width: '100%', borderRadius: 50, marginTop: 15 }]} onPress={() => logoutX()}>
-                    <Text style={styles.buttonText}>Log Out</Text>
+                <TouchableOpacity style={[styles.button, { width: '100%', borderRadius: 50, marginTop: 15, padding: 15, elevation: 5 }]} onPress={() => logoutX()}>
+                    <Text style={styles.buttonText}>{selectedLanguage === 'Coorg' ? coorg.crg.log_out : eng.en.log_out}</Text>
                 </TouchableOpacity>
             </View>
-            <Text style={{ flex: 1, textAlign: 'center', fontSize: 12, color: 'black', marginTop: 30, fontWeight: 'bold',marginBottom:50 }}>v {info.version}</Text>
+            <Text style={{ flex: 1, textAlign: 'center', fontSize: 12, color: 'black', marginTop: 30, fontWeight: 'bold', marginBottom: 50 }}>v {info.version}</Text>
         </ScrollView>
     );
 }
@@ -254,7 +305,8 @@ const styles = {
     },
     bioText: {
         fontSize: 16,
-        textAlign: 'center'
+        textAlign: 'center',
+        fontWeight: '900'
     },
     statsContainer: {
         flexDirection: 'row',
@@ -284,6 +336,7 @@ const styles = {
         fontSize: 16,
         color: '#fff',
         textAlign: 'center',
+        fontWeight: 'bold',
     },
 };
 

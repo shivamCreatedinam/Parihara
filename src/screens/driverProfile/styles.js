@@ -5,8 +5,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        marginTop: 40,
-        backgroundColor: '#F1F6F9'
+        paddingTop: 40,
+        backgroundColor: '#F1F6F9',
+        paddingVertical: 60
     },
     mapContainer: {
         height: "50%"

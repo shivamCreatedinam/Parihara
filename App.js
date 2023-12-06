@@ -11,31 +11,33 @@ import {
   SafeAreaView,
   StyleSheet,
   StatusBar,
-  Platform,
   Text,
   Alert,
   TouchableOpacity,
-  Dimensions,
-  BackHandler,
-  Linking,
   ImageBackground,
   Image,
+  Linking,
+  Platform
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import PushController from './PushController';
 import messaging from '@react-native-firebase/messaging';
+import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import VersionCheck from 'react-native-version-check';
-import { TailwindProvider, useTailwind } from 'tailwind-rn';
+import StackNavigation from './navigation'
+import { TailwindProvider } from 'tailwind-rn';
 import utilities from './tailwind.json';
 import data from './package.json';
-import StackNavigation from './navigation';
+import DeviceInfo from "react-native-device-info";
 import NotificationCenter from './NotificationCenter';
-
+import BackgroundTimer from "react-native-background-timer";
+import Geolocation from '@react-native-community/geolocation';
+// version check
+import VersionCheck from 'react-native-version-check';
 
 const App = () => {
 
-  const [isupdated, setisupdated] = React.useState(true);
+  const [isupdated, setisupdated] = React.useState(false);
   const appState = React.useRef(AppState.currentState);
   const [initialRoute, setInitialRoute] = React.useState('SplashAppScreen');
   const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
@@ -43,8 +45,8 @@ const App = () => {
 
   React.useEffect(() => {
     checkPermission();
-    messageListener();
-    forceUpdate();
+    setLongRunTimer();
+    checkAppVersion();
   }, []);
 
   const checkPermission = async () => {
@@ -56,15 +58,83 @@ const App = () => {
     }
   }
 
+  const setLongRunTimer = async () => {
+    BackgroundTimer.setInterval(() => {
+      LocationTracking();
+    }, 10000);
+  }
+
+  const LocationTracking = async () => {
+    const valuex = await AsyncStorage.getItem('@autoUserType');
+    const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+    let data = JSON.parse(valueX);
+    if (valuex === 'Driver') {
+      Geolocation.watchPosition(
+        (position) => {
+          let currentLocation = {
+            longitude: position.coords.longitude,
+            latitude: position.coords.latitude,
+            heading: position.coords.heading,
+            speed: position.coords.speed
+          };
+          // console.log('location_status_update----->>', currentLocation);
+          TrackingDriverLocation(position?.coords?.latitude, position?.coords?.longitude, position?.coords?.heading, position.coords.speed, data?.id);
+          // var authOptions = {
+          //   method: 'POST',
+          //   url: url_driver_location_update,
+          //   data: JSON.stringify({ 'driver_id': data?.id, 'latitude': position?.coords?.latitude, 'longitude': position?.coords?.longitude }),
+          //   headers: { 'Content-Type': 'application/json' },
+          //   json: true,
+          // };
+          // axios(authOptions)
+          //   .then((response) => {
+          //     if (response.data?.status) {
+          //     } else {
+          //       console.log('location status update fails' + JSON.stringify(response.data));
+          //     }
+          //   })
+          //   .catch((error) => {
+          //     console.log(error);
+          //   });
+        },
+        (error) => console.log(error),
+        {
+          showLocationDialog: true,
+          enableHighAccuracy: true,
+          accuracy: {
+            android: "high",
+            ios: "bestForNavigation",
+          },
+          fastestInterval: 100,
+          distanceFilter: 0.01,
+          interval: 1500,
+        }
+      );
+    } else {
+
+    }
+
+  }
+
+  const TrackingDriverLocation = async (lattitude, longitude, header, speed, d_ids) => {
+    let reff = '/tracking/' + d_ids + '';
+    const driverData = {
+      lattitude: lattitude,
+      longitude: longitude,
+      heading: header,
+      speed: speed,
+    }
+    database()
+      .ref(reff)
+      .set({
+        time: new Date().getTime(),
+        timeUTC: new Date(),
+        location: driverData,
+      })
+      .then(() => { });
+  }
+
   const getFcmToken = async () => {
-    // const fcmToken = await messaging().getToken();
-    // if (fcmToken) {
-    //   // showAlert('Your Firebase Token is:', fcmToken);
-    //   await AsyncStorage.setItem('@tokenKey', fcmToken);
-    //   console.log('FCM_save:' + fcmToken);
-    // } else {
-    //   showAlert('Failed', 'No token received');
-    // }
   }
 
   const requestPermission = async () => {
@@ -77,156 +147,24 @@ const App = () => {
     }
   }
 
-  const messageListener = async () => {
-    messaging().onNotificationOpenedApp(remoteMessage => {
-      // console.log(
-      //   'Notification caused app to open from background state:',
-      //   remoteMessage.notification,
-      // ); 
-      setInitialRoute('TripStartScreen');
-    });
-
-    // Quiet and Background State -> Check whether an initial notification is available
-    messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        if (remoteMessage) {
-          console.log(
-            'Notification caused app to open from quit state:',
-            remoteMessage.notification,
-          );
-        }
-      })
-      .catch(error => console.log('failed', error));
-
-    // Foreground State
-    messaging().onMessage(async remoteMessage => {
-      console.log('foreground', remoteMessage);
-    });
-  }
-
-  const showAlert = (title, message) => {
-    Alert.alert(
-      title,
-      message,
-      [
-        { text: 'OK', onPress: () => console.log('OK Pressed') },
-      ],
-      { cancelable: false },
-    );
-  }
-
-  // React.useEffect(() => {
-  //   if (authenticated) {
-  //     BackgroundGeolocation.configure({
-  //       desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
-  //       stationaryRadius: 50,
-  //       distanceFilter: 50,
-  //       notificationTitle: 'Background tracking',
-  //       notificationText: 'enabled',
-  //       debug: false,
-  //       startOnBoot: false,
-  //       stopOnTerminate: true,
-  //       locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
-  //       interval: 30000,
-  //       fastestInterval: 30000,
-  //       activitiesInterval: 30000,
-  //       stopOnStillActivity: false,
-  //       url: 'http://192.168.81.15:3000/location',
-  //       httpHeaders: {
-  //         'X-FOO': 'bar',
-  //       },
-  //       // customize post properties
-  //       postTemplate: {
-  //         lat: '@latitude',
-  //         lon: '@longitude',
-  //         foo: 'bar' // you can also add your own properties
-  //       }
-  //     })
-
-  //     BackgroundGeolocation.on('location', (location) => {
-  //       console.log('BackgroundGeolocation', payload);
-  //       const payload = { latitude: location?.latitude, longitude: location?.longitude }
-  //       // dispatch({ type: CONSTANTS.LOCATION_POST_REQUEST, payload })
-  //       // handle your locations here
-  //       // to perform long running operation on iOS
-  //       // you need to create background task
-  //       BackgroundGeolocation.startTask(taskKey => {
-  //         // execute long running task
-  //         // eg. ajax post location
-  //         // IMPORTANT: task has to be ended by endTask
-  //         BackgroundGeolocation.endTask(taskKey);
-  //       });
-  //     });
-
-  //     BackgroundGeolocation.on('stationary', (stationaryLocation) => {
-  //       // handle stationary locations here
-  //       // Actions.sendLocation(stationaryLocation);
-  //       console.log('stationaryLocation', stationaryLocation);
-  //     });
-
-  //     BackgroundGeolocation.on('error', (error) => {
-  //       console.log('[ERROR] BackgroundGeolocation error:', error);
-  //     });
-
-  //     BackgroundGeolocation.on('start', () => {
-  //       console.log('[INFO] BackgroundGeolocation service has been started');
-  //     });
-
-  //     BackgroundGeolocation.on('stop', () => {
-  //       console.log('[INFO] BackgroundGeolocation service has been stopped');
-  //     });
-
-  //     BackgroundGeolocation.on('authorization', (status) => {
-  //       console.log('[INFO] BackgroundGeolocation authorization status: ' + status);
-  //       if (status !== BackgroundGeolocation.AUTHORIZED) {
-  //         // we need to set delay or otherwise alert may not be shown
-  //         setTimeout(() =>
-  //           Alert.alert('App requires location tracking permission', 'Would you like to open app settings?', [
-  //             { text: 'Yes', onPress: () => BackgroundGeolocation.showAppSettings() },
-  //             { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
-  //           ]), 1000);
-  //       }
-  //     });
-
-  //     BackgroundGeolocation.on('background', () => {
-  //       console.log('[INFO] App is in background');
-  //     });
-
-  //     BackgroundGeolocation.on('foreground', () => {
-  //       console.log('[INFO] App is in foreground');
-  //     });
-
-  //     BackgroundGeolocation.on('abort_requested', () => {
-  //       console.log('[INFO] Server responded with 285 Updates Not Required');
-  //     });
-
-  //     BackgroundGeolocation.on('http_authorization', () => {
-  //       console.log('[INFO] App needs to authorize the http requests');
-  //     });
-
-  //     BackgroundGeolocation.checkStatus(status => {
-
-  //       console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
-  //       console.log('[INFO] BackgroundGeolocation services enabled', status.locationServicesEnabled);
-  //       console.log('[INFO] BackgroundGeolocation auth status: ' + status.authorization);
-
-  //       if (!status.isRunning) {
-  //         BackgroundGeolocation.start(); //triggers start on start event
-  //       }
-  //     });
-  //   }
-
-  //   // you can also just start without checking for status
-  //   // BackgroundGeolocation.start();
-  // }, [authenticated]);
-
-
   const forceUpdate = async () => {
     try {
-      let updateNeeded = await VersionCheck.needUpdate();
-      console.log('updateNeeded------------->', JSON.stringify(updateNeeded));
-      // if (updateNeeded && updateNeeded.isNeeded) {
+      // let updateNeeded = await VersionCheck.needUpdate();
+      // console.log('updateNeeded------------->', JSON.stringify(updateNeeded));
+      const PlayStoreUrl = await VersionCheck.getPlayStoreUrl();
+      VersionCheck.needUpdate({
+        currentVersion: VersionCheck.getCurrentVersion(),
+        latestVersion: data.version
+      }).then((res) => {
+        if (res.isNeeded) {
+          console.log('updateNeeded------------->' + PlayStoreUrl, JSON.stringify(res));
+        }
+      })
+      // const currentVersion = DeviceInfo.getVersion();
+      // const latestVersion = await VersionCheck.getCurrentVersion();
+      // const PlayStoreUrl = await VersionCheck.getPlayStoreUrl();
+      // console.log('updateNeeded------------->' + PlayStoreUrl + ' -> ' + currentVersion, JSON.stringify(latestVersion));
+      // if (false) {
       //   setisupdated(false)
       //   Alert.alert('Please update', 'You have to update the app to continue using',
       //     [{
@@ -247,8 +185,45 @@ const App = () => {
     }
   }
 
+  const checkAppVersion = async () => {
+    try {
+      const latestVersion = await VersionCheck.getLatestVersion({
+        packageName: 'com.mapilocator', // Replace with your app's package name
+        ignoreErrors: true,
+      });
 
-  if (!isupdated) {
+      const currentVersion = VersionCheck.getCurrentVersion();
+
+      if (latestVersion > currentVersion) {
+        Alert.alert(
+          'Update Required',
+          'A new version of the app is available. Please update to continue using the app.',
+          [
+            {
+              text: 'Update Now',
+              onPress: () => {
+                Linking.openURL(
+                  Platform.OS === 'ios'
+                    ? VersionCheck.getAppStoreUrl({ appID: 'com.mapilocator' })
+                    : 'https://play.google.com/store/apps/details?id=com.mapilocator&hl=en&gl=US'
+                );
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        // App is up-to-date, proceed with the app
+        setisupdated(false);
+        console.log(' App is up-to-date, proceed with the app');
+      }
+    } catch (error) {
+      // Handle error while checking app version
+      console.error('Error checking app version:', error);
+    }
+  };
+
+  if (isupdated) {
     return <ImageBackground
       style={{ flex: 1 }}
       source={require('./src/assets/background.jpeg')}
@@ -264,7 +239,7 @@ const App = () => {
     </ImageBackground>
   } else {
     return (
-      <SafeAreaView style={{ height: Dimensions.get('screen').height, width: Dimensions.get('screen').width }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <TailwindProvider utilities={utilities}>
           <StatusBar backgroundColor='black' barStyle='light-content' translucent />
           <NotificationCenter />

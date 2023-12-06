@@ -10,13 +10,14 @@ export default class PushController extends React.Component {
         PushNotification.configure({
             // (optional) Called when Token is generated (iOS and Android)
             onRegister: function async(token) {
-                console.log("TOKEN:", token);
-                AsyncStorage.setItem('@tokenKey', token);
+                console.log("TOKEN:", token?.token);
+                let finalToken = token?.token;
+                AsyncStorage.setItem('@tokenKey', String(finalToken));
             },
 
             // (required) Called when a remote or local notification is opened or received
             onNotification: function (notification) {
-                console.log("NOTIFICATION:", notification);
+                console.log("NOTIFICATION:->", notification);
                 // process the notification here
                 if (Platform.OS === 'ios') {
                     // required on iOS only 

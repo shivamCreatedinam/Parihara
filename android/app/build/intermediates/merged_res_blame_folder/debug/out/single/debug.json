@@ -1,14 +1,18 @@
 [
     {
-        "merged": "com.mapilocator.app-merged_res-51:/xml_data_extraction_rules.xml.flat",
-        "source": "com.mapilocator.app-main-53:/xml/data_extraction_rules.xml"
+        "merged": "com.mapilocator.app-merged_res-54:/drawable_ic_launcher_round.png.flat",
+        "source": "com.mapilocator.app-main-56:/drawable/ic_launcher_round.png"
     },
     {
-        "merged": "com.mapilocator.app-merged_res-51:/drawable_ic_launcher_round.png.flat",
-        "source": "com.mapilocator.app-main-53:/drawable/ic_launcher_round.png"
+        "merged": "com.mapilocator.app-merged_res-54:/drawable_ic_stat_directions.png.flat",
+        "source": "com.mapilocator.app-main-56:/drawable/ic_stat_directions.png"
     },
     {
-        "merged": "com.mapilocator.app-merged_res-51:/drawable_rn_edit_text_material.xml.flat",
-        "source": "com.mapilocator.app-main-53:/drawable/rn_edit_text_material.xml"
+        "merged": "com.mapilocator.app-merged_res-54:/drawable_rn_edit_text_material.xml.flat",
+        "source": "com.mapilocator.app-main-56:/drawable/rn_edit_text_material.xml"
+    },
+    {
+        "merged": "com.mapilocator.app-merged_res-54:/xml_data_extraction_rules.xml.flat",
+        "source": "com.mapilocator.app-main-56:/xml/data_extraction_rules.xml"
     }
 ]

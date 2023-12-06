@@ -22,6 +22,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import OTPInput from 'react-native-otp';
 import { Image } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import globle from '../../../common/env';
 
 import axios from 'axios';
 
@@ -38,18 +39,6 @@ const OTPSubmitScreen = () => {
     const [password, setPassword] = React.useState('');
     const [errors, setErrors] = React.useState('');
 
-    // Handle user state changes
-    function onAuthStateChanged(user) {
-        setUser(user);
-        setUserData(user);
-        if (initializing) setInitializing(false);
-    }
-
-    React.useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-        return subscriber; // unsubscribe on unmount
-    }, []);
-
     React.useEffect(() => {
         console.log('addEventListener', JSON.stringify(routes?.params?.mobileNumber));
         return () => {
@@ -60,8 +49,8 @@ const OTPSubmitScreen = () => {
     const showSuccessToast = (value) => {
         Toast.show({
             type: 'success',
-            text1: 'Login Success',
-            text2: value?.message
+            text1: value,
+            text2: value
         });
         storeData(value);
         // navigation.navigate('HomeBottomNavigation');
@@ -70,7 +59,7 @@ const OTPSubmitScreen = () => {
     const showSuccessErrorToast = (value) => {
         Toast.show({
             type: 'error',
-            text1: 'Something went wrong',
+            text1: value,
             text2: value
         });
         storeData(value);
@@ -125,8 +114,8 @@ const OTPSubmitScreen = () => {
         serLoader(true);
         var authOptions = {
             method: 'post',
-            url: 'https://createdinam.in/Parihara/public/api/verify-otp',
-            data: JSON.stringify({ "mobile": email, 'otp': OTP }),
+            url: globle.API_BASE_URL + 'verify-otp',
+            data: JSON.stringify({ "mobile": Number(email), 'otp': Number(OTP) }),
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -139,13 +128,13 @@ const OTPSubmitScreen = () => {
                     serLoader(false);
                     showSuccessToast(response.data);
                 } else {
-                    console.log('errors', response?.data?.error?.otp[0]);
+                    console.log('errors', JSON.stringify(response?.data) + '' + JSON.stringify({ "mobile": email, 'otp': OTP }));
                     if (response?.data?.error?.otp[0] !== undefined) {
                         // showSuccessErrorToast(response?.data?.error?.otp[0]);
                         serLoader(false);
                     } else {
                         // message
-                        // showSuccessErrorToast(response?.data?.message);
+                        showSuccessErrorToast(response?.data?.message);
                         serLoader(false);
                     }
                 }
@@ -161,7 +150,7 @@ const OTPSubmitScreen = () => {
     const loggedUsingMobileIn = () => {
         var authOptions = {
             method: 'post',
-            url: 'https://createdinam.in/Parihara/public/api/requesting_for_otp',
+            url: globle.API_BASE_URL + 'requesting_for_otp',
             data: JSON.stringify({ "mobile": email }),
             headers: {
                 'Content-Type': 'application/json'
@@ -170,18 +159,17 @@ const OTPSubmitScreen = () => {
         };
         axios(authOptions)
             .then((response) => {
-                if (response.status) {
-                    console.log(response.data);
+                if (response.data.status) {
+                    console.log('x', response.data);
                     showSuccessToast(response.data.message + '\n your OTP is: ' + response.data.otp);
                 } else {
-                    console.log(response.data);
+                    console.log('xx', response.data);
                 }
             })
             .catch((error) => {
                 alert(error)
             });
     }
-
 
     return (
         <View style={{ padding: 20, flex: 1 }}>
@@ -198,17 +186,17 @@ const OTPSubmitScreen = () => {
                         fontWeight={'900'}
                     />
                 </View>
-                {/* <View style={{ marginTop: 25 }}>
-                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Password</Text>
-                    <TextInput placeholder='Enter user password' secureTextEntry={secure} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setPassword(e)} />
-                    <Pressable onPress={() => setSecure(!secure)} style={{ position: 'absolute', right: 15, top: 15 }}>
-                        <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/icons_eye.png')} />
-                    </Pressable>
-                </View> */}
                 <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center' }}>
                     <Image style={{ tintColor: 'green', width: 20, height: 20, marginRight: 5 }} source={{ uri: 'https://icons.veryicon.com/png/o/miscellaneous/8atour/check-box-4.png' }} />
                     <Text style={{ fontSize: 8 }} >by clicking the button you agree with the <Text style={{ fontWeight: 'bold' }}>Terms & Conditions and Privacy Policy</Text></Text>
                 </View>
+                <TouchableOpacity onPress={loggedUsingMobileIn} style={{ marginTop: 25 }}>
+                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, right: 2, fontWeight: 'bold' }}>Forget Password</Text>
+                    {/* <TextInput placeholder='Enter user password' secureTextEntry={secure} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setPassword(e)} />
+                    <Pressable onPress={() => setSecure(!secure)} style={{ position: 'absolute', right: 15, top: 15 }}>
+                        <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/icons_eye.png')} />
+                    </Pressable> */}
+                </TouchableOpacity>
                 <TouchableOpacity style={{
                     width: '100%',
                     marginTop: 20,

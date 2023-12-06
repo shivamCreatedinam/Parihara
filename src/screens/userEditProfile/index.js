@@ -332,6 +332,8 @@ const UserEditProfileScreen = () => {
             navigate.replace('UserBottomNavigation');
         } else if (routes.params?.screenType === 'OldUser') {
             navigate.replace('UserBottomNavigation');
+        } else {
+            navigate.goBack();
         }
     }
 

@@ -16,7 +16,17 @@ import {
     ImageBackground,
     Alert,
 } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import notifee,
+{
+    AndroidImportance,
+    AndroidBadgeIconType,
+    AndroidVisibility,
+    AndroidColor,
+    AndroidCategory
+}
+    from '@notifee/react-native';
 import {
     INPUT_RANGE_START,
     INPUT_RANGE_END,
@@ -29,6 +39,11 @@ import Global from '../../../common/env';
 import { Image } from 'react-native-elements';
 import { ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Geolocation from '@react-native-community/geolocation';
+import RNRestart from 'react-native-restart';
+import axios from 'axios';
+const latitudeDelta = 0.025;
+const longitudeDelta = 0.025;
 
 const SplashAppScreen = () => {
 
@@ -40,33 +55,41 @@ const SplashAppScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             // whatever
+            getOneTimeLocation();
             setTimeout(() => {
                 // setTimeout
-                loadSessionStorage();
+                // loadSessionStorage();
             }, 3000);
         }, [])
     );
 
-    const loadSessionStorage = async () => {
+    React.useEffect(() => {
+        messageListener();
+    }, []);
+
+    const loadSessionStorage = async (latitude, longitude) => {
         // autoUserType
         try {
             const valueX = await AsyncStorage.getItem('@autoUserType');
             const valueXX = await AsyncStorage.getItem('@autoDriverGroup');
             const value = await AsyncStorage.getItem('@autoUserGroup');
             console.log(valueX)
+            console.log('y', JSON.parse(valueXX)?.id);
+            console.log('x', JSON.parse(value));
             if (valueX === 'Driver') {
                 if (valueXX !== null) {
-                    // value previously stored UserBottomNavigation
-                    navigation.replace('HomeScreen');
-                    console.log('addEventListener1', JSON.parse(valueXX));
+                    let driver_id = JSON.parse(valueXX)?.id;
+                    DriverLocationUpdate(driver_id, latitude, longitude);
+                    // value previously stored UserBottomNavigation 
                 }
             } else if (valueX === 'User') {
-                // updateTokenProfile();
+                // updateTokenProfile(); RatingAndReviewScreen
                 navigation.replace('UserBottomNavigation');
+                // navigation.replace('RatingAndReviewScreen');
                 console.log('addEventListener2', JSON.parse(value));
             } else {
                 console.log('loadSessionStorage3', JSON.stringify(value));
-                navigation.replace('LoginScreen');
+                navigation.replace('ChangeLanguage');
             }
         } catch (e) {
             console.log('addEventListener4', JSON.stringify(e));
@@ -74,65 +97,338 @@ const SplashAppScreen = () => {
         }
     }
 
-    const updateDriverTokenProfile = async () => {
-        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
-        const value = await AsyncStorage.getItem('@tokenKey');
-        let data = JSON.parse(valueX)?.id;
-        var formdata = new FormData();
-        formdata.append('driver_id', data);
-        formdata.append('token', value);
-        var requestOptions = {
+    const DriverLocationUpdate = async (id, latitude, longitude) => {
+        var authOptions = {
             method: 'POST',
-            body: formdata,
-            redirect: 'follow',
-            headers: {
-                'Authorization': 'Bearer ' + data,
-            }
+            url: Global.API_BASE_URL + 'update-driver-lat-long',
+            data: JSON.stringify({ 'driver_id': id, 'latitude': latitude, 'longitude': longitude }),
+            headers: { 'Content-Type': 'application/json' },
+            json: true,
         };
-        console.log('updateUserTokenProfilex', JSON.stringify(requestOptions))
-        fetch(Global.API_BASE_URL + 'update-driver-fcm', requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                if (result.status) {
-                    console.log('updateUserTokenProfile', result?.message);
+        axios(authOptions)
+            .then((response) => {
+                if (response.data?.status) {
+                    console.log(JSON.stringify(response.data?.message));
+                    navigation.replace('HomeScreen');
+                    //         console.log('addEventListener1', JSON.parse(valueXX));
                 } else {
-                    console.log('error', JSON.stringify(result));
+                    console.log('location status update fails' + JSON.stringify(response.data));
                 }
             })
             .catch((error) => {
-                console.log('error', error);
+                console.log(error);
             });
     }
 
-    const updateTokenProfile = async () => {
-        const valueX = await AsyncStorage.getItem('@autoUserGroup');
-        const value = await AsyncStorage.getItem('@tokenKey');
-        let data = JSON.parse(valueX)?.token;
-        console.log('updateUserTokenProfilex', value);
-        var formdata = new FormData();
-        formdata.append('token', value);
-        var requestOptions = {
-            method: 'POST',
-            body: formdata,
-            redirect: 'follow',
-            headers: {
-                'Authorization': 'Bearer ' + data,
-            }
-        };
-        fetch(Global.API_BASE_URL + 'update-user-fcm', requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                console.log('uploadProfileX', result);
-                if (result.status) {
-                    console.log('updateDriverTokenProfilex', result?.message);
-                } else {
-                    console.log('updateDriverTokenProfilex', result?.message);
+    const messageListener = async () => {
+        // Assume a message-notification contains a "type" property in the data payload of the screen to open
+        messaging().onNotificationOpenedApp(remoteMessage => {
+            console.log(
+                'Notification caused app to open from background state:',
+                remoteMessage.notification,
+            );
+            navigation.navigate('NotificationCenterScreen', remoteMessage);
+        });
+        // Quiet and Background State -> Check whether an initial notification is available
+        messaging()
+            .getInitialNotification()
+            .then(remoteMessage => {
+                if (remoteMessage) {
+                    console.log(
+                        'Notification caused app to open from quit state:',
+                        remoteMessage.notification,
+                    );
                 }
             })
-            .catch((error) => {
-                console.log('error', error);
-            });
+            .catch(error => console.log('failed', error));
+
+        // Foreground State
+        messaging().onMessage(async remoteMessage => {
+            console.log('foreground', remoteMessage);
+            if (remoteMessage?.notification?.title === 'Dear user your trip has been completed.') {
+                clearTripDataAndMoveToEndTrip(remoteMessage);
+                onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
+            } else {
+                onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
+            }
+        });
     }
+
+    async function onDisplayNotificationx(chids, title, body) {
+        // Request permissions (required for iOS)
+        if (Platform.OS === 'ios') {
+            await notifee.requestPermission()
+        }
+
+        // Create a channel (required for Android)
+        const channelId = await notifee.createChannel({
+            id: chids,
+            name: 'parihara_' + chids,
+            sound: 'default',
+            importance: AndroidImportance.HIGH,
+            badge: true,
+            vibration: true,
+            vibrationPattern: [300, 700],
+            lights: true,
+            lightColor: AndroidColor.RED,
+        });
+
+        // Display a notification
+        await notifee.displayNotification({
+            title: title,
+            body: body,
+            android: {
+                channelId,
+                smallIcon: 'ic_stat_directions', // optional, defaults to 'ic_launcher'.
+                color: '#9c27b0',
+                category: AndroidCategory.MESSAGE,
+                badgeIconType: AndroidBadgeIconType.SMALL,
+                importance: AndroidImportance.HIGH,
+                visibility: AndroidVisibility.PUBLIC,
+                vibrationPattern: [300, 700],
+                ongoing: true,
+                lights: [AndroidColor.RED, 300, 600],
+                // pressAction is needed if you want the notification to open the app when pressed
+                pressAction: {
+                    id: 'default',
+                },
+            },
+        });
+    }
+
+    const clearTripDataAndMoveToEndTrip = (info) => {
+        // clear trip Data
+        Alert.alert(
+            'Trip End',
+            'Please give your valuable feedback for your ride and Driver.',
+            [
+                { text: 'No', onPress: () => navigation.replace('UserBottomNavigation') },
+                { text: 'Yes', onPress: () => removeItemValue('@saveTripDetails', info) },
+            ]
+        );
+    }
+
+    const removeItemValue = async (key, info) => {
+        try {
+            await AsyncStorage.removeItem(key);
+            navigation.replace('RatingAndReviewScreen', info)
+            console.log('DataDeleted');
+            return true;
+        }
+        catch (exception) {
+            console.log('ErrorDataDeleted');
+            return false;
+        }
+    }
+
+    // const updateDriverTokenProfile = async () => {
+    //     const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+    //     const value = await AsyncStorage.getItem('@tokenKey');
+    //     let data = JSON.parse(valueX)?.id;
+    //     var formdata = new FormData();
+    //     formdata.append('driver_id', data);
+    //     formdata.append('token', value);
+    //     var requestOptions = {
+    //         method: 'POST',
+    //         body: formdata,
+    //         redirect: 'follow',
+    //         headers: {
+    //             'Authorization': 'Bearer ' + data,
+    //         }
+    //     };
+    //     console.log('updateUserTokenProfilex', JSON.stringify(requestOptions))
+    //     fetch(Global.API_BASE_URL + 'update-driver-fcm', requestOptions)
+    //         .then(response => response.json())
+    //         .then(result => {
+    //             if (result.status) {
+    //                 console.log('updateUserTokenProfile', result?.message);
+    //             } else {
+    //                 console.log('error', JSON.stringify(result));
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             console.log('error', error);
+    //         });
+    // }
+
+    // const updateTokenProfile = async () => {
+    //     const valueX = await AsyncStorage.getItem('@autoUserGroup');
+    //     const value = await AsyncStorage.getItem('@tokenKey');
+    //     let data = JSON.parse(valueX)?.token;
+    //     console.log('updateUserTokenProfilex', value);
+    //     var formdata = new FormData();
+    //     formdata.append('token', value);
+    //     var requestOptions = {
+    //         method: 'POST',
+    //         body: formdata,
+    //         redirect: 'follow',
+    //         headers: {
+    //             'Authorization': 'Bearer ' + data,
+    //         }
+    //     };
+    //     fetch(Global.API_BASE_URL + 'update-user-fcm', requestOptions)
+    //         .then(response => response.json())
+    //         .then(result => {
+    //             console.log('uploadProfileX', result);
+    //             if (result.status) {
+    //                 console.log('updateDriverTokenProfilex', result?.message);
+    //             } else {
+    //                 console.log('updateDriverTokenProfilex', result?.message);
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             console.log('error', error);
+    //         });
+    // }
+
+    const getCurrentAddress = (currentLatitude, currentLongitude) => {
+        fetch(
+            'https://maps.googleapis.com/maps/api/geocode/json?address=' +
+            currentLatitude +
+            ',' +
+            currentLongitude +
+            '&key=' +
+            Global.GOOGLE_MAPS_APIKEY_V2,
+        )
+            .then(response => response.json())
+            .then(responseJson => {
+                // console.log('Address Location', JSON.stringify(responseJson));
+                loadSessionStorage(currentLatitude, currentLongitude);
+                setAddressFieldAutoPopulate(responseJson);
+            });
+    };
+
+    const setAddressFieldAutoPopulate = responseJson => {
+        let getAddressInfo = responseJson.results[0].formatted_address;
+        let addressLength = getAddressInfo.split(',');
+        let count = addressLength.length;
+        let postcode = '';
+        let address = '';
+        let country = addressLength[count - 1];
+        let state = addressLength[count - 2];
+        let city = addressLength[count - 3];
+
+        let formattedAddress = responseJson.results[0].formatted_address;
+        let formattedAddressLength = formattedAddress.split(',');
+        if (formattedAddressLength.length > 3) {
+            for (let i = 0; i < count - 3; i++) {
+                address += addressLength[i] + ',';
+            }
+        } else {
+            address = '';
+        }
+        var pos = address.lastIndexOf(','),
+            withoutComma = '';
+        address = address.slice(0, pos) + withoutComma + address.slice(pos + 1);
+
+        for (const component of responseJson.results[1].address_components) {
+            // @ts-ignore remove once typings fixed
+            const componentType = component;
+
+            switch (componentType.types[0]) {
+                case 'postal_code': {
+                    postcode = component.long_name;
+                    break;
+                }
+
+                case 'locality': {
+                    city = component.long_name;
+                    break;
+                }
+
+                case 'administrative_area_level_1': {
+                    state = component.long_name;
+                    break;
+                }
+
+                case 'country': {
+                    country = component.long_name;
+                    break;
+                }
+            }
+        }
+
+        console.log('Info_location', JSON.stringify(address));
+        // check city Validation
+        // city = cityValidationCondition(city);
+
+        // if (!this.cityExists(city)) {
+        //   console.log(resources.strings.cityCannotBeDelivered);
+        //   return false;
+        // } else if (this.postalCodeExists(postcode)) {
+        //   console.log(resources.strings.postalCodeCannotBeDelivered);
+        //   return false;
+        // } else {
+        //   const locationInfo = {
+        //     address: address,
+        //     addressLine2: address,
+        //     city: city,
+        //     state: state,
+        //     postalCode: postcode,
+        //     addressDetails: responseJson,
+        //     mapFlag: true,
+        //   }
+        // }
+    };
+
+    const getOneTimeLocation = () => {
+        console.log('Getting Location. Please Wait.');
+        Geolocation.getCurrentPosition(
+            //Will give you the current location
+            position => {
+                //getting the Longitude from the location json
+                const currentLongitude = JSON.stringify(position.coords.longitude);
+
+                //getting the Latitude from the location json
+                const currentLatitude = JSON.stringify(position.coords.latitude);
+
+                var region = {
+                    latitudeDelta,
+                    longitudeDelta,
+                    latitude: parseFloat(currentLatitude),
+                    longitude: parseFloat(currentLongitude),
+                };
+                console.log('getOneTimeLocation', JSON.stringify(region));
+                // this.setState({
+                //   showLoading: false,
+                //   region: region,
+                //   forceRefresh: Math.floor(Math.random() * 100),
+                // });
+                getCurrentAddress(currentLatitude, currentLongitude);
+            },
+            error => {
+                console.log('We are not able to find you location, Please Enter Manually');
+                RNRestart.restart();
+                // console.log('error.message', error.message);
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 10000,
+            },
+        );
+    };
+
+    const cityValidationCondition = city => {
+        if (city.includes('Bangalore') || city.includes('Bengaluru')) {
+            return 'Bangalore';
+        } else if (city.includes('Delhi') || city.includes('New Delhi')) {
+            return 'Delhi';
+        } else if (city.includes('Gurgaon') || city.includes('Gurugram')) {
+            return 'Gurgaon';
+        } else if (city.includes('Bombay') || city.includes('Mumbai')) {
+            return 'Mumbai';
+        } else if (
+            city.includes('Gautam Buddh Nagar') ||
+            city.includes('Greater Noida')
+        ) {
+            return 'Noida';
+        } else if (city.includes('Hyderabad') || city.includes('Secunderabad')) {
+            return 'Hyderabad';
+        } else {
+            return city;
+        }
+    };
 
     React.useEffect(() => {
         const backAction = () => {
@@ -182,19 +478,6 @@ const SplashAppScreen = () => {
     return (
         <View style={{ flex: 1, backgroundColor: '#000' }}>
             <ActivityIndicator style={{ position: 'absolute', alignItems: 'center', bottom: 160, alignSelf: 'center' }} color={'#FAD323'} size={'large'} />
-            {/* <AnimetedImage
-                resizeMode="repeat"
-                style={[styless.background, {
-                    transform: [
-                        {
-                            translateX: translateAnimation,
-                        },
-                        {
-                            translateY: translateAnimation,
-                        },
-                    ],
-                }]}
-                source={backgroundImage} /> */}
             <View style={{ marginTop: Dimensions.get('screen').height / 6, alignItems: 'center' }}>
                 <Image style={{ height: 250, width: 250, resizeMode: 'contain' }} source={require('../../assets/ic_launcher_round.jpg')} />
                 <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 11 }} >Go Driving</Text>

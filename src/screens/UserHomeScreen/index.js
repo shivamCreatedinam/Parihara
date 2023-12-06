@@ -14,9 +14,7 @@ import {
     Dimensions,
     TouchableOpacity,
     FlatList,
-    DeviceEventEmitter,
-    NativeAppEventEmitter,
-    Image
+    Image,
 } from 'react-native';
 import axios from 'axios';
 import globle from '../../../common/env';
@@ -32,6 +30,9 @@ import { showMessage } from "react-native-flash-message";
 import notifee, { AndroidImportance, AndroidBadgeIconType, AndroidVisibility, AndroidColor, AndroidCategory } from '@notifee/react-native';
 import Global from '../../../common/env';
 import Toast from 'react-native-toast-message';
+// change language 
+const coorg = require('../../../common/coorg.json');
+const eng = require('../../../common/eng.json');
 
 const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
 
@@ -42,8 +43,8 @@ const taskRandom = async taskData => {
     }
 }
 
-const UserHomeScreen = () => {
 
+const UserHomeScreen = () => {
 
     const permModal = React.useRef();
     const navigate = useNavigation();
@@ -54,6 +55,22 @@ const UserHomeScreen = () => {
     const [PreviousTripData, setPreviousTripData] = React.useState(null);
     const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
     const [location, setLocation] = React.useState({ latitude: 60.1098678, longitude: 24.7385084, });
+    const [selectedLanguage, setSelectedLanguage] = React.useState(null);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            getLanguageStatus();
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
+
+    const getLanguageStatus = async () => {
+        const valueX = await AsyncStorage.getItem('@appLanguage');
+        setSelectedLanguage(valueX);
+        console.log('getLanguageStatus', valueX);
+    }
 
     const handleLocationPermission = async () => {
         console.warn('Location perrmission handleLocationPermission.');
@@ -95,7 +112,7 @@ const UserHomeScreen = () => {
                 setVisible(true);
             }
             if (!BackgroundJob.isRunning()) {
-                onDisplayNotification();
+                // onDisplayNotification();
             }
         }, [visible])
     );
@@ -144,19 +161,20 @@ const UserHomeScreen = () => {
 
     const onPressPreviousTrip = () => {
         if (isPreviousTrip) {
-            navigate.replace('MapComponent', PreviousTripData);
+            navigate.replace('DriverTrackToMapsScreen', PreviousTripData);
         }
     }
 
     const onDisplayNotification = async () => {
-        try {
-            console.log('start background job');
-            await BackgroundJob.start(veryIntensiveTask, options);
-            await BackgroundJob.updateNotification({ veryIntensiveTask: 'New ExampleTask description' });
-            console.log('successfully run');
-        } catch (ex) {
-            console.log(ex)
-        }
+        // try {
+        //     console.log('start background job');
+        //     await BackgroundJob.start(veryIntensiveTask, options);
+        //     await BackgroundJob.updateNotification({ veryIntensiveTask: 'New ExampleTask description' });
+        //     console.log('successfully run');
+        // } catch (ex) {
+        //     console.log(ex)
+        // }
+        navigate.navigate('TripHistoryScreen');
     }
 
     // const requestLocationPermission = async () => {
@@ -364,8 +382,8 @@ const UserHomeScreen = () => {
 
         // Create a channel (required for Android)
         const channelId = await notifee.createChannel({
-            id: 'default1',
-            name: 'Default Channel1',
+            id: 'default122',
+            name: 'DefaultChannel122',
             sound: 'default',
             importance: AndroidImportance.HIGH,
             badge: true,
@@ -376,13 +394,12 @@ const UserHomeScreen = () => {
         });
 
         // Display a notification
-        // Display a notification
         await notifee.displayNotification({
             title: 'Notification Title',
             body: 'Main body content of the notification',
             android: {
                 channelId,
-                smallIcon: 'ic_small_icon', // optional, defaults to 'ic_launcher'.
+                smallIcon: 'ic_stat_directions', // optional, defaults to 'ic_launcher'.
                 color: '#9c27b0',
                 category: AndroidCategory.CALL,
                 badgeIconType: AndroidBadgeIconType.SMALL,
@@ -455,7 +472,7 @@ const UserHomeScreen = () => {
         <View style={{ flex: 1, marginTop: 25, backgroundColor: '#000' }}>
             <View style={{ padding: 0, backgroundColor: '#000', height: Dimensions.get('screen').height }}>
                 <ImageBackground source={require('../../assets/logo_main.gif')} style={{ height: 300, marginLeft: 0, top: -15, paddingLeft: 30, paddingTop: 40 }}>
-                    <Text style={{ marginLeft: 21, fontSize: 13, color: '#b3b3b3', marginBottom: -20 }}>Feels Like</Text>
+                    <Text style={{ marginLeft: 21, fontSize: 13, color: '#b3b3b3', marginBottom: -20 }}>{selectedLanguage === 'Coorg' ? coorg.crg.feels_like : eng.en.feels_like}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Image style={{ width: 80, height: 80, resizeMode: 'contain', tintColor: 'white' }} source={require('../../assets/weather_icon.png')} />
                         <Text style={{ fontSize: 24, marginLeft: -15, color: 'white' }}>24°c</Text>
@@ -487,15 +504,15 @@ const UserHomeScreen = () => {
                         </View>
                     </View> */}
                     <TouchableOpacity onPress={() => startTrip()} style={{ marginTop: 5, width: '100%', height: 50 }}>
-                        <Text style={{ height: 50, borderRadius: 50, borderWidth: 1, borderColor: '#F1F6F9', paddingLeft: 20, backgroundColor: '#F1F6F9', elevation: 3, paddingTop: 15, fontWeight: 'bold' }}>Where are you going?</Text>
+                        <Text style={{ height: 50, borderRadius: 50, borderWidth: 1, borderColor: '#F1F6F9', paddingLeft: 20, backgroundColor: '#F1F6F9', elevation: 3, paddingTop: 15, fontWeight: 'bold' }}>{selectedLanguage === 'Coorg' ? coorg.crg.where_are_you_going : eng.en.where_are_you_going}</Text>
                         <View style={{ position: 'absolute', right: 10, top: 15 }}>
                             <Image style={{ width: 20, height: 20, resizeMode: 'contain', }} source={require('../../assets/next.png')} />
                         </View>
                     </TouchableOpacity>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
-                        <Text style={{ flex: 1, color: '#000', fontWeight: 'bold', }}>Your last trip</Text>
+                        <Text style={{ flex: 1, color: '#000', fontWeight: 'bold', }}>{selectedLanguage === 'Coorg' ? coorg.crg.your_last_trip : eng.en.your_last_trip}</Text>
                         <TouchableOpacity style={{}} onPress={() => onDisplayNotification()}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>View All</Text>
+                            <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>{selectedLanguage === 'Coorg' ? coorg.crg.view_all : eng.en.view_all}</Text>
                         </TouchableOpacity>
                     </View>
                     <View>
@@ -508,7 +525,7 @@ const UserHomeScreen = () => {
                             />
                             : <View style={{ alignItems: 'center', marginTop: 20 }}>
                                 <Image style={{ width: 200, height: 200, resizeMode: 'cover', }} source={require('../../assets/search_result_not_found.png')} />
-                                <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>No Trip Found</Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>{selectedLanguage === 'Coorg' ? coorg.crg.no_trip_nound : eng.en.no_trip_nound}</Text>
                             </View>}
                     </View>
                 </View>

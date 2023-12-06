@@ -21,6 +21,7 @@ import auth from '@react-native-firebase/auth';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
+import globle from '../../../common/env';
 import Modal from 'react-native-modal';
 
 const RegisterDriverTwoScreen = () => {
@@ -337,7 +338,7 @@ const RegisterDriverTwoScreen = () => {
             redirect: 'follow'
         };
 
-        fetch('https://createdinam.in/Parihara/public/api/driver-signup', requestOptions)
+        fetch(globle.API_BASE_URL + 'driver-signup', requestOptions)
             .then(response => response.json())
             .then(result => {
                 console.log('uploadProfile', result)
@@ -378,8 +379,8 @@ const RegisterDriverTwoScreen = () => {
         <View style={{ padding: 20, flex: 1, marginTop: 20 }}>
             <View style={{ elevation: 5, flex: 1, padding: 20, backgroundColor: '#FFEEBB', borderRadius: 10, marginBottom: 40 }}>
                 <TouchableOpacity style={{ padding: 20 }} onPress={() => uplodProfilePhotoCard()}>
-                    {uploadProfile !== null ? <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 75, marginBottom: 20, borderRadius: 150 }} source={{ uri: uploadProfile }} /> :
-                        <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 75, marginBottom: 20, borderRadius: 150 }} source={require('../../assets/profile_man.png')} />}
+                    {uploadProfile !== null ? <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 5, marginBottom: 20, borderRadius: 150 }} source={{ uri: uploadProfile }} /> :
+                        <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 5, marginBottom: 20, borderRadius: 150 }} source={require('../../assets/profile_man.png')} />}
                     <View style={{ position: 'absolute', right: 0 }}>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </View>
@@ -404,15 +405,15 @@ const RegisterDriverTwoScreen = () => {
                     </TouchableOpacity>
                 </View>
                 <View style={{ marginTop: 25 }}>
-                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Aadhar Front</Text>
-                    <TextInput placeholder='Upload Aadhar Front' defaultValue={AadharFront} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
+                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Vehicle Registration Certificate (VRC)</Text>
+                    <TextInput placeholder='Vehicle Registration Certificate (VRC)' defaultValue={AadharFront} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
                     <TouchableOpacity onPress={() => uplodAadharFrontCard()} style={{ position: 'absolute', right: 15, top: 15 }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ marginTop: 25 }}>
-                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Aadhar Back</Text>
-                    <TextInput placeholder='Upload Aadhar Back' defaultValue={AadharBack} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
+                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Vehicle Insurance</Text>
+                    <TextInput placeholder='Vehicle Insurance' defaultValue={AadharBack} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
                     <TouchableOpacity onPress={() => uplodAadharBackCard()} style={{ position: 'absolute', right: 15, top: 15 }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </TouchableOpacity>

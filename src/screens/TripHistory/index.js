@@ -1,64 +1,99 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * https://www.google.com/maps/dir/Noida,+Uttar+Pradesh/Gurugram,+Haryana/@28.5563204,77.0362189,11z/data=!3m1!4b1!4m13!4m12!1m5!1m1!1s0x390ce5a43173357b:0x37ffce30c87cc03f!2m2!1d77.3910265!2d28.5355161!1m5!1m1!1s0x390d19d582e38859:0x2cf5fe8e5c64b1e!2m2!1d77.0266383!2d28.4594965?entry=ttu
- * @format
- */
-
-
 import React from 'react';
-import {
-    View,
-    TouchableOpacity,
-    Text,
-    FlatList,
-    Image,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import styles from './styles';
+import axios from 'axios';
+import globle from '../../../common/env';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Text, View, TouchableOpacity, Image, FlatList, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-const TripHistoryScreen = () => {
+const BookingTripHistoryScreen = () => {
 
     const navigate = useNavigation();
-    const [historyData, setHistoryData] = React.useState([{ id: 1, name: 'Prashant Verma' }, { id: 2, name: 'Prashant Verma' }, { id: 3, name: 'Prashant Verma' }, { id: 4, name: 'Prashant Verma' }, { id: 5, name: 'Prashant Verma' }, { id: 6, name: 'Prashant Verma' }]);
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
+    const [UserId, setUserId] = React.useState(null);
+    const [package_id, setPackageId] = React.useState(null);
+    const [isLinkTrue, setLinkTrue] = React.useState(false);
 
-    React.useEffect(() => {
-        // AppState.addEventListener('change', _handleAppStateChange);
-        return () => {
-            // console.log('addEventListener');
+    useFocusEffect(
+        React.useCallback(() => {
+            loadProfile();
+            console.log(globle.API_BASE_URL + 'place_order?package_id=')
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
+
+    const loadProfile = async () => {
+        setLoading(true)
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let id = JSON.parse(valueX)?.id;
+        setUserId(id)
+        console.log('loadProfile', JSON.stringify(valueX));
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: globle.API_BASE_URL + 'user-trip-list',
+            headers: {
+                'Authorization': 'Bearer ' + data
+            }
         };
-    }, [false]);
+        console.log('Profile', config);
+        axios.request(config)
+            .then((response) => {
+                setLoading(false)
+                console.log(JSON.stringify(response?.data?.data));
+                setData(response?.data?.data);
+            })
+            .catch((error) => {
+                setLoading(false)
+                console.log(error);
+            });
+    }
 
-    const renderHistoryView = () => {
-        return <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', padding: 10, borderBottomColor: 'grey', borderBottomWidth: 0.5, }}>
-            <View style={{ width: 60, height: 60, backgroundColor: '#F5F5F5', borderRadius: 150, marginRight: 10 }}>
-                <Image style={{ width: 25, height: 25, alignSelf: 'center', marginTop: 15, marginLeft: 5, elevation: 5 }} source={require('../../assets/map_pointer.png')} />
+    const renderItems = (info) => {
+
+        return (
+            <View style={{ padding: 15, backgroundColor: info?.item?.payment_status === 'Success' ? '#D16666' : '#04724D', margin: 10, borderRadius: 10, elevation: 5 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flex: 1, marginBottom: 5, marginTop: 6 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 14, marginLeft: 10, color: 'white', marginBottom: 10 }}>Date {info?.item?.created_date}</Text>
+                        </View>
+                        <Text style={{ fontWeight: 'bold', fontSize: 14, marginLeft: 10, color: 'white', textTransform: 'capitalize' }}>PayBy: {info?.item?.trip_type}</Text>
+                    </View>
+                    <Text style={{ fontWeight: 'bold', fontSize: 16, marginLeft: 10, color: 'white' }}>{info?.item?.distance}Km</Text>
+                </View>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 16, marginLeft: 10, color: 'white', textAlign: 'center' }}>{info?.item?.to_address}</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 16, marginLeft: 10, color: 'white', textAlign: 'center' }}>{'To'}</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 16, marginLeft: 10, color: 'white', textAlign: 'center' }}>{info?.item?.from_address}</Text>
+                </View>
+                <Text style={{ fontWeight: 'bold', fontSize: 16, marginLeft: 10, color: 'white', marginTop: 10 }}>Trip End</Text>
             </View>
-            <View>
-                <Text style={{ fontWeight: 'bold' }}>Pragati Maidan</Text>
-                <Text style={{}} >Pragati Maidan, New Delhi, Delhi 110001</Text>
-            </View>
-        </TouchableOpacity>
+        )
     }
 
     return (
-        <View style={styles.container}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 35, padding: 15, borderBottomWidth: 1, borderColor: 'grey' }}>
-                <TouchableOpacity onPress={() => navigate.goBack()} style={{ padding: 5 }}>
-                    <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/left_icon.png')} />
-                </TouchableOpacity>
-                <Text style={{ flex: 1, textAlign: 'center', color: '#000000', fontWeight: 'bold' }}>Trip History</Text>
-            </View>
-            <View>
-                <FlatList
-                    data={historyData}
-                    keyExtractor={(e) => e.id}
-                    renderItem={(items) => renderHistoryView(items)}
-                />
+        <View style={{ flex: 1 }}>
+            <View style={{ marginTop: 15, padding: 20, flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', borderBottomColor: 'grey', borderBottomWidth: 1, padding: 15 }}>
+                    <TouchableOpacity onPress={() => navigate.goBack()} style={{ padding: 2, zIndex: 999 }}>
+                        <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/left_icon.png')} />
+                    </TouchableOpacity>
+                    <Text style={{ textAlign: 'center', flex: 1, marginLeft: -20, fontWeight: 'bold', fontSize: 15 }}>Booking History</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                    <FlatList
+                        data={data}
+                        keyExtractor={(ed) => ed.id}
+                        renderItem={(items) => renderItems(items)}
+                    />
+                </View>
             </View>
         </View>
-    );
-};
+    )
+}
 
-export default TripHistoryScreen;
+export default BookingTripHistoryScreen;

@@ -8,6 +8,7 @@ import App from './App';
 import { name as appName } from './app.json';
 import { firebase } from '@react-native-firebase/database';
 import { enableLatestRenderer } from 'react-native-maps';
+import RNOtpVerify from 'react-native-otp-verify';
 const Urls = require('./urls.json');
 
 enableLatestRenderer();
@@ -23,6 +24,10 @@ let config = {
 if (true) {
     firebase.initializeApp(config);
 }
+
+RNOtpVerify.getHash()
+    .then(console.log)
+    .catch(console.log);
 
 LogBox.ignoreAllLogs(true);
 // Register the service

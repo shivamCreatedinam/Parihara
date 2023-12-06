@@ -5,6 +5,12 @@ import globle from './env';
 
 const AddressPickup = ({ placheholderText, fetchAddress }) => {
 
+    const ref = React.useRef();
+
+    React.useEffect(() => {
+        ref.current?.setAddressText('');
+      }, [fetchAddress]);
+
     const onPressAddress = (data, details) => {
         // console.log("details==>>>>", details)
         let resLength = details.address_components
@@ -45,6 +51,7 @@ const AddressPickup = ({ placheholderText, fetchAddress }) => {
     return (
         <View style={styles.container}>
             <GooglePlacesAutocomplete
+                ref={ref}
                 placeholder={placheholderText}
                 minLength={2}
                 autoFocus={false}
@@ -55,6 +62,7 @@ const AddressPickup = ({ placheholderText, fetchAddress }) => {
                 query={{
                     key: globle.GOOGLE_MAPS_APIKEY_V2,
                     language: 'en',
+                    components: 'country:ind',
                 }}
                 enableHighAccuracyLocation={true}
                 currentLocation={true}
@@ -63,6 +71,16 @@ const AddressPickup = ({ placheholderText, fetchAddress }) => {
                     textInputContainer: styles.containerStyle,
                     textInput: styles.textInputStyle,
                 }}
+                nearbyPlacesAPI="GooglePlacesSearch"
+                GooglePlacesSearchQuery={{
+                    rankby: 'distance',
+                    types: 'building',
+                }}
+                filterReverseGeocodingByTypes={[
+                    'locality',
+                    'administrative_area_level_3',
+                ]}
+                debounce={200}
             />
         </View>
     );

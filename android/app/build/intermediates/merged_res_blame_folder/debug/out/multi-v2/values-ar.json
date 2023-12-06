@@ -1,8 +1,25 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-ar/values-ar.xml",
+            "outputFile": "com.mapilocator.app-mergeDebugResources-52:/values-ar/values-ar.xml",
             "map": [
+                {
+                    "source": "/Users/apple/.gradle/caches/transforms-3/51523299b862454926548e78f123f226/transformed/jetified-play-services-wallet-18.1.3/res/values-ar/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "202",
+                        "endColumns": "72",
+                        "endOffsets": "274"
+                    },
+                    "to": {
+                        "startLines": "123",
+                        "startColumns": "4",
+                        "startOffsets": "10746",
+                        "endColumns": "76",
+                        "endOffsets": "10818"
+                    }
+                },
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/dbeb72a4bccfecf0875df07f00e5d44c/transformed/material-1.9.0/res/values-ar/values-ar.xml",
                     "from": {
@@ -57,6 +74,23 @@
                     }
                 },
                 {
+                    "source": "/Users/apple/.gradle/caches/transforms-3/15a57b7be4a044055cfebf45f345142e/transformed/jetified-play-services-basement-18.2.0/res/values-ar/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "125",
+                        "endOffsets": "320"
+                    },
+                    "to": {
+                        "startLines": "53",
+                        "startColumns": "4",
+                        "startOffsets": "4833",
+                        "endColumns": "129",
+                        "endOffsets": "4958"
+                    }
+                },
+                {
                     "source": "/Users/apple/.gradle/caches/transforms-3/fc3a2c9f8034c438b8aa8d751860061f/transformed/core-1.9.0/res/values-ar/values-ar.xml",
                     "from": {
                         "startLines": "2",
@@ -71,23 +105,6 @@
                         "startOffsets": "10645",
                         "endColumns": "100",
                         "endOffsets": "10741"
-                    }
-                },
-                {
-                    "source": "/Users/apple/.gradle/caches/transforms-3/b8b032a9f011549aa4242ce10998c5f2/transformed/jetified-play-services-basement-18.1.0/res/values-ar/values.xml",
-                    "from": {
-                        "startLines": "4",
-                        "startColumns": "0",
-                        "startOffsets": "195",
-                        "endColumns": "125",
-                        "endOffsets": "320"
-                    },
-                    "to": {
-                        "startLines": "53",
-                        "startColumns": "4",
-                        "startOffsets": "4833",
-                        "endColumns": "129",
-                        "endOffsets": "4958"
                     }
                 },
                 {

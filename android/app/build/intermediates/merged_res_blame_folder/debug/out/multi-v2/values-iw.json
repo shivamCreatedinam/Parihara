@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeDebugResources-49:/values-iw/values-iw.xml",
+            "outputFile": "com.mapilocator.app-mergeDebugResources-52:/values-iw/values-iw.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/dbeb72a4bccfecf0875df07f00e5d44c/transformed/material-1.9.0/res/values-iw/values-iw.xml",
@@ -74,6 +74,23 @@
                     }
                 },
                 {
+                    "source": "/Users/apple/.gradle/caches/transforms-3/15a57b7be4a044055cfebf45f345142e/transformed/jetified-play-services-basement-18.2.0/res/values-iw/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "113",
+                        "endOffsets": "308"
+                    },
+                    "to": {
+                        "startLines": "51",
+                        "startColumns": "4",
+                        "startOffsets": "4741",
+                        "endColumns": "117",
+                        "endOffsets": "4854"
+                    }
+                },
+                {
                     "source": "/Users/apple/.gradle/caches/transforms-3/269c9f868e782062e0af1d1dc0411f28/transformed/jetified-play-services-base-18.1.0/res/values-iw/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
@@ -91,20 +108,20 @@
                     }
                 },
                 {
-                    "source": "/Users/apple/.gradle/caches/transforms-3/b8b032a9f011549aa4242ce10998c5f2/transformed/jetified-play-services-basement-18.1.0/res/values-iw/values.xml",
+                    "source": "/Users/apple/.gradle/caches/transforms-3/51523299b862454926548e78f123f226/transformed/jetified-play-services-wallet-18.1.3/res/values-iw/values.xml",
                     "from": {
                         "startLines": "4",
                         "startColumns": "0",
-                        "startOffsets": "195",
-                        "endColumns": "113",
-                        "endOffsets": "308"
+                        "startOffsets": "202",
+                        "endColumns": "71",
+                        "endOffsets": "273"
                     },
                     "to": {
-                        "startLines": "51",
+                        "startLines": "121",
                         "startColumns": "4",
-                        "startOffsets": "4741",
-                        "endColumns": "117",
-                        "endOffsets": "4854"
+                        "startOffsets": "10459",
+                        "endColumns": "75",
+                        "endOffsets": "10530"
                     }
                 }
             ]

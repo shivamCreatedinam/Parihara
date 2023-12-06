@@ -6,6 +6,8 @@ import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
+import com.ocetnik.timer.BackgroundTimerPackage;
+import com.razorpay.rn.RazorpayPackage;
 import io.xogus.reactnative.versioncheck.RNVersionCheckPackage;  // <--- HERE
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;

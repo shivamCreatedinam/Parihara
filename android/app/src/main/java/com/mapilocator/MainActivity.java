@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.util.Log;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
+import com.otplessreactnative.OtplessReactNativeManager;
+import android.content.Intent;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
@@ -16,6 +18,7 @@ public class MainActivity extends ReactActivity {
    * Returns the name of the main component registered from JavaScript. This is used to schedule
    * rendering of the component.
    */
+
   @Override
   protected String getMainComponentName() {
     return "MapiLocator";
@@ -33,12 +36,21 @@ public class MainActivity extends ReactActivity {
     super.onNewIntent(intent);
     isOnNewIntent = true;
     ForegroundEmitter();
+    OtplessReactNativeManager.INSTANCE.onNewIntent(intent);
+  }
+
+  @Override
+  public void onBackPressed() {
+    if (OtplessReactNativeManager.INSTANCE.onBackPressed()) return;
+    super.onBackPressed();
   }
 
   @Override
   protected void onStart() {
     super.onStart();
-    if(isOnNewIntent == true){}else {
+    if(isOnNewIntent == true){
+
+    }else {
       ForegroundEmitter();
     }
   }
@@ -73,5 +85,20 @@ public class MainActivity extends ReactActivity {
         // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
         DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
         );
+  }
+
+  @Override
+  public int checkPermission(String s, int i, int i1) {
+    return 0;
+  }
+
+  @Override
+  public int checkSelfPermission(String s) {
+    return 0;
+  }
+
+  @Override
+  public boolean shouldShowRequestPermissionRationale(String s) {
+    return false;
   }
 }

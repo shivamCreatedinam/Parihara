@@ -26,6 +26,10 @@ import BackgroundJob from 'react-native-background-actions';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import Dialog, { SlideAnimation, DialogTitle, DialogContent, DialogFooter, DialogButton, } from 'react-native-popup-dialog';
+import notifee, { AndroidImportance, AndroidBadgeIconType, AndroidVisibility, AndroidColor, AndroidCategory } from '@notifee/react-native';
+// change language 
+const coorg = require('../../../common/coorg.json');
+const eng = require('../../../common/eng.json');
 //import all the components we are going to use.
 import Geolocation from '@react-native-community/geolocation';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -33,25 +37,6 @@ import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
 import messaging from '@react-native-firebase/messaging';
-import { getPreciseDistance } from 'geolib';
-
-
-const options = {
-    taskName: 'Example',
-    taskTitle: 'ExampleTask title',
-    taskDesc: 'ExampleTask description',
-    taskIcon: {
-        name: 'ic_launcher',
-        type: 'mipmap',
-    },
-    color: '#ff00ff',
-    linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
-    parameters: {
-        delay: 1000,
-    },
-};
-
-const propertyData = [{ id: 1 }];
 
 const HomeScreen = () => {
 
@@ -61,7 +46,7 @@ const HomeScreen = () => {
     const [searchText, setSearchText] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [visible, setVisible] = React.useState(true);
-    let [driverData, setDriverData] = React.useState(false);
+    const [driverData, setDriverData] = React.useState(false);
     const [dutyStatus, setDutyStatus] = React.useState('Off');
     const [appState, setAppState] = React.useState(AppState.currentState);
     const [driver_activated, setDriverActivated] = React.useState(false);
@@ -69,7 +54,24 @@ const HomeScreen = () => {
     const [Destinationstate, setDestinationState] = React.useState({ destinationCords: {} });
     const [location, setLocation] = React.useState({ latitude: 60.1098678, longitude: 24.7385084, });
     const [Pickupstate, setPickupState] = React.useState({ pickupCords: {} });
+    const [Latest_address, setLatestAddress] = React.useState(null);
     const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
+    const [selectedLanguage, setSelectedLanguage] = React.useState(null);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            getLanguageStatus();
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
+
+    const getLanguageStatus = async () => {
+        const valueX = await AsyncStorage.getItem('@appLanguage');
+        setSelectedLanguage(valueX);
+        console.log('getLanguageStatus', valueX);
+    }
 
     // You can do anything in your task such as network requests, timers and so on,
     // Watch for position updates 
@@ -104,52 +106,54 @@ const HomeScreen = () => {
         // Now you can start using background location.
     };
 
-    // as long as it doesn't touch UI. Once your task completes (i.e. the promise is resolved), 
-    const options = {
-        taskName: 'Example',
-        taskTitle: 'ExampleTask title',
-        taskDesc: 'ExampleTask description',
-        taskIcon: {
-            name: 'ic_launcher_round',
-            type: 'drawable',
-            package: 'com.mapilocator'
-        },
-        color: '#ff00ff',
-        linkingURI: 'yourSchemeHere://chat/jane', // Add this
-        parameters: {
-            delay: 50000,
-        },
+    // For example, in a button press handler or component lifecycle method.
+    const handleLocationPress = () => {
+        // checkAndRequestLocationPermission();
+        onDisplayNotificationx('trip_cancel', 'Driver Trip Cancel Request', 'Driver Trip Cancel Request Send. Please Wait!');
+        // Now you can start using background location.
     };
-    // React Native will go into "paused" mode (unless there are other tasks running,
-    const veryIntensiveTask = async (taskDataArguments) => {
-        // Example of an infinite loop task
-        const { delay } = taskDataArguments;
-        await new Promise(async (resolve) => {
-            for (let i = 0; BackgroundJob.isRunning(); i++) {
-                driverLocationUpdate();
-                await BackgroundJob.updateNotification({
-                    taskDesc: 'Location Tracking is running..',
-                    progressBar: 2,
-                })
-                await sleep(delay);
+
+    const requestPermission = async () => {
+        const checkPermission = await checkNotificationPermission();
+        if (checkPermission !== RESULTS.GRANTED) {
+            const request = await requestNotificationPermission();
+            if (request !== RESULTS.GRANTED) {
+                // permission not granted
             }
-        });
+        }
     };
+
+    const requestNotificationPermission = async () => {
+        const result = await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
+        return result;
+    };
+
+    const checkNotificationPermission = async () => {
+        const result = await check(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
+        return result;
+    };
+
+    // as long as it doesn't touch UI. Once your task completes (i.e. the promise is resolved),
+    // React Native will go into "paused" mode (unless there are other tasks running,
     // or there is a foreground app).
 
     useFocusEffect(
         React.useCallback(() => {
-            getUpcomingTrip();
+            // getUpcomingTrip();
+            checkPreviousTrip();
+            driverLocationUpdate();
             async function fetchData() {
                 permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
                 if (permissionCheck === RESULTS.GRANTED) {
                     if (!BackgroundJob.isRunning()) {
-                        onDisplayNotification();
+                        // onDisplayNotification();
                     }
+                    handleLocationButtonPress();
                     updateUserTokenProfile();
                     getProfileDriverData();
                     getProfileActiveStatus();
                     updateDriverLocation();
+                    requestPermission();
                     setVisible(false);
                 } else {
                     setVisible(true);
@@ -168,22 +172,68 @@ const HomeScreen = () => {
         // Foreground State
         messaging().onMessage(async remoteMessage => {
             console.log('foreground', remoteMessage);
+            onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
             let infoTrip_ = JSON.stringify(remoteMessage);
             AsyncStorage.setItem('@tripAddedKeys', infoTrip_);
-            console.log('trip_saved')
-            navigate.navigate('NotificationCenterScreen', remoteMessage)
-            // getUpcomingTrip();
+            console.log('trip_saved');
+            navigate.navigate('NotificationCenterScreen', remoteMessage);
         });
     }
 
-    const onDisplayNotification = async () => {
-        try {
-            console.log('start background job');
-            await BackgroundJob.start(veryIntensiveTask, options);
-            await BackgroundJob.updateNotification({ veryIntensiveTask: 'New ExampleTask description' });
-            console.log('successfully run');
-        } catch (ex) {
-            console.log(ex);
+    async function onDisplayNotificationx(chids, title, body) {
+        const info = {
+            chids: chids,
+            title: title,
+            body: body,
+        }
+        console.log('onDisplayNotification-><><><><>', info);
+        // Request permissions (required for iOS)
+        if (Platform.OS === 'ios') {
+            await notifee.requestPermission()
+        }
+
+        // Create a channel (required for Android)
+        const channelId = await notifee.createChannel({
+            id: chids,
+            name: 'parihara_' + chids,
+            sound: 'default',
+            importance: AndroidImportance.HIGH,
+            badge: true,
+            vibration: true,
+            vibrationPattern: [300, 700],
+            lights: true,
+            lightColor: AndroidColor.RED,
+        });
+
+        // Display a notification
+        await notifee.displayNotification({
+            title: title,
+            body: body,
+            android: {
+                channelId,
+                smallIcon: 'ic_stat_directions', // optional, defaults to 'ic_launcher'.
+                color: '#9c27b0',
+                category: AndroidCategory.MESSAGE,
+                badgeIconType: AndroidBadgeIconType.SMALL,
+                importance: AndroidImportance.HIGH,
+                visibility: AndroidVisibility.PUBLIC,
+                vibrationPattern: [300, 700],
+                ongoing: false,
+                lights: [AndroidColor.RED, 300, 600],
+                // pressAction is needed if you want the notification to open the app when pressed
+                pressAction: {
+                    id: 'default',
+                },
+            },
+        });
+    }
+
+    const checkPreviousTrip = async () => {
+        const valueX = await AsyncStorage.getItem('@tripAddedKeys');
+        if (valueX !== null) {
+            // console.log('checkPreviousTrip', JSON.stringify(valueX));
+        } else {
+            // console.log('checkPreviousTrip');
         }
     }
 
@@ -209,6 +259,8 @@ const HomeScreen = () => {
                     setLoading(false);
                 } else {
                     console.log('loggedUsingSubmitMobileIn', response.data);
+                    setData([]);
+                    setLoading(false);
                 }
             })
             .catch((error) => {
@@ -216,49 +268,6 @@ const HomeScreen = () => {
                 console.log('errors', error);
                 setLoading(false);
             });
-    }
-
-    const handleAppStateChange = (nextAppState) => {
-        if (appState.match(/inactive|background/) && nextAppState === 'active') {
-            console.log('handleAppStateChange', appState);
-            // App is returning to the foreground
-            // You can perform any actions or cleanup tasks here
-        } else if (appState === 'active' && nextAppState.match(/inactive|background/)) {
-            // App is going into the background
-            console.log('handleAppStateChange', appState, nextAppState);
-            // You can handle background-specific actions here
-        }
-        setAppState(nextAppState);
-    };
-
-    const sendNotification = () => {
-        var myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        myHeaders.append("Authorization", "Bearer AAAAPtYIrjk:APA91bH08K8usDvoiH-R45u8w-2TPvGQE7up5wR1O63QstD2QdrpSFeukpg9MtUcTTQ19y05M8D7PUK6H2CV4TiuQyL-7MjhfmDhb1ChfcsjqgENIhzYP2VZeahGe6t_R4m1kgzIIP_K");
-
-        var raw = JSON.stringify({
-            "to": "dBEJqVryRwS5YKmeFOJsPn:APA91bFhI4X2EeDWZ1LmcnLu47-uUMfokr30WUUSg5ux7q5PSsI5w149e1XDKrVsyPoojCTnax0_DCE9nzLzh2MXVUsKa0mqn7aeyh-QU70pfu64P_amTcMIZmSsDgeYtjNqQ6x6uneq",
-            "notification": {
-                "title": "Hello Test",
-                "body": "Some body",
-                "sound": "noti_sound1.wav",
-                "android_channel_id": "new_email_arrived_channel"
-            },
-            "content_available": true,
-            "priority": "high"
-        });
-
-        var requestOptions = {
-            method: 'POST',
-            headers: myHeaders,
-            body: raw,
-            redirect: 'follow'
-        };
-
-        fetch("https://fcm.googleapis.com/fcm/send", requestOptions)
-            .then(response => response.text())
-            .then(result => console.log(result))
-            .catch(error => console.log('error', error));
     }
 
     const updateDriverLocation = async (lattitude, longitude) => {
@@ -324,8 +333,10 @@ const HomeScreen = () => {
         axios(authOptions)
             .then((response) => {
                 if (response.data.status) {
-                    console.log('getProfileDriverData', response.data?.driver?.duty_status);
+                    console.log('getProfileDriverData', response.data?.driver?.latitude);
+                    console.log('getProfileDriverData', response.data?.driver?.longitude);
                     setLoading(false);
+                    getCurrentAddress(response.data?.driver?.latitude, response.data?.driver?.longitude);
                     setDutyStatus(response.data.driver?.duty_status)
                     setDriverData(response.data?.driver);
                 } else {
@@ -339,9 +350,9 @@ const HomeScreen = () => {
 
     React.useEffect(() => {
         if (dutyStatus === 'On') {
-            onDisplayNotification();
+            // onDisplayNotification();
         } else {
-            onDisplayNotification();
+            // onDisplayNotification();
         }
     }, [dutyStatus]);
 
@@ -448,16 +459,6 @@ const HomeScreen = () => {
         setSearchText(text);
     }
 
-    const getDistance = async (f_latitude, f_longitude, t_latitude, t_longitude) => {
-        console.log('getDistance_F', f_latitude, f_longitude);
-        console.log('getDistance_T', t_latitude, t_longitude);
-        let disct = getPreciseDistance(
-            { latitude: f_latitude, longitude: f_longitude },
-            { latitude: t_latitude, longitude: t_longitude }
-        );
-        console.log(disct);
-    }
-
     const startTrip = async (trip_id) => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
         const fcmToken = await messaging().getToken();
@@ -482,15 +483,16 @@ const HomeScreen = () => {
                 console.log('startTrip', result);
                 if (result.status) {
                     console.log('startTrip', result?.message);
-                    getUpcomingTrip();
                     Toast.show({
                         type: 'success',
                         text1: 'Status Update Successfully',
                         text2: 'Update Successfully',
                     });
+                    navigate.navigate('NotificationCenterScreen', remoteMessage);
                 } else {
+                    getUpcomingTrip();
                     Toast.show({
-                        type: 'success',
+                        type: 'error',
                         text1: 'Something went wrong!',
                         text2: result?.message,
                     });
@@ -499,7 +501,7 @@ const HomeScreen = () => {
             .catch((error) => {
                 console.log('error', error);
                 Toast.show({
-                    type: 'success',
+                    type: 'error',
                     text1: 'Something went wrong!',
                     text2: error,
                 });
@@ -513,7 +515,7 @@ const HomeScreen = () => {
                 <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/passenger.png')} />
                 <Text style={styles.beds}>{item.name}</Text>
                 <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/time_icon.png')} />
-                <Text style={styles.baths}>0:45 Min</Text>
+                <Text style={styles.baths}> 0:45 Min</Text>
                 <Image style={{ width: 20, height: 20, resizeMode: 'contain', tintColor: '#000' }} source={require('../../assets/trip.png')} />
                 <Text style={[styles.parking, { textAlign: 'center' }]}>{Number(item?.distance).toFixed(2)}</Text>
             </View>
@@ -529,8 +531,10 @@ const HomeScreen = () => {
                     </View>
                 </View>
             </View>
-            <View>
-                <Text style={[styles.price, { marginLeft: 20 }]}>{item?.from_address} To {item?.to_address}</Text>
+            <View style={{ alignItems: 'center' }}>
+                <Text style={[styles.price, { marginLeft: 20 }]}>{item?.from_address}</Text>
+                <Text style={[styles.price, { marginLeft: 20 }]}>To {JSON.stringify(item)}</Text>
+                <Text style={[styles.price, { marginLeft: 20 }]}>{item?.to_address}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 5, marginTop: 0, marginLeft: 20, marginRight: 20, marginBottom: 20 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
@@ -543,10 +547,10 @@ const HomeScreen = () => {
                 </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
-                <TouchableOpacity onPress={() => handleLocationButtonPress()} style={{ flex: 1, padding: 10, backgroundColor: '#F24C3D', elevation: 5, borderRadius: 60 }}>
+                <TouchableOpacity onPress={() => handleLocationPress()} style={{ flex: 1, padding: 10, backgroundColor: '#F24C3D', elevation: 5, borderRadius: 60, marginRight: 10 }}>
                     <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Reject</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => startTrip(item?.id)} style={{ flex: 1, padding: 10, backgroundColor: '#22A699', elevation: 5, borderRadius: 60, marginRight: 15 }}>
+                <TouchableOpacity onPress={() => startTrip(item?.id)} style={{ flex: 1, padding: 10, backgroundColor: '#22A699', elevation: 5, borderRadius: 60 }}>
                     <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Accept</Text>
                 </TouchableOpacity>
             </View>
@@ -588,67 +592,72 @@ const HomeScreen = () => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
         let data = JSON.parse(valueX);
         let url_driver_location_update = globle.API_BASE_URL + 'update-driver-lat-long';
-        return new Promise((resolve, reject) =>
-            Geolocation.watchPosition(
-                (position) => {
-                    console.log('location_status_update', position);
-                    var authOptions = {
-                        method: 'POST',
-                        url: url_driver_location_update,
-                        data: JSON.stringify({ 'driver_id': data?.id, 'latitude': position?.coords?.latitude, 'longitude': position?.coords?.longitude }),
-                        headers: { 'Content-Type': 'application/json' },
-                        json: true,
-                    };
-                    axios(authOptions)
-                        .then((response) => {
-                            if (response.data?.status) {
-                                TrackingDriverLocation(position?.coords?.latitude, position?.coords?.longitude, position?.coords?.heading, data?.id);
-                            } else {
-                                console.log('location status update fails' + JSON.stringify(response.data));
-                            }
-                        })
-                        .catch((error) => {
-                            console.log(error);
-                        });
+
+        Geolocation.getCurrentPosition(
+            (position) => {
+                let currentLocation = {
+                    longitude: position.coords.longitude,
+                    latitude: position.coords.latitude,
+                    heading: position.coords.heading,
+                };
+                console.log('location_status_update', currentLocation);
+                TrackingDriverLocation(position?.coords?.latitude, position?.coords?.longitude, position?.coords?.heading, data?.id);
+                var authOptions = {
+                    method: 'POST',
+                    url: url_driver_location_update,
+                    data: JSON.stringify({ 'driver_id': data?.id, 'latitude': position?.coords?.latitude, 'longitude': position?.coords?.longitude }),
+                    headers: { 'Content-Type': 'application/json' },
+                    json: true,
+                };
+                axios(authOptions)
+                    .then((response) => {
+                        if (response.data?.status) {
+                            console.log(JSON.stringify(response.data?.message));
+                        } else {
+                            console.log('location status update fails' + JSON.stringify(response.data));
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            },
+            (error) => console.log(error),
+            {
+                showLocationDialog: true,
+                enableHighAccuracy: false,
+                accuracy: {
+                    android: "high",
+                    ios: "bestForNavigation",
                 },
-                (error) => {
-                    console.log('location_status_update_error', error);
-                },
-                {
-                    enableHighAccuracy: false,
-                    timeout: 15000,
-                }
-            )
+                fastestInterval: 100,
+                distanceFilter: 0.01,
+                interval: 100,
+            }
         );
+        // return new Promise((resolve, reject) =>
+        //     Geolocation.watchPosition(
+        //         (position) => {
+        //             console.log('location_status_update', position);
+
+        //         },
+        //         (error) => {
+        //             console.log('location_status_update_error', error);
+        //         },
+        //         {
+        //             showLocationDialog: true,
+        //             enableHighAccuracy: false,
+        //             accuracy: {
+        //                 android: "high",
+        //                 ios: "bestForNavigation",
+        //             },
+        //             fastestInterval: 100,
+        //             distanceFilter: 0.01,
+        //             interval: 100,
+        //             timeout: 15000,
+        //         }
+        //     )
+        // );
     };
-
-    const getDeviceCurrentLocation = async () => {
-        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
-        let data = JSON.parse(valueX);
-        let url_driver_location_update = globle.API_BASE_URL + 'update-driver-lat-long';
-
-        Geolocation.watchPosition(info => {
-            var authOptions = {
-                method: 'POST',
-                url: url_driver_location_update,
-                data: JSON.stringify({ 'driver_id': data?.id, 'latitude': info?.coords?.latitude, 'longitude': info?.coords?.longitude }),
-                headers: { 'Content-Type': 'application/json' },
-                json: true,
-            };
-            axios(authOptions)
-                .then((response) => {
-                    if (response.data?.status) {
-                        console.log('location status update', JSON.stringify(response?.data));
-                        TrackingDriverLocation(info?.coords?.latitude, info?.coords?.longitude);
-                    } else {
-                        console.log('location status update fails' + JSON.stringify(response.data));
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        });
-    }
 
     const TrackingDriverLocation = async (lattitude, longitude, header, d_ids) => {
         let reff = '/tracking/' + d_ids + '';
@@ -662,11 +671,102 @@ const HomeScreen = () => {
             .set({
                 time: new Date().getTime(),
                 dutyStatus: dutyStatus,
-                location: driverData
+                location: driverData,
             })
-            .then(() => console.log('Tracking_Driver_Location', driverData));
+            .then(() => {
+                // console.log('Tracking_Driver_Location', driverData)
+            });
         setLocation({ latitude: lattitude, longitude: longitude });
     }
+
+    const getCurrentAddress = (currentLatitude, currentLongitude) => {
+        fetch(
+            'https://maps.googleapis.com/maps/api/geocode/json?address=' +
+            currentLatitude +
+            ',' +
+            currentLongitude +
+            '&key=' +
+            globle.GOOGLE_MAPS_APIKEY_V2,
+        )
+            .then(response => response.json())
+            .then(responseJson => {
+                // console.log('Address Location', JSON.stringify(responseJson)); 
+                setAddressFieldAutoPopulate(responseJson);
+            });
+    };
+
+    const setAddressFieldAutoPopulate = responseJson => {
+        let getAddressInfo = responseJson.results[0].formatted_address;
+        let addressLength = getAddressInfo.split(',');
+        let count = addressLength.length;
+        let postcode = '';
+        let address = '';
+        let country = addressLength[count - 1];
+        let state = addressLength[count - 2];
+        let city = addressLength[count - 3];
+
+        let formattedAddress = responseJson.results[0].formatted_address;
+        let formattedAddressLength = formattedAddress.split(',');
+        if (formattedAddressLength.length > 3) {
+            for (let i = 0; i < count - 3; i++) {
+                address += addressLength[i] + ',';
+            }
+        } else {
+            address = '';
+        }
+        var pos = address.lastIndexOf(','),
+            withoutComma = '';
+        address = address.slice(0, pos) + withoutComma + address.slice(pos + 1);
+
+        for (const component of responseJson.results[1].address_components) {
+            // @ts-ignore remove once typings fixed
+            const componentType = component;
+
+            switch (componentType.types[0]) {
+                case 'postal_code': {
+                    postcode = component.long_name;
+                    break;
+                }
+
+                case 'locality': {
+                    city = component.long_name;
+                    break;
+                }
+
+                case 'administrative_area_level_1': {
+                    state = component.long_name;
+                    break;
+                }
+
+                case 'country': {
+                    country = component.long_name;
+                    break;
+                }
+            }
+        }
+        setLatestAddress(address);
+        console.log('Info_location', JSON.stringify(address));
+        // check city Validation
+        // city = cityValidationCondition(city);
+
+        // if (!this.cityExists(city)) {
+        //   console.log(resources.strings.cityCannotBeDelivered);
+        //   return false;
+        // } else if (this.postalCodeExists(postcode)) {
+        //   console.log(resources.strings.postalCodeCannotBeDelivered);
+        //   return false;
+        // } else {
+        //   const locationInfo = {
+        //     address: address,
+        //     addressLine2: address,
+        //     city: city,
+        //     state: state,
+        //     postalCode: postcode,
+        //     addressDetails: responseJson,
+        //     mapFlag: true,
+        //   }
+        // }
+    };
 
     return (
         <View style={{ flex: 1, marginTop: 25, backgroundColor: '#000000' }}>
@@ -685,12 +785,20 @@ const HomeScreen = () => {
                             isOn={dutyStatus === 'On' ? true : false}
                             onColor="#22A699"
                             offColor="#F24C3D"
-                            label={visible === true ? 'Duty On' : 'Duty Off'}
+                            label={visible === true ? selectedLanguage === 'Coorg' ? coorg.crg.duty_on : eng.en.duty_on : selectedLanguage === 'Coorg' ? coorg.crg.duty_off : eng.en.duty_off}
                             onPress={() => setVisible(!visible)}
                             labelStyle={{ color: "white", fontWeight: "900" }}
                             size='small'
                             onToggle={isOn => dutyOnOff(isOn)}
                         />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+                            <Image
+                                style={{ width: 13, height: 13, resizeMode: 'contain', tintColor: '#ffffff', marginRight: 5, marginLeft: 10 }}
+                                source={require('../../assets/navigation_icon.png')} />
+                            <Text
+                                numberOfLines={2}
+                                style={{ fontSize: 14, color: 'white', width: 200 }}>{Latest_address}</Text>
+                        </View>
                     </View>
                     <TouchableOpacity
                         onPress={() => showSuccessToast('Coming soon!')}
@@ -720,7 +828,7 @@ const HomeScreen = () => {
                     <View style={[styles.searchInputContainer, { paddingTop: 0, marginTop: 20 }]}>
                         <TextInput
                             style={styles.searchInput}
-                            placeholder="Search trips..."
+                            placeholder={selectedLanguage === 'Coorg' ? coorg.crg.search_trips : eng.en.search_trips}
                             onChangeText={handleSearch}
                             value={searchText}
                         />
@@ -729,11 +837,11 @@ const HomeScreen = () => {
                         </TouchableOpacity>
                     </View>
                     <View style={{ borderBottomWidth: 0, borderColor: 'grey', marginLeft: 24, marginRight: 24 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 10, color: 'grey' }}>Upcoming Trip Request</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 10, color: 'grey' }}>{selectedLanguage === 'Coorg' ? coorg.crg.upcoming_trip_request : eng.en.upcoming_trip_request}</Text>
                     </View>
                     {data.length > 0 ?
                         <FlatList
-                            style={{ padding: 15 }}
+                            style={{ padding: 15, marginBottom: 60 }}
                             data={data}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
@@ -741,7 +849,7 @@ const HomeScreen = () => {
                         :
                         <View style={{ flex: 1, alignItems: 'center' }}>
                             <Image style={{ width: 220, height: 220, resizeMode: 'cover', marginTop: 120 }} source={require('../../assets/search_result_not_found.png')} />
-                            <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>No Upcoming Trip</Text>
+                            <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>{selectedLanguage === 'Coorg' ? coorg.crg.no_upcoming_trip : eng.en.no_upcoming_trip}</Text>
                         </View>}
                 </View>
             </View>

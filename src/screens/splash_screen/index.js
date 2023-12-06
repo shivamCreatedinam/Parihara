@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import MapViewDirections from 'react-native-maps-directions';
 import BottomSheet from "react-native-gesture-bottom-sheet";
@@ -47,6 +47,7 @@ const NotificationCenterScreen = () => {
     const [from_address, setFaddress] = React.useState(routes.params?.data?.from_address);
     const [to_address, setTaddress] = React.useState(routes.params?.data?.to_address);
     const [trip_cost, setTripcost] = React.useState(routes.params?.data?.price);
+    const [tripType, setTripType] = React.useState(routes.params?.data?.trip_type);
     let [startPoint, setStartPoint] = React.useState({ latitude: routes.params?.data?.from_lat, longitude: routes.params?.data?.from_long, });
     let [endPoint, setEndPoint] = React.useState({ latitude: routes.params?.data?.to_lat, longitude: routes.params?.data?.to_long, });
     const [marker, setMarker] = React.useState(false);
@@ -149,11 +150,20 @@ const NotificationCenterScreen = () => {
             // startTrip();
             // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startinPointName + '&destination=' + endingPointName + '&travelmode=driving&waypoints=' + 'Office to Home ')
         }
-        if (Platform.OS === 'android') {
-            // startTrip();
-            // https://www.google.com/maps/dir/Noida,+Uttar+Pradesh/GTB+Nagar,+Delhi/@28.607801,77.2154511,12z/
-            // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startPoint + '&destination=' + endPoint + '&travelmode=driving')
-            Linking.openURL('http://maps.google.com/maps?daddr=' + startPoint.latitude + ',' + startPoint.longitude).catch(err => console.error('An error occurred', err));;
+        if (isTripStartedStatus === true) {
+            if (Platform.OS === 'android') {
+                // startTrip();
+                // https://www.google.com/maps/dir/Noida,+Uttar+Pradesh/GTB+Nagar,+Delhi/@28.607801,77.2154511,12z/
+                // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startPoint + '&destination=' + endPoint + '&travelmode=driving')
+                Linking.openURL('http://maps.google.com/maps?daddr=' + endPoint.latitude + ',' + endPoint.longitude).catch(err => console.error('An error occurred', err));;
+            }
+        } else {
+            if (Platform.OS === 'android') {
+                // startTrip();
+                // https://www.google.com/maps/dir/Noida,+Uttar+Pradesh/GTB+Nagar,+Delhi/@28.607801,77.2154511,12z/
+                // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startPoint + '&destination=' + endPoint + '&travelmode=driving')
+                Linking.openURL('http://maps.google.com/maps?daddr=' + startPoint.latitude + ',' + startPoint.longitude).catch(err => console.error('An error occurred', err));;
+            }
         }
     }
 
@@ -164,7 +174,7 @@ const NotificationCenterScreen = () => {
             serLoader(true);
             var authOptions = {
                 method: 'post',
-                url: 'https://createdinam.in/Parihara/public/api/driver-verify-trip-otp',
+                url: globle.API_BASE_URL + 'driver-verify-trip-otp',
                 data: JSON.stringify({ "request_id": RequestId, 'otp': StartTripOTP, 'driver_id': data }),
                 headers: {
                     'Content-Type': 'application/json'
@@ -205,7 +215,7 @@ const NotificationCenterScreen = () => {
     const saveTripDetails = async () => {
         let infoTrip_ = JSON.stringify(routes.params);
         AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
-        AsyncStorage.setItem('@tripStartedStatusKeys', true);
+        AsyncStorage.setItem('@tripStartedStatusKeys', 'true');
         console.log('trip_saved');
         Toast.show({
             type: 'success',
@@ -222,7 +232,7 @@ const NotificationCenterScreen = () => {
         serLoader(true);
         var authOptions = {
             method: 'post',
-            url: 'https://createdinam.in/Parihara/public/api/end-trip',
+            url: globle.API_BASE_URL + 'end-trip',
             data: JSON.stringify({ "request_id": RequestId, 'driver_id': data }),
             headers: {
                 'Content-Type': 'application/json'
@@ -269,7 +279,7 @@ const NotificationCenterScreen = () => {
                     showsTraffic={false}
                     showsBuildings={false}
                     showsCompass={false}
-                    showsUserLocation={false}
+                    // showsUserLocation={true}
                     initialRegion={{
                         latitude: parseFloat(startPoint.latitude),
                         longitude: parseFloat(startPoint.longitude),
@@ -317,9 +327,10 @@ const NotificationCenterScreen = () => {
                     <Image style={{ height: 50, width: 50, resizeMode: 'contain', alignSelf: 'center', marginBottom: 5 }} source={require('../../assets/auto_icon.png')} />
                     <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 16, textTransform: 'capitalize' }}>{routes.params?.notification?.title}</Text>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
-                    <Text style={{ fontWeight: 'bold' }}>{from_address} To </Text>
-                    <Text style={{ fontWeight: 'bold' }}>{to_address}</Text>
+                <View style={{ flexDirection: 'column', alignItems: 'center', alignSelf: 'center', marginBottom: 15, marginTop: 15 }}>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12 }}>{from_address}</Text>
+                    <Text style={{ fontWeight: 'bold', margin: 10 }}>To </Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 12 }}>{to_address}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
                     <Text style={{ fontWeight: 'bold' }}>Total Distance </Text>
@@ -328,6 +339,10 @@ const NotificationCenterScreen = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
                     <Text style={{ fontWeight: 'bold' }}>Trip Cost </Text>
                     <Text style={{ fontWeight: 'bold' }}>{trip_cost}/- ₹</Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', borderWidth: 1, padding: 10, marginTop: 15, borderRadius: 5, elevation: 5, backgroundColor: '#fff' }}>
+                    <Text style={{ fontWeight: 'bold' }}>Payment Mode: </Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 14, textTransform: 'uppercase' }}>{tripType}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
                     <TouchableOpacity onPress={() => BookingReject()}
@@ -368,7 +383,7 @@ const NotificationCenterScreen = () => {
                 </View>
             </View> */}
             <View style={{ padding: 20, backgroundColor: '#ffffff', position: 'absolute', bottom: 50, left: 20, right: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
-                <TouchableOpacity style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }} onPress={() => bottomSheet.current.show()}>
+                <TouchableOpacity style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>Trip Details ↑</Text>
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -388,12 +403,12 @@ const NotificationCenterScreen = () => {
                 hasDraggableIcon
                 radius={20}
                 ref={bottomSheet}
-                height={350} >
+                height={450} >
                 <View style={{ padding: 20 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', marginBottom: 20 }}>
-                        <Text>{from_address} </Text>
+                    <View style={{ flexDirection: 'column', alignItems: 'center', alignSelf: 'center', marginBottom: 20 }}>
+                        <Text style={{ textAlign: 'center' }}>{from_address} </Text>
                         <Text style={{ fontWeight: 'bold' }}>To</Text>
-                        <Text> {to_address}</Text>
+                        <Text style={{ textAlign: 'center' }}> {to_address}</Text>
                     </View>
                     <View style={{ alignSelf: 'center', marginBottom: 20 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>

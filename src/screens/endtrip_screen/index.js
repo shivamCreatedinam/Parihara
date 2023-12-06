@@ -82,7 +82,6 @@ const EndStartScreen = () => {
     );
 
     const getPriceFromWeb = async () => {
-        // https://createdinam.in/Parihara/public/api/getPrice
         // Optionally the request above could also be done as
         setLoading(true)
         var authOptions = {
