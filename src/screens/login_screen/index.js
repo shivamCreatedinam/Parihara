@@ -14,6 +14,7 @@ import {
     TextInput,
     TouchableOpacity,
     Linking,
+    ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
@@ -30,6 +31,7 @@ const LoginScreen = () => {
     const navigation = useNavigation();
     const [initializing, setInitializing] = React.useState(true);
     const [secure, setSecure] = React.useState(true);
+    const [loader, setLoader] = React.useState(false);
     const [user, setUser] = React.useState();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -54,7 +56,7 @@ const LoginScreen = () => {
     const showSuccessToast = (msg) => {
         Toast.show({
             type: 'success',
-            text1: 'Login Success',
+            text1: msg,
             text2: msg,
         });
         setTimeout(() => {
@@ -93,18 +95,22 @@ const LoginScreen = () => {
             },
             json: true
         };
+        setLoader(true);
         axios(authOptions)
             .then((response) => {
                 console.log('loggedUsingMobileIn', JSON.stringify(response.data));
                 if (response.status) {
                     console.log('loggedUsingMobileIn', response);
-                    showSuccessToast(response.data.message + '\n your OTP is: ' + response.data.otp);
+                    showSuccessToast(response.data.message);
+                    setLoader(false);
                 } else {
+                    setLoader(false);
                     console.log(response.data);
                 }
             })
             .catch((error) => {
                 alert(error)
+                setLoader(false);
             });
     }
 
@@ -190,21 +196,24 @@ const LoginScreen = () => {
                     <Image style={{ tintColor: 'green', width: 20, height: 20, marginRight: 5 }} source={{ uri: 'https://icons.veryicon.com/png/o/miscellaneous/8atour/check-box-4.png' }} />
                     <Text style={{ fontSize: 12, letterSpacing: 1.5 }} >{selectedLanguage === 'Coorg' ? coorg.crg.button_you_agree_with_the : eng.en.button_you_agree_with_the} <TouchableOpacity style={{}} onPress={() => openLinkToAnotherTabs('https://theparihara.com/privacy_policy.html')}><Text style={{ fontWeight: 'bold', fontSize: 12, letterSpacing: 1.5 }}>{selectedLanguage === 'Coorg' ? coorg.crg.button_you_agree_with_the : eng.en.button_you_agree_with_the}</Text></TouchableOpacity></Text>
                 </View>
-                <TouchableOpacity style={{
-                    width: '100%',
-                    marginTop: 20,
-                    paddingHorizontal: 10,
-                    paddingVertical: 14,
-                    backgroundColor: 'black',
-                    borderRadius: 5,
-                    elevation: 6,
-                }} onPress={validation}>
-                    <Text style={{
-                        color: 'white',
-                        fontWeight: 'bold',
-                        textTransform: 'uppercase',
-                        textAlign: 'center',
-                    }}>{selectedLanguage === 'Coorg' ? coorg.crg.send_OTP : eng.en.send_OTP}</Text>
+                <TouchableOpacity
+                    disabled={loader}
+                    style={{
+                        width: '100%',
+                        marginTop: 20,
+                        paddingHorizontal: 10,
+                        paddingVertical: 14,
+                        backgroundColor: 'black',
+                        borderRadius: 5,
+                        elevation: 6,
+                    }} onPress={validation}>
+                    {loader === true ? <ActivityIndicator style={{ alignSelf: 'center' }} color={'white'} /> :
+                        <Text style={{
+                            color: 'white',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            textAlign: 'center',
+                        }}>{selectedLanguage === 'Coorg' ? coorg.crg.send_OTP : eng.en.send_OTP}</Text>}
                 </TouchableOpacity>
                 <View style={{ marginTop: 20 }}>
                     <Text style={{ color: '#FE0000', fontWeight: 'bold', fontSize: 10 }}>{errors}</Text>

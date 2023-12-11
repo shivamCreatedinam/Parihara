@@ -6,8 +6,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { showMessage } from "react-native-flash-message";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Text, View, TouchableOpacity, Image, FlatList, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { WebView, WebViewMessageEvent } from "react-native-webview";
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
 const TransactionHistoryScreen = () => {
 

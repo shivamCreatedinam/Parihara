@@ -29,6 +29,7 @@ import { TailwindProvider } from 'tailwind-rn';
 import utilities from './tailwind.json';
 import data from './package.json';
 import DeviceInfo from "react-native-device-info";
+import notifee from '@notifee/react-native';
 import NotificationCenter from './NotificationCenter';
 import BackgroundTimer from "react-native-background-timer";
 import Geolocation from '@react-native-community/geolocation';
@@ -47,7 +48,7 @@ const App = () => {
     checkPermission();
     setLongRunTimer();
     checkAppVersion();
-  }, []);
+  }, []); 
 
   const checkPermission = async () => {
     const enabled = await messaging().hasPermission();

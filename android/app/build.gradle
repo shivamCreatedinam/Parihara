@@ -98,8 +98,8 @@ android {
         applicationId "com.mapilocator"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 37
-        versionName "1.2.37"
+        versionCode 41
+        versionName "1.2.41"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -107,7 +107,7 @@ android {
         abi {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
-            universalApk false  // If true, also generate a universal APK
+            universalApk false  // If true, also generate a universal APK 12:45/1-december/Ambala
             include (*reactNativeArchitectures())
         }
     }
@@ -162,7 +162,6 @@ dependencies {
     implementation project(':react-native-background-timer')
     implementation project(':react-native-razorpay')
     implementation "com.google.android.gms:play-services-location:21.0.1"
-    implementation project(':react-native-webview')
     implementation project(':react-native-geocoder')
     implementation project(':react-native-geolocation-service')
     implementation project(':react-native-restart')
@@ -174,7 +173,8 @@ dependencies {
     implementation project(':react-native-maps')
     implementation project(':react-native-sensors')
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation('com.google.android.gms:play-services-plus:17.0.0')
+    implementation 'com.google.android.gms:play-services-identity:18.0.1'
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

@@ -25,7 +25,7 @@ const BookingTripHistoryScreen = () => {
     );
 
     const loadProfile = async () => {
-        setLoading(true)
+        setLoading(true);
         const valueX = await AsyncStorage.getItem('@autoUserGroup');
         let data = JSON.parse(valueX)?.token;
         let id = JSON.parse(valueX)?.id;
@@ -43,7 +43,6 @@ const BookingTripHistoryScreen = () => {
         axios.request(config)
             .then((response) => {
                 setLoading(false)
-                console.log(JSON.stringify(response?.data?.data));
                 setData(response?.data?.data);
             })
             .catch((error) => {
@@ -52,7 +51,7 @@ const BookingTripHistoryScreen = () => {
             });
     }
 
-    const renderItems = (info) => {
+    const renderItems = (info) => { 
 
         return (
             <View style={{ padding: 15, backgroundColor: info?.item?.payment_status === 'Success' ? '#D16666' : '#04724D', margin: 10, borderRadius: 10, elevation: 5 }}>

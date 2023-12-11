@@ -2051,7 +2051,7 @@
   resolved "https://registry.npmjs.org/@react-native-firebase/analytics/-/analytics-17.5.0.tgz"
   integrity sha512-SATj+O8YbSJkL5tHtMSxaXqojZROO6+1mq4BDm9m2Gt8HqDXL7FCUl8dyB1h0dp5cvQ6Jl3nkYEICzHNnSXMeQ==
 
-"@react-native-firebase/app@^17.4.3", "@react-native-firebase/app@17.4.3", "@react-native-firebase/app@17.5.0", "@react-native-firebase/app@18.3.2":
+"@react-native-firebase/app@^17.4.3", "@react-native-firebase/app@17.4.3", "@react-native-firebase/app@17.5.0", "@react-native-firebase/app@18.3.2", "@react-native-firebase/app@18.7.2":
   version "17.4.3"
   resolved "https://registry.npmjs.org/@react-native-firebase/app/-/app-17.4.3.tgz"
   integrity sha512-D+Cez5HrUmDzYcQxzYH8cM2ZENYaz4daTRshVqJEEQWeUerYdRAy8M6JAhP/wjQlSHkeDWnrJ1nVzBgeLFSyYQ==
@@ -2070,6 +2070,11 @@
   version "17.4.3"
   resolved "https://registry.npmjs.org/@react-native-firebase/database/-/database-17.4.3.tgz"
   integrity sha512-JpiFZN9sW0uZU6SRjGLJD+E6VXC1YE/XQXVV6ujtjBJa1Z4qQndLTUpM4lPyf/2OoAfgsHiX8GwE2Ykg8UhASw==
+
+"@react-native-firebase/dynamic-links@^18.7.2":
+  version "18.7.2"
+  resolved "https://registry.npmjs.org/@react-native-firebase/dynamic-links/-/dynamic-links-18.7.2.tgz"
+  integrity sha512-hWBvzS/HrXYnWEJ86QrsS1R99Ghpvx+nD/4abiOaiMLH2HE74CuEVXHBefem06SX3L+Aj02iop7m/cQHlrmDnQ==
 
 "@react-native-firebase/firestore@^17.4.3":
   version "17.4.3"
@@ -8613,11 +8618,6 @@ react-native-otp-textinput@^1.1.1:
   dependencies:
     react "^16.8.6"
 
-react-native-otp-verify@^1.1.6:
-  version "1.1.6"
-  resolved "https://registry.npmjs.org/react-native-otp-verify/-/react-native-otp-verify-1.1.6.tgz"
-  integrity sha512-EeGSWwA81zLCXb4Q7qLJ5T1SqAjwWYH7evP5yZknWWbU8xnySoSwQBz/p7FBsh5MIcM1pJadt8E+Pp3BTvh1cw==
-
 react-native-otp@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/react-native-otp/-/react-native-otp-1.0.0.tgz"
@@ -8786,10 +8786,10 @@ react-native-version-check@^3.4.7:
     lodash.pick "^4.4.0"
     semver "^6.1.1"
 
-react-native-webview@^13.6.2:
-  version "13.6.2"
-  resolved "https://registry.npmjs.org/react-native-webview/-/react-native-webview-13.6.2.tgz"
-  integrity sha512-QzhQ5JCU+Nf2W285DtvCZOVQy/MkJXMwNDYPZvOWQbAOgxJMSSO+BtqXTMA1UPugDsko6PxJ0TxSlUwIwJijDg==
+react-native-webview@^13.6.3:
+  version "13.6.3"
+  resolved "https://registry.npmjs.org/react-native-webview/-/react-native-webview-13.6.3.tgz"
+  integrity sha512-IApO0JSj0uAWsBGKWagyfgDYoX29piiMYLmkHtRjKeL1rIVjLoR/bMe7KJ/0X47y86b//a6u3cYQtphyay+F2A==
   dependencies:
     escape-string-regexp "2.0.0"
     invariant "2.2.4"

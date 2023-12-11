@@ -117,11 +117,10 @@ const RegisterDriverTwoScreen = () => {
     }
 
     React.useEffect(() => {
-        // requestPermission()
-    }, [])
+        requestPermission();
+    }, []);
 
     const requestPermission = async () => {
-
         try {
             const cameraPermission = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.CAMERA
@@ -291,7 +290,7 @@ const RegisterDriverTwoScreen = () => {
             cropping: true
         }).then(image => {
             console.log(image.path);
-            setAadharFront(image.path)
+            setAadharFront(image.path);
         });
     }
 
@@ -302,7 +301,7 @@ const RegisterDriverTwoScreen = () => {
             cropping: true
         }).then(image => {
             console.log(image.path);
-            setAadharBack(image.path)
+            setAadharBack(image.path);
         });
     }
 

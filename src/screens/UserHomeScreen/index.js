@@ -66,6 +66,17 @@ const UserHomeScreen = () => {
         }, [])
     );
 
+    React.useEffect(() => {
+        (async () => {
+            // ask for notification permission
+            await notifee.requestPermission();
+        })();
+
+        return () => {
+            // this now gets called when the component unmounts
+        };
+    }, []);
+
     const getLanguageStatus = async () => {
         const valueX = await AsyncStorage.getItem('@appLanguage');
         setSelectedLanguage(valueX);
@@ -152,10 +163,11 @@ const UserHomeScreen = () => {
     const checkPreviousTrips = async () => {
         const valueX = await AsyncStorage.getItem('@saveTripDetails');
         let data = JSON.parse(valueX);
-        console.log('updateUserTokenProfile', JSON.stringify(data?.details));
+        console.log('updateUserTokenProfile', JSON.stringify(data));
         if (data?.tripEnable === true) {
             setPreviousTrip(true);
             setPreviousTripData(data?.details);
+            // navigate.replace('DriverTrackToMapsScreen', PreviousTripData);
         }
     }
 

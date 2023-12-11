@@ -49,6 +49,7 @@ const TripCreateScreen = () => {
     const navigate = useNavigation();
     const markerRef = React.useRef();
     const mapRef = React.useRef();
+    const [TaxPrice, setTaxPrice] = React.useState(7);
     const [visible, setVisible] = React.useState(false);
     const [BookingVisible, setBookingVisible] = React.useState(false);
     const [message, setMessage,] = React.useState(null);
@@ -196,21 +197,28 @@ const TripCreateScreen = () => {
     }
 
     const calculateDistance = (dis) => {
-        let distance = dis;
-        let price = tripPrice;
-        const mePrice = Number(distance) * Number(price);
-        if (Number(mePrice) < 40) {
-            setEventPrice(40);
-        } else {
-            setEventPrice(mePrice);
-        }
+
         return mePrice;
     }
 
     React.useEffect(() => {
-        const percentage = (eventPrice / 100) * 20;
+        let distance = Distance;
+        let price = tripPrice;
+        const mePrice = Number(parseFloat(distance)) * Number(price);
+        console.warn('price', mePrice);
+        console.warn('distance', Number(parseFloat(distance)));
+        if (Number(parseFloat(distance)) < 2) {
+            setEventPrice(40);
+        } else {
+            setEventPrice(mePrice);
+        }
+    }, [Distance]);
+
+    React.useEffect(() => {
+        const percentage = (eventPrice / 100) * Number(TaxPrice);
         setEventTaxPrice(percentage);
-        let final_amt = Number(percentage) + Number(eventPrice)
+        let final_amt = Number(percentage) + Number(eventPrice);
+        console.warn('EventFinalPrice-> ', Number(percentage) + '  --  ' + Number(eventPrice))
         setEventFinalPrice(final_amt)
     }, [eventPrice]);
 
@@ -234,7 +242,7 @@ const TripCreateScreen = () => {
     const fetchTime = (d, t) => {
         setTime(t);
         setDistance(d);
-        calculateDistance(d);
+        // calculateDistance(d);
     }
 
     function StartTripTypeTrip() {
@@ -298,7 +306,7 @@ const TripCreateScreen = () => {
                 'to_long': to_location?.longitude,
                 'from_lat': from_location?.latitude,
                 'from_long': from_location?.longitude,
-                'price': Number(eventPrice),
+                'price': Number(eventFinalPrice),
                 'distance': Distance === '' ? 10 : Distance,
             },
             headers: {

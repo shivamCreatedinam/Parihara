@@ -41,6 +41,7 @@ const NotificationCenterScreen = () => {
     const markerRef = React.useRef();
     const mapRef = React.useRef();
     const bottomSheet = React.useRef();
+    const UserbottomSheet = React.useRef();
     const [loader, serLoader] = React.useState(false);
     const [RequestId, setTripRequestId] = React.useState(routes.params?.data?.id);
     const [distance, setDistance] = React.useState(routes.params?.data?.distance);
@@ -59,6 +60,7 @@ const NotificationCenterScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             // whatever
+            checkActveTripIsAvailable();
             setTimeout(() => {
                 // setTimeout
                 setLoading(true);
@@ -121,8 +123,8 @@ const NotificationCenterScreen = () => {
                             text1: 'Status Update Successfully',
                             text2: 'Update Successfully',
                         });
-                        setTripStarted(true);
-                        setLoading(true);
+                        saveBookingAcceptStatus();
+
                     } else {
                         Toast.show({
                             type: 'error',
@@ -142,6 +144,60 @@ const NotificationCenterScreen = () => {
                     setLoading(true)
                 });
         });
+    }
+
+    const notifiyUserDriverReached = async () => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let data = JSON.parse(valueX)?.id;
+        Geolocation.getCurrentPosition(info => {
+            var formdata = new FormData();
+            formdata.append('request_id', routes.params?.data?.id);
+            var requestOptions = {
+                method: 'POST',
+                body: formdata,
+                redirect: 'follow',
+                headers: {
+                    'Authorization': 'Bearer ' + data,
+                }
+            };
+            console.log('startTrip', JSON.stringify(requestOptions))
+            fetch(globle.API_BASE_URL + 'driver-notify-user', requestOptions)
+                .then(response => response.json())
+                .then(result => {
+                    console.log('startTrip', result);
+                    if (result.status) {
+                        console.log('startTrip', result?.message);
+                        Toast.show({
+                            type: 'success',
+                            text1: 'User Notify Successfully',
+                            text2: 'User Notify Successfully',
+                        });
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Something went wrong!',
+                            text2: result?.message,
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.log('error', error);
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Something went wrong!',
+                        text2: error,
+                    });
+                });
+        });
+    }
+
+    const saveBookingAcceptStatus = async () => {
+        let infoTrip_ = JSON.stringify(routes.params);
+        AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
+        AsyncStorage.setItem('@tripAcceptStatusKeys', 'true');
+        console.log('trip_saved');
+        setTripStarted(true);
+        setLoading(true);
     }
 
     const FolloweOnGoogleMaps = async () => {
@@ -226,6 +282,23 @@ const NotificationCenterScreen = () => {
         serLoader(false);
     }
 
+    const checkActveTripIsAvailable = async () => {
+        const tripStartedStatus = await AsyncStorage.getItem('@tripStartedStatusKeys');
+        const tripAcceptStatusKeys = await AsyncStorage.getItem('@tripAcceptStatusKeys');
+        console.warn('tripAcceptStatusKeysY', tripAcceptStatusKeys);
+        console.warn('tripStartedStatusZ', tripStartedStatus);
+        if (tripAcceptStatusKeys === null) {
+            setTripStarted(false);
+        } else if (tripAcceptStatusKeys === 'true') {
+            setTripStarted(true);
+            if (tripStartedStatus === 'true') {
+                setTripStartedStatus(true);
+            } else {
+                setTripStartedStatus(false);
+            }
+        }
+    }
+
     const setTripEnd = async () => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
         let data = JSON.parse(valueX)?.id;
@@ -244,14 +317,14 @@ const NotificationCenterScreen = () => {
             .then((response) => {
                 if (response.data.status) {
                     console.log('setTripEnd', response.data);
-                    navigate.navigate('HomeScreen');
+                    tripEndEventFinish();
                 } else {
                     Toast.show({
                         type: 'error',
                         text1: 'Something went wrong!',
                         text2: response?.data?.message
                     });
-                    console.log('errors', response?.data?.message);
+                    console.log('errors', response?.data);
                     serLoader(false);
                 }
             })
@@ -260,6 +333,24 @@ const NotificationCenterScreen = () => {
                 console.log('errors', error);
                 serLoader(false);
             });
+    }
+
+    const tripEndEventFinish = async () => {
+        const key = '@tripDriverAddedKeys';
+        const key_one = '@tripAcceptStatusKeys';
+        const key_two = '@tripStartedStatusKeys';
+        try {
+            await AsyncStorage.removeItem(key);
+            await AsyncStorage.removeItem(key_one);
+            await AsyncStorage.removeItem(key_two);
+            // move to home after finish the trip
+            navigate.navigate('HomeScreen');
+            return true;
+        }
+        catch (exception) {
+            console.error('tripEndEventFinishX');
+            return false;
+        }
     }
 
     return (
@@ -383,7 +474,7 @@ const NotificationCenterScreen = () => {
                 </View>
             </View> */}
             <View style={{ padding: 20, backgroundColor: '#ffffff', position: 'absolute', bottom: 50, left: 20, right: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
-                <TouchableOpacity style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }}>
+                <TouchableOpacity onPress={() => notifiyUserDriverReached()} style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>Trip Details ↑</Text>
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -399,6 +490,13 @@ const NotificationCenterScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+            <BottomSheet
+                hasDraggableIcon
+                radius={20}
+                ref={UserbottomSheet}
+                height={450} >
+                <View style={{ padding: 20 }}></View>
+            </BottomSheet>
             <BottomSheet
                 hasDraggableIcon
                 radius={20}

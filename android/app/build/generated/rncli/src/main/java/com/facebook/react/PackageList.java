@@ -29,6 +29,8 @@ import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;
 import io.invertase.firebase.auth.ReactNativeFirebaseAuthPackage;
 // @react-native-firebase/database
 import io.invertase.firebase.database.ReactNativeFirebaseDatabasePackage;
+// @react-native-firebase/dynamic-links
+import io.invertase.firebase.dynamiclinks.ReactNativeFirebaseDynamicLinksPackage;
 // @react-native-firebase/firestore
 import io.invertase.firebase.firestore.ReactNativeFirebaseFirestorePackage;
 // @react-native-firebase/messaging
@@ -65,8 +67,6 @@ import com.reactnativeloaderkit.LoaderKitPackage;
 import com.github.reactnativecommunity.location.RNLocationPackage;
 // react-native-maps
 import com.airbnb.android.react.maps.MapsPackage;
-// react-native-otp-verify
-import com.faizal.OtpVerify.OtpVerifyPackage;
 // react-native-pager-view
 import com.reactnativepagerview.PagerViewPackage;
 // react-native-permissions
@@ -145,6 +145,7 @@ public class PackageList {
       new ReactNativeFirebaseAppPackage(),
       new ReactNativeFirebaseAuthPackage(),
       new ReactNativeFirebaseDatabasePackage(),
+      new ReactNativeFirebaseDynamicLinksPackage(),
       new ReactNativeFirebaseFirestorePackage(),
       new ReactNativeFirebaseMessagingPackage(),
       new ForegroundServicePackage(),
@@ -163,7 +164,6 @@ public class PackageList {
       new LoaderKitPackage(),
       new RNLocationPackage(),
       new MapsPackage(),
-      new OtpVerifyPackage(),
       new PagerViewPackage(),
       new RNPermissionsPackage(),
       new ReactNativePushNotificationPackage(),

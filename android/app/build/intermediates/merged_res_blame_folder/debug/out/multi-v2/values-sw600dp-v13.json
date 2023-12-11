@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mapilocator.app-mergeDebugResources-52:/values-sw600dp-v13/values-sw600dp-v13.xml",
+            "outputFile": "com.mapilocator.app-mergeDebugResources-53:/values-sw600dp-v13/values-sw600dp-v13.xml",
             "map": [
                 {
                     "source": "/Users/apple/.gradle/caches/transforms-3/708dc108e7e6b211b5cd923e1383f982/transformed/jetified-checkout-1.6.36/res/values-sw600dp-v13/values-sw600dp-v13.xml",

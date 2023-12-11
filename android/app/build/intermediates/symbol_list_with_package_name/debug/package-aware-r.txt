@@ -3233,6 +3233,10 @@ drawable ic_mtrl_checked_circle
 drawable ic_mtrl_chip_checked_black
 drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
+drawable ic_plusone_medium_off_client
+drawable ic_plusone_small_off_client
+drawable ic_plusone_standard_off_client
+drawable ic_plusone_tall_off_client
 drawable ic_retry_otpless
 drawable ic_search_black_24
 drawable ic_stat_directions

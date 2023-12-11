@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import dynamicLinks from '@react-native-firebase/dynamic-links';
 import Toast from 'react-native-toast-message';
 import React from 'react';
 
@@ -40,6 +41,21 @@ export default function ChangeLanguage() {
             navigate.replace('LoginScreen');
         }
     }
+
+    const createDynamicLink = async () => {
+        const link = await dynamicLinks().buildLink({
+            link: 'https://invertase.io',
+            // domainUriPrefix is created in your Firebase console
+            domainUriPrefix: 'https://xyz.page.link',
+            // optional setup which updates Firebase analytics campaign
+            // "banner". This also needs setting up before hand
+            analytics: {
+                campaign: 'banner',
+            },
+        });
+    }
+
+    
 
     return (
         <ScrollView

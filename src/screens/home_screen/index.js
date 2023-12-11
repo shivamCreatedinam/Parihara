@@ -67,6 +67,17 @@ const HomeScreen = () => {
         }, [])
     );
 
+    React.useEffect(() => {
+        (async () => {
+            // ask for notification permission
+            await notifee.requestPermission();
+        })();
+
+        return () => {
+            // this now gets called when the component unmounts
+        };
+    }, []);
+
     const getLanguageStatus = async () => {
         const valueX = await AsyncStorage.getItem('@appLanguage');
         setSelectedLanguage(valueX);
@@ -154,6 +165,7 @@ const HomeScreen = () => {
                     getProfileActiveStatus();
                     updateDriverLocation();
                     requestPermission();
+                    checkPreviousDriverActiveTrip();
                     setVisible(false);
                 } else {
                     setVisible(true);
@@ -178,6 +190,20 @@ const HomeScreen = () => {
             console.log('trip_saved');
             navigate.navigate('NotificationCenterScreen', remoteMessage);
         });
+    }
+
+    const checkPreviousDriverActiveTrip = async () => {
+        const autoDriverActiveTrip = await AsyncStorage.getItem('@tripAddedKeys');
+        const tripStartedStatus = await AsyncStorage.getItem('@tripStartedStatusKeys');
+        const tripAcceptStatusKeys = await AsyncStorage.getItem('@tripAcceptStatusKeys');
+        console.warn('tripAcceptStatusKeys', tripAcceptStatusKeys);
+        console.warn('tripStartedStatus', tripStartedStatus);
+        // @tripAcceptStatusKeys
+        if (tripAcceptStatusKeys === 'true') {
+            navigate.navigate('NotificationCenterScreen', JSON.parse(autoDriverActiveTrip));
+        } else {
+            console.warn('no_active_trip');
+        }
     }
 
     async function onDisplayNotificationx(chids, title, body) {
