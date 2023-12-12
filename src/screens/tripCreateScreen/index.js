@@ -49,6 +49,10 @@ const TripCreateScreen = () => {
     const navigate = useNavigation();
     const markerRef = React.useRef();
     const mapRef = React.useRef();
+    const [name, setName] = React.useState(null);
+    const [image, setImage] = React.useState(null);
+    const [gender, setGender] = React.useState(null);
+    const [number, setNumber] = React.useState(null);
     const [TaxPrice, setTaxPrice] = React.useState(7);
     const [visible, setVisible] = React.useState(false);
     const [BookingVisible, setBookingVisible] = React.useState(false);
@@ -147,6 +151,7 @@ const TripCreateScreen = () => {
             .then((response) => {
                 setLoading(true);
                 setWalletData(response.data?.user?.wallet_amount);
+                loadProfile();
                 console.log('loadWalletProfile', JSON.stringify(response.data?.user?.wallet_amount));
             })
             .catch((error) => {
@@ -194,6 +199,35 @@ const TripCreateScreen = () => {
             console.log('getPriceFromWeb', JSON.stringify(resp.data))
             setTripPrice(resp.data.data?.value);
         }).catch((e) => console.log(e));
+    }
+
+    const loadProfile = async () => {
+        console.log('loadProfile');
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: globle.API_BASE_URL + 'my-profile',
+            headers: {
+                'Authorization': 'Bearer ' + data
+            }
+        };
+        axios.request(config)
+            .then((response) => {
+                if (response.data.status) {
+                    setName(response.data?.user?.name);
+                    setGender(response.data?.user?.gender);
+                    setImage(response.data?.user?.user_image);
+                    setNumber(response.data?.user?.mobile);
+                    console.warn(response.data?.user);
+                } else {
+                    setData(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }
 
     const calculateDistance = (dis) => {
@@ -281,7 +315,7 @@ const TripCreateScreen = () => {
         const drop_point = {
             latitude: to_location?.latitude,
             longitude: to_location?.longitude,
-            DropUp_formattedAddress: to_location?.DropUp_formattedAddress
+            DropUp_formattedAddress: to_location?.DropUp_formattedAddress,
         }
         console.log('purchasePackageX', to_location?.DropUp_formattedAddress);
         console.log('purchasePackageY', from_location?.Pickup_formattedAddress);
@@ -295,10 +329,10 @@ const TripCreateScreen = () => {
             data: {
                 'from_address': from_location?.Pickup_formattedAddress,
                 'to_address': to_location?.DropUp_formattedAddress,
-                'from_state': 1,
-                'from_city': 1,
-                'to_state': 1,
-                'to_city': 1,
+                'from_state': name,
+                'from_city': gender,
+                'to_state': number,
+                'to_city': image,
                 'to_pincode': 110084,
                 'from_pincode': 110009,
                 'trip_type': type_pay,
@@ -310,7 +344,7 @@ const TripCreateScreen = () => {
                 'distance': Distance === '' ? 10 : Distance,
             },
             headers: {
-                'Authorization': 'Bearer ' + data
+                'Authorization': 'Bearer ' + data,
             }
         };
         console.log('purchasePackage', config);
@@ -651,5 +685,5 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
 });
-
+//    console.log(data.name)
 export default TripCreateScreen;

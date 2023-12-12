@@ -18,7 +18,8 @@ import {
     Linking,
     Platform,
     StyleSheet,
-    Pressable
+    Pressable,
+    BackHandler
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -66,6 +67,25 @@ const DriverTrackToMapsScreen = () => {
             }, 1000);
         }, [])
     );
+
+    React.useEffect(() => {
+        BackHandler.addEventListener("hardwareBackPress", backButtonHandler);
+        return () => {
+            BackHandler.removeEventListener("hardwareBackPress", backButtonHandler);
+        };
+    }, [backButtonHandler]);
+
+
+    const backButtonHandler = () => {
+        Alert.alert(
+            'Want To Go Back',
+            'Are you sure, you want to go Back?',
+            [
+                { text: 'Cancel', onPress: () => console.warn('close') },
+                { text: 'OK', onPress: () => BackHandler.exitApp() },
+            ]
+        );
+    }
 
     const startTracking = async () => {
         // Set up a listener for your Firebase database reference

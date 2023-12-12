@@ -73,7 +73,7 @@ const SplashAppScreen = () => {
             const valueX = await AsyncStorage.getItem('@autoUserType');
             const valueXX = await AsyncStorage.getItem('@autoDriverGroup');
             const value = await AsyncStorage.getItem('@autoUserGroup');
-            console.log(valueX)
+            console.log(valueX);
             console.log('y', JSON.parse(valueXX)?.id);
             console.log('x', JSON.parse(value));
             if (valueX === 'Driver') {
@@ -84,9 +84,18 @@ const SplashAppScreen = () => {
                 }
             } else if (valueX === 'User') {
                 // updateTokenProfile(); RatingAndReviewScreen
-                navigation.replace('UserBottomNavigation');
+                // navigation.replace('UserBottomNavigation');
                 // navigation.replace('RatingAndReviewScreen');
                 console.log('addEventListener2', JSON.parse(value));
+                // check current active trip first /// ---><><><<><><><><><><><><><>
+                const valueX = await AsyncStorage.getItem('@saveTripDetails');
+                let data = JSON.parse(valueX);
+                console.log('updateUserTokenProfile', JSON.stringify(data));
+                if (data?.tripEnable === true) {
+                    navigation.replace('DriverTrackToMapsScreen', data?.details);
+                } else {
+                    navigation.replace('UserBottomNavigation');
+                }
             } else {
                 console.log('loadSessionStorage3', JSON.stringify(value));
                 navigation.replace('ChangeLanguage');
@@ -109,7 +118,9 @@ const SplashAppScreen = () => {
             .then((response) => {
                 if (response.data?.status) {
                     console.log(JSON.stringify(response.data?.message));
+                    // go with active trip
                     navigation.replace('HomeScreen');
+
                     //         console.log('addEventListener1', JSON.parse(valueXX));
                 } else {
                     console.log('location status update fails' + JSON.stringify(response.data));

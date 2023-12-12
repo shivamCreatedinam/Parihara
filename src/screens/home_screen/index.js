@@ -198,6 +198,7 @@ const HomeScreen = () => {
         const tripAcceptStatusKeys = await AsyncStorage.getItem('@tripAcceptStatusKeys');
         console.warn('tripAcceptStatusKeys', tripAcceptStatusKeys);
         console.warn('tripStartedStatus', tripStartedStatus);
+        console.warn('no_active_trip', JSON.parse(autoDriverActiveTrip));
         // @tripAcceptStatusKeys
         if (tripAcceptStatusKeys === 'true') {
             navigate.navigate('NotificationCenterScreen', JSON.parse(autoDriverActiveTrip));

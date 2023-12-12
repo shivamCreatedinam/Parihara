@@ -44,6 +44,11 @@ const NotificationCenterScreen = () => {
     const UserbottomSheet = React.useRef();
     const [loader, serLoader] = React.useState(false);
     const [RequestId, setTripRequestId] = React.useState(routes.params?.data?.id);
+    const [TripUserId, setTripUserId] = React.useState(routes.params?.data?.user_id);
+    const [FromState, setFromState] = React.useState(routes.params?.data?.from_state);
+    const [FromCity, setFromCity] = React.useState(routes.params?.data?.from_city);
+    const [ToCity, setToCity] = React.useState(routes.params?.data?.to_city);
+    const [ToState, setToState] = React.useState(routes.params?.data?.to_state);
     const [distance, setDistance] = React.useState(routes.params?.data?.distance);
     const [from_address, setFaddress] = React.useState(routes.params?.data?.from_address);
     const [to_address, setTaddress] = React.useState(routes.params?.data?.to_address);
@@ -353,8 +358,22 @@ const NotificationCenterScreen = () => {
         }
     }
 
+    const callUserForConformation = () => {
+        Alert.alert(
+            'Call Passanger',
+            'Are you sure, you want to call passanger?',
+            [
+                { text: 'Cancel', onPress: () => UserbottomSheet.current.close() },
+                { text: 'OK', onPress: () => Linking.openURL(`tel:${ToState}`) },
+            ]
+        );
+    }
+
     return (
         <View style={styles.container}>
+            {isTripStartedStatus === false ? <TouchableOpacity onPress={() => notifiyUserDriverReached()} style={{ position: 'absolute', top: 30, right: 20, zIndex: 999, backgroundColor: 'black', padding: 5, borderRadius: 10, elevation: 5 }}>
+                <Image style={{ width: 45, height: 45, resizeMode: 'contain' }} source={require('../../assets/reached_icon.png')} />
+            </TouchableOpacity> : null}
             {loading === true ?
                 <MapView
                     ref={mapRef}
@@ -474,8 +493,8 @@ const NotificationCenterScreen = () => {
                 </View>
             </View> */}
             <View style={{ padding: 20, backgroundColor: '#ffffff', position: 'absolute', bottom: 50, left: 20, right: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
-                <TouchableOpacity onPress={() => notifiyUserDriverReached()} style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>Trip Details ↑</Text>
+                <TouchableOpacity onPress={() => UserbottomSheet.current.show()} style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>Passanger Details ↑</Text>
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 1, marginRight: 15 }}>
@@ -495,7 +514,17 @@ const NotificationCenterScreen = () => {
                 radius={20}
                 ref={UserbottomSheet}
                 height={450} >
-                <View style={{ padding: 20 }}></View>
+                <View style={{ padding: 20, alignSelf: 'center', alignItems: 'center', width: '100%' }}>
+                    <TouchableOpacity onPress={() => UserbottomSheet.current.close()} style={{ position: 'absolute', top: 10, right: 10, borderRadius: 100, height: 30, width: 30, backgroundColor: 'red' }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center', fontSize: 16 }}>X</Text>
+                    </TouchableOpacity>
+                    <Image style={{ width: 120, height: 120, resizeMode: 'contain', borderRadius: 150, marginTop: 50 }} source={{ uri: globle.IMAGE_BASE_URL + ToCity }} />
+                    <Text style={{ fontWeight: 'bold' }}>{FromState}</Text>
+                    <Text>{FromCity}</Text>
+                    <TouchableOpacity onPress={() => callUserForConformation()} style={{ backgroundColor: '#000000', padding: 15, width: 200, marginTop: 20, borderRadius: 10 }}>
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#ffffff' }}>Call Passenger</Text>
+                    </TouchableOpacity>
+                </View>
             </BottomSheet>
             <BottomSheet
                 hasDraggableIcon
