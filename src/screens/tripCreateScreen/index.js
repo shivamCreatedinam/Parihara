@@ -284,8 +284,8 @@ const TripCreateScreen = () => {
             selectedLanguage === 'Coorg' ? coorg.crg.payment_method : eng.en.payment_method,
             selectedLanguage === 'Coorg' ? coorg.crg.choose_your_payment_options : eng.en.choose_your_payment_options,
             [
-                { text: selectedLanguage === 'Coorg' ? coorg.crg.no : eng.en.wallet, onPress: () => createNewTripForCustomer('wallet') },
-                { text: selectedLanguage === 'Coorg' ? coorg.crg.yes : eng.en.cash, onPress: () => createNewTripForCustomer('cash') },
+                { text: selectedLanguage === 'Coorg' ? coorg.crg.wallet : eng.en.wallet, onPress: () => createNewTripForCustomer('wallet') },
+                { text: selectedLanguage === 'Coorg' ? coorg.crg.cash : eng.en.cash, onPress: () => createNewTripForCustomer('cash') },
             ]
         );
     }
@@ -332,7 +332,7 @@ const TripCreateScreen = () => {
                 'from_state': name,
                 'from_city': gender,
                 'to_state': number,
-                'to_city': image,
+                'to_city': image === null ? 'uploads/user_image/user.png' : image,
                 'to_pincode': 110084,
                 'from_pincode': 110009,
                 'trip_type': type_pay,

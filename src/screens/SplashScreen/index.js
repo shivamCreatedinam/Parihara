@@ -15,6 +15,7 @@ import {
     Easing,
     ImageBackground,
     Alert,
+    PermissionsAndroid
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -120,7 +121,6 @@ const SplashAppScreen = () => {
                     console.log(JSON.stringify(response.data?.message));
                     // go with active trip
                     navigation.replace('HomeScreen');
-
                     //         console.log('addEventListener1', JSON.parse(valueXX));
                 } else {
                     console.log('location status update fails' + JSON.stringify(response.data));
@@ -159,11 +159,37 @@ const SplashAppScreen = () => {
             if (remoteMessage?.notification?.title === 'Dear user your trip has been completed.') {
                 clearTripDataAndMoveToEndTrip(remoteMessage);
                 onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
+            } else if (remoteMessage?.notification?.title === 'Dear user your trip has been canceled.') {
+                removeCancelTripItemValue('@saveTripDetails');
+                onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
+            } else if (remoteMessage?.notification?.title === 'Dear driver your trip has been canceled by user.') {
+                removeCancelTripFromUser('@saveTripDetails');
+                onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
             } else {
                 onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
             }
         });
     }
+
+    const removeCancelTripFromUser = async () => {
+        console.log('removeCancelTripItemValue');
+        let key0 = '@tripAddedKeys';
+        let key1 = '@tripStartedStatusKeys';
+        let key2 = '@tripAcceptStatusKeys';
+        try {
+            await AsyncStorage.removeItem(key0);
+            await AsyncStorage.removeItem(key1);
+            await AsyncStorage.removeItem(key2);
+            navigation.replace('HomeScreen');
+            console.log('DataDeleted');
+            return true;
+        }
+        catch (exception) {
+            console.log('ErrorDataDeleted');
+            return false;
+        }
+    }
+    // AsyncStorage.setItem('@tripAddedKeys', infoTrip_); // 
 
     async function onDisplayNotificationx(chids, title, body) {
         // Request permissions (required for iOS)
@@ -197,7 +223,7 @@ const SplashAppScreen = () => {
                 importance: AndroidImportance.HIGH,
                 visibility: AndroidVisibility.PUBLIC,
                 vibrationPattern: [300, 700],
-                ongoing: true,
+                ongoing: false,
                 lights: [AndroidColor.RED, 300, 600],
                 // pressAction is needed if you want the notification to open the app when pressed
                 pressAction: {
@@ -205,6 +231,20 @@ const SplashAppScreen = () => {
                 },
             },
         });
+    }
+
+    const removeCancelTripItemValue = async (key) => {
+        console.log('removeCancelTripItemValue');
+        try {
+            await AsyncStorage.removeItem(key);
+            navigation.replace('UserBottomNavigation')
+            console.log('DataDeleted');
+            return true;
+        }
+        catch (exception) {
+            console.log('ErrorDataDeleted');
+            return false;
+        }
     }
 
     const clearTripDataAndMoveToEndTrip = (info) => {
@@ -382,7 +422,7 @@ const SplashAppScreen = () => {
         // }
     };
 
-    const getOneTimeLocation = () => {
+    const getOneTimeLocation = async () => {
         console.log('Getting Location. Please Wait.');
         Geolocation.getCurrentPosition(
             //Will give you the current location
@@ -409,6 +449,7 @@ const SplashAppScreen = () => {
             },
             error => {
                 console.log('We are not able to find you location, Please Enter Manually');
+                // checkAgainLocationPermission();
                 RNRestart.restart();
                 // console.log('error.message', error.message);
             },
@@ -419,6 +460,21 @@ const SplashAppScreen = () => {
             },
         );
     };
+
+    const checkAgainLocationPermission = async () => {
+        try {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            )
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                // getOneTimeLocation();
+            } else {
+
+            }
+        } catch (err) {
+            console.warn(err)
+        }
+    }
 
     const cityValidationCondition = city => {
         if (city.includes('Bangalore') || city.includes('Bengaluru')) {

@@ -28,7 +28,6 @@ firebase.initializeApp(config);
 // RNOtpVerify.getHash()
 //     .then(console.log)
 //     .catch(console.log);
-
 // Register the service
 // ReactNativeForegroundService.register();
 // ReactNativeForegroundService.add_task(() => 

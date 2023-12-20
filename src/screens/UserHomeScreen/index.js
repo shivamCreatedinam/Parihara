@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     FlatList,
     Image,
+    Share
 } from 'react-native';
 import axios from 'axios';
 import globle from '../../../common/env';
@@ -22,6 +23,8 @@ import BackgroundJob from 'react-native-background-actions';
 import messaging from '@react-native-firebase/messaging';
 import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import crashlytics from '@react-native-firebase/crashlytics';
+import dynamicLinks from '@react-native-firebase/dynamic-links';
 import database from '@react-native-firebase/database';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
@@ -85,6 +88,7 @@ const UserHomeScreen = () => {
 
     const handleLocationPermission = async () => {
         console.warn('Location perrmission handleLocationPermission.');
+        // crashlytics().crash()
         if (Platform.OS === 'ios') {
             permissionCheck = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
             if (permissionCheck === RESULTS.DENIED) {
@@ -178,15 +182,27 @@ const UserHomeScreen = () => {
     }
 
     const onDisplayNotification = async () => {
-        // try {
-        //     console.log('start background job');
-        //     await BackgroundJob.start(veryIntensiveTask, options);
-        //     await BackgroundJob.updateNotification({ veryIntensiveTask: 'New ExampleTask description' });
-        //     console.log('successfully run');
-        // } catch (ex) {
-        //     console.log(ex)
-        // }
-        navigate.navigate('TripHistoryScreen');
+        try {
+            const links = dynamicLinks();
+            // const link = 'https://theparihara.page.link/parihara'
+            const result = await Share.share({
+                title: 'App link',
+                message: 'Please install this app and stay safe , ' + JSON.stringify(links) + '  AppLink :https://play.google.com/store/apps/details?id=nic.goi.aarogyasetu&hl=en',
+                url: 'https://play.google.com/store/apps/details?id=nic.goi.aarogyasetu&hl=en'
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    // shared with activity type of result.activityType
+                } else {
+                    // shared
+                }
+            } else if (result.action === Share.dismissedAction) {
+                // dismissed
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+        // navigate.navigate('TripHistoryScreen');
     }
 
     // const requestLocationPermission = async () => {
@@ -254,6 +270,7 @@ const UserHomeScreen = () => {
         const valueX = await AsyncStorage.getItem('@autoUserGroup');
         const fcmToken = await messaging().getToken();
         let data = JSON.parse(valueX)?.token;
+        crashlytics().log(data);
         var formdata = new FormData();
         formdata.append('token', fcmToken);
         var requestOptions = {
@@ -418,7 +435,7 @@ const UserHomeScreen = () => {
                 importance: AndroidImportance.HIGH,
                 visibility: AndroidVisibility.SECRET,
                 vibrationPattern: [300, 700],
-                ongoing: true,
+                ongoing: false,
                 lights: [AndroidColor.RED, 300, 600],
                 // pressAction is needed if you want the notification to open the app when pressed
                 pressAction: {
@@ -478,7 +495,6 @@ const UserHomeScreen = () => {
             })
             .then(() => console.log('Tracking_User_Location'));
     }
-
 
     return (
         <View style={{ flex: 1, marginTop: 25, backgroundColor: '#000' }}>
@@ -540,6 +556,9 @@ const UserHomeScreen = () => {
                                 <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>{selectedLanguage === 'Coorg' ? coorg.crg.no_trip_nound : eng.en.no_trip_nound}</Text>
                             </View>}
                     </View>
+                    {/* <TouchableOpacity onPress={() => ShareLink()}>
+                        <Text>Share Link</Text>
+                    </TouchableOpacity> */}
                 </View>
                 {isPreviousTrip === true ?
                     <View style={{ position: 'absolute', bottom: 80, padding: 20, backgroundColor: '#fff', zIndex: 999, left: 15, right: 15, elevation: 5, borderRadius: 5 }}>

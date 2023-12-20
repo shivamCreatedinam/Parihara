@@ -133,10 +133,10 @@
       android:usesCleartextTraffic="true"
       android:launchMode="singleTask"
       android:theme="@style/AppTheme"
-        android:exported="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        tools:targetApi="s"
-        tools:ignore="DataExtractionRules">
+      android:exported="true"
+      android:dataExtractionRules="@xml/data_extraction_rules"
+      tools:targetApi="s"
+      tools:ignore="DataExtractionRules">
       <activity
         android:name=".MainActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
@@ -150,16 +150,13 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-                <intent-filter android:autoVerify="true">
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" />
                 <data android:scheme="https" />
-                <data android:scheme="demo" />
-                <data android:host="theparihara" />
-                <data android:host="theparihara.com" />
-                <data android:host="www.theparihara.com" />
+                <data android:host="theparihara.page.link" android:pathPrefix="/parihara" />
             </intent-filter>
       </activity>
         <meta-data

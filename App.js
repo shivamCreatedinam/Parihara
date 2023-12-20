@@ -19,6 +19,7 @@ import {
   Linking,
   Platform
 } from 'react-native';
+import { MenuProvider } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
 import PushController from './PushController';
 import messaging from '@react-native-firebase/messaging';
@@ -48,7 +49,7 @@ const App = () => {
     checkPermission();
     setLongRunTimer();
     checkAppVersion();
-  }, []); 
+  }, []);
 
   const checkPermission = async () => {
     const enabled = await messaging().hasPermission();
@@ -241,13 +242,15 @@ const App = () => {
   } else {
     return (
       <SafeAreaView style={{ flex: 1 }}>
-        <TailwindProvider utilities={utilities}>
-          <StatusBar backgroundColor='black' barStyle='light-content' translucent />
-          <NotificationCenter />
-          <StackNavigation initialRouts={initialRoute} />
-          <PushController />
-          <Toast />
-        </TailwindProvider>
+        <MenuProvider>
+          <TailwindProvider utilities={utilities}>
+            <StatusBar backgroundColor='black' barStyle='light-content' translucent />
+            <NotificationCenter />
+            <StackNavigation initialRouts={initialRoute} />
+            <PushController />
+            <Toast />
+          </TailwindProvider>
+        </MenuProvider>
       </SafeAreaView>
     );
   }

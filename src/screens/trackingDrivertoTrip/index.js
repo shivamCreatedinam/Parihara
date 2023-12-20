@@ -5,7 +5,6 @@
  * @format
  */
 
-
 import React from 'react';
 import {
     Alert,
@@ -29,6 +28,13 @@ import MapViewDirections from 'react-native-maps-directions';
 import BottomSheet from "react-native-gesture-bottom-sheet";
 import database from '@react-native-firebase/database';
 import Toast from 'react-native-toast-message';
+import Modal from "react-native-modal";
+import {
+    Menu,
+    MenuOptions,
+    MenuOption,
+    MenuTrigger,
+} from 'react-native-popup-menu';
 import globle from '../../../common/env';
 import axios from 'axios';
 
@@ -46,6 +52,7 @@ const DriverTrackToMapsScreen = () => {
     const [PickupPoint, setPickupPoint] = React.useState(null);
     const [DropPoint, setDropPoint] = React.useState(null);
     // distanceTravelled
+    const [TripID, setTripID] = React.useState(routes?.params?.data?.id);
     const [driverID, setDriverID] = React.useState(routes?.params?.data?.driver_id);
     const [DistanceTravelled, setDistanceTravelled] = React.useState(0);
     const [TripOtp, setTripOtp] = React.useState(routes?.params?.data?.trip_otp);
@@ -56,11 +63,13 @@ const DriverTrackToMapsScreen = () => {
     const [Distance, setDistance] = React.useState(null);
     const [Duration, setDuration] = React.useState(null);
     const [Headings, setHeadings] = React.useState(0);
+    const [isCancelPopup, setCancelPopup] = React.useState(false);
 
 
     useFocusEffect(
         React.useCallback(() => {
             // whatever
+            console.error(JSON.stringify(routes?.params?.data?.id))
             setTimeout(() => {
                 // setTimeout
                 getTripDetails();
@@ -87,6 +96,80 @@ const DriverTrackToMapsScreen = () => {
         );
     }
 
+    const cancelUserCurrentTrip = () => {
+        // CancelUserCurrentTrip
+        Alert.alert(
+            'Cancel Current Trip',
+            'Are you sure, you want cancel current active trip?',
+            [
+                { text: 'No', onPress: () => console.warn('close') },
+                { text: 'Yes', onPress: () => setCancelPopup(!isCancelPopup) },
+            ]
+        );
+    }
+
+    const cancelUserCurrentTripHit = async () => {
+        const autoUserGroup = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(autoUserGroup)?.token;
+        // api/user-cancel-trip
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: globle.API_BASE_URL + 'user-cancel-trip',
+            data: {
+                'trip_id': TripID,
+            },
+            headers: {
+                'Authorization': 'Bearer ' + data,
+            }
+        };
+        console.log('cancelUserCurrentTripHit', config);
+        axios.request(config)
+            .then((response) => {
+                // setLoading(false)
+                console.log('cancelUserCurrentTripHit', response.data);
+                if (response.data?.status === false) {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Something went wrong!',
+                        text2: response.data?.message,
+                    });
+                } else if (response.data?.error) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Something went wrong!',
+                        text2: response.data?.error,
+                    });
+                } else {
+                    Toast.show({
+                        type: 'success',
+                        text1: '"Trip canceled successfully.',
+                        text2: response.data?.message,
+                    });
+                    ClearAllDataEndTrip();
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+    const ClearAllDataEndTrip = async () => {
+        // ClearAllDataEndTrip
+        // clear trip, send to home page.
+        let key = '@saveTripDetails';
+        try {
+            await AsyncStorage.removeItem(key);
+            setCancelPopup(!isCancelPopup);
+            navigate.navigate('UserBottomNavigation');
+            return true;
+        }
+        catch (exception) {
+            return false;
+        }
+    }
+
+
     const startTracking = async () => {
         // Set up a listener for your Firebase database reference
         // const valueX = await AsyncStorage.getItem('@autoDriverGroup');
@@ -110,8 +193,8 @@ const DriverTrackToMapsScreen = () => {
             //         longitude: data?.location?.longitude,
             //         latitudeDelta: LATITUDE_DELTA,
             //         longitudeDelta: LONGITUDE_DELTA,
-            //     })
-            // })
+            //     });
+            // });
             console.log('location_has_been_update', JSON.stringify(data?.location?.longitude));
         });
     }
@@ -292,27 +375,74 @@ const DriverTrackToMapsScreen = () => {
                     <Image style={{ height: 50, width: 50, borderRadius: 150, resizeMode: 'contain', marginLeft: 7 }} source={{ uri: globle.IMAGE_BASE_URL + DriverImage }} />
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontWeight: 'bold' }}>{DriverName}</Text>
-                        <TouchableOpacity style={{
-                            marginLeft: 5, paddingTop: 0, marginTop: 1
-                        }}
-                            onPress={() => callToDriver()}
-                        >
+                        <TouchableOpacity style={{ marginLeft: 5, paddingTop: 0, marginTop: 1 }}
+                            onPress={() => callToDriver()} >
                             <Image style={{ width: 15, height: 15, resizeMode: 'contain' }} source={require('../../assets/call.png')} />
                         </TouchableOpacity>
                     </View>
                     <Text style={{ fontWeight: 'bold' }}>{DriverVehicleNo}</Text>
                 </View>
-                <TouchableOpacity onPress={() => handleOnMapsPress()} style={{}}>
+                {/* <TouchableOpacity onPress={() => handleOnMapsPress()} style={{}}>
                     <Image style={{ width: 50, height: 50, resizeMode: 'contain' }} source={require('../../assets/map_icon.png')} />
                     <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'center' }}>Open Map</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </View>
-        <TouchableOpacity style={{ position: 'absolute', top: 150, right: 10, backgroundColor: '#fff', padding: 10, borderRadius: 150 }}>
+        {/* <TouchableOpacity style={{ position: 'absolute', top: 150, right: 10, backgroundColor: '#fff', padding: 10, borderRadius: 150 }}>
             <Text style={{ fontSize: 12, fontWeight: 'bold' }}>
                 {parseFloat(DistanceTravelled).toFixed(2)} km
             </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <Modal isVisible={isCancelPopup}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 20 }}>
+                <TouchableOpacity onPress={() => setCancelPopup(!isCancelPopup)} style={{ padding: 5, elevation: 5, backgroundColor: 'red', borderRadius: 150, width: 30, height: 30, position: 'absolute', top: -40, right: 1, }}>
+                    <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold', marginTop: 2 }}>X</Text>
+                </TouchableOpacity>
+                <View style={{ alignSelf: 'center', paddingVertical: 15 }}>
+                    <Text style={{ textAlign: 'center', fontWeight: '600' }}>Please Choose once of the reason for cancel current trip, you trip deduction amount will be transfer within 12 hours After successfully trip cancel.</Text>
+                </View>
+                <TouchableOpacity onPress={() => cancelUserCurrentTripHit()} style={{ padding: 15, elevation: 5, backgroundColor: '#fff', borderRadius: 5, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image style={{ height: 15, width: 15, resizeMode: 'contain', tintColor: 'grey', marginRight: 10 }} source={require('../../assets/cancel_icon.png')} />
+                    <Text>Wrong pick up location.</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => cancelUserCurrentTripHit()} style={{ padding: 15, elevation: 5, backgroundColor: '#fff', borderRadius: 5, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image style={{ height: 15, width: 15, resizeMode: 'contain', tintColor: 'grey', marginRight: 10 }} source={require('../../assets/cancel_icon.png')} />
+                    <Text>Wrong drop location.</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => cancelUserCurrentTripHit()} style={{ padding: 15, elevation: 5, backgroundColor: '#fff', borderRadius: 5, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image style={{ height: 15, width: 15, resizeMode: 'contain', tintColor: 'grey', marginRight: 10 }} source={require('../../assets/cancel_icon.png')} />
+                    <Text>Plan changed.</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => cancelUserCurrentTripHit()} style={{ padding: 15, elevation: 5, backgroundColor: '#fff', borderRadius: 5, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image style={{ height: 15, width: 15, resizeMode: 'contain', tintColor: 'grey', marginRight: 10 }} source={require('../../assets/cancel_icon.png')} />
+                    <Text>Driver denied ride.</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => cancelUserCurrentTripHit()} style={{ padding: 15, elevation: 5, backgroundColor: '#fff', borderRadius: 5, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image style={{ height: 15, width: 15, resizeMode: 'contain', tintColor: 'grey', marginRight: 10 }} source={require('../../assets/cancel_icon.png')} />
+                    <Text>Waiting time too long.</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => cancelUserCurrentTripHit()} style={{ padding: 15, elevation: 5, backgroundColor: '#fff', borderRadius: 5, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image style={{ height: 15, width: 15, resizeMode: 'contain', tintColor: 'grey', marginRight: 10 }} source={require('../../assets/cancel_icon.png')} />
+                    <Text>Health Emergency.</Text>
+                </TouchableOpacity>
+            </View>
+        </Modal>
+        <Menu style={{ zIndex: 999, position: 'absolute', top: 60, right: 20, }}>
+            <MenuTrigger>
+                <Image style={{ width: 30, height: 30, resizeMode: 'contain' }} source={require('../../assets/see_more.png')} />
+            </MenuTrigger>
+            <MenuOptions>
+                <MenuOption onSelect={() => cancelUserCurrentTrip()} >
+                    <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancel Trip</Text>
+                </MenuOption>
+                <MenuOption onSelect={() => callToDriver()} >
+                    <Text style={{ color: 'black' }}>Call Driver</Text>
+                </MenuOption>
+                <MenuOption onSelect={() => callToDriver()} >
+                    <Text style={{ color: 'black', }}>Close App</Text>
+                </MenuOption>
+            </MenuOptions>
+        </Menu>
     </View>)
 
 }

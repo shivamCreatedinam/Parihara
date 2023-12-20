@@ -27,6 +27,8 @@ import io.invertase.firebase.analytics.ReactNativeFirebaseAnalyticsPackage;
 import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;
 // @react-native-firebase/auth
 import io.invertase.firebase.auth.ReactNativeFirebaseAuthPackage;
+// @react-native-firebase/crashlytics
+import io.invertase.firebase.crashlytics.ReactNativeFirebaseCrashlyticsPackage;
 // @react-native-firebase/database
 import io.invertase.firebase.database.ReactNativeFirebaseDatabasePackage;
 // @react-native-firebase/dynamic-links
@@ -144,6 +146,7 @@ public class PackageList {
       new ReactNativeFirebaseAnalyticsPackage(),
       new ReactNativeFirebaseAppPackage(),
       new ReactNativeFirebaseAuthPackage(),
+      new ReactNativeFirebaseCrashlyticsPackage(),
       new ReactNativeFirebaseDatabasePackage(),
       new ReactNativeFirebaseDynamicLinksPackage(),
       new ReactNativeFirebaseFirestorePackage(),

@@ -46,6 +46,7 @@ const HomeScreen = () => {
     const [searchText, setSearchText] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [visible, setVisible] = React.useState(true);
+    const [visibleLocationPermission, setVisibleLocationPermission] = React.useState(false);
     const [driverData, setDriverData] = React.useState(false);
     const [dutyStatus, setDutyStatus] = React.useState('Off');
     const [appState, setAppState] = React.useState(AppState.currentState);
@@ -183,13 +184,37 @@ const HomeScreen = () => {
     const messageListener = async () => {
         // Foreground State
         messaging().onMessage(async remoteMessage => {
-            console.log('foreground', remoteMessage);
-            onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
-            let infoTrip_ = JSON.stringify(remoteMessage);
-            AsyncStorage.setItem('@tripAddedKeys', infoTrip_);
-            console.log('trip_saved');
-            navigate.navigate('NotificationCenterScreen', remoteMessage);
+            console.log('foreground-', remoteMessage);
+            if (remoteMessage?.notification?.title === 'Dear driver your trip has been canceled by user.') {
+                onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
+                removeCancelTripFromUser();
+            } else {
+                onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
+                let infoTrip_ = JSON.stringify(remoteMessage);
+                AsyncStorage.setItem('@tripAddedKeys', infoTrip_);
+                console.log('trip_saved');
+                navigate.navigate('NotificationCenterScreen', remoteMessage);
+            }
         });
+    }
+
+    const removeCancelTripFromUser = async () => {
+        console.log('removeCancelTripItemValue');
+        let key0 = '@tripAddedKeys';
+        let key1 = '@tripStartedStatusKeys';
+        let key2 = '@tripAcceptStatusKeys';
+        try {
+            await AsyncStorage.removeItem(key0);
+            await AsyncStorage.removeItem(key1);
+            await AsyncStorage.removeItem(key2);
+            navigate.replace('HomeScreen');
+            console.log('DataDeleted');
+            return true;
+        }
+        catch (exception) {
+            console.log('ErrorDataDeleted');
+            return false;
+        }
     }
 
     const checkPreviousDriverActiveTrip = async () => {
@@ -881,7 +906,7 @@ const HomeScreen = () => {
                 </View>
             </View>
             <Dialog
-                visible={visible}
+                visible={visibleLocationPermission}
                 dialogAnimation={new SlideAnimation({
                     slideFrom: 'bottom',
                 })}
