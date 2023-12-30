@@ -57,9 +57,8 @@ const SplashAppScreen = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            // whatever
-            navigation.replace('PermissionScreenMain');
-            // getOneTimeLocation();
+            // whatever 
+            getOneTimeLocation();
             setTimeout(() => {
                 // setTimeout
                 // loadSessionStorage();

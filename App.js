@@ -41,14 +41,15 @@ const App = () => {
 
   const [isupdated, setisupdated] = React.useState(false);
   const appState = React.useRef(AppState.currentState);
-  const [initialRoute, setInitialRoute] = React.useState('SplashAppScreen');
+  const [initialRoute, setInitialRoute] = React.useState('PermissionScreenMain');
+  // PermissionScreenMain / SplashAppScreen
   const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
   const [authenticated, setAuthenticated] = React.useState(true);
 
   React.useEffect(() => {
-    checkPermission();
+    // checkPermission();
     setLongRunTimer();
-    checkAppVersion();
+    // checkAppVersion();
   }, []);
 
   const checkPermission = async () => {

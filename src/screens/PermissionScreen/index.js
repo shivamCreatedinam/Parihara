@@ -1,5 +1,6 @@
 import { Text, View, TouchableOpacity, Image, PermissionsAndroid, BackHandler } from 'react-native';
-import notifee, { AndroidImportance, AndroidBadgeIconType, AndroidVisibility, AndroidColor, AndroidCategory } from '@notifee/react-native';
+import Toast from 'react-native-toast-message';
+import notifee from '@notifee/react-native';
 import React, { Component } from 'react';
 
 export default class PermissionScreenMain extends Component {
@@ -29,9 +30,9 @@ export default class PermissionScreenMain extends Component {
     componentDidFocus = () => {
         this.FilePermission();
         this.CameraPermission();
-        this.PushNotification();
-        this.requestLocationPermission();
-        this.requestLocationBackgroundPermission();
+        // this.PushNotification();
+        // this.requestLocationPermission();
+        // this.requestLocationBackgroundPermission();
     };
 
 
@@ -108,7 +109,7 @@ export default class PermissionScreenMain extends Component {
     async FilePermission(params) {
         try {
             const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
                 {
                     'title': 'Cool Photo App Camera Permission',
                     'message': 'Cool Photo App needs access to your camera ' +
@@ -138,6 +139,18 @@ export default class PermissionScreenMain extends Component {
         }
     }
 
+    checkAllPermission() {
+        if (this.state.cameraPermission === true && this.state.locationBackgroundPermission === true && this.state.locationPermission === true && this.state.notificationPermission === true) {
+            this.props.navigation.replace('SplashAppScreen');
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Required Permissions!',
+                text2: 'Please Accept All The Permission!',
+            });
+        }
+    }
+
     render() {
         return (
             <View style={{ padding: 30, backgroundColor: 'black', flex: 1, }}>
@@ -146,29 +159,29 @@ export default class PermissionScreenMain extends Component {
                     <View style={{ marginBottom: 20 }}>
                         <Image style={{ height: 250, width: 250, resizeMode: 'contain', alignSelf: 'center' }} source={require('../../assets/ic_launcher_round.jpg')} />
                     </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
+                    <TouchableOpacity onPress={() => this.requestLocationPermission()} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Location Permission</Text>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.locationPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.requestLocationBackgroundPermission()} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Location Background Permission</Text>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.locationBackgroundPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.CameraPermission()} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Camera Permission {this.state.cameraPermission}</Text>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.cameraPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
+                    </TouchableOpacity>
+                    {/* <TouchableOpacity onPress={() => this.FilePermission()} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>File Permission</Text>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.filePermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
+                    </TouchableOpacity> */}
+                    <TouchableOpacity onPress={() => this.PushNotification()} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Notification Permission</Text>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.notificationPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
-                    </View>
+                    </TouchableOpacity>
                 </View>
                 <View>
-                    <TouchableOpacity style={{ paddingHorizontal: 20, paddingVertical: 15, elevation: 5, borderRadius: 10, backgroundColor: '#fff' }}>
+                    <TouchableOpacity onPress={() => this.checkAllPermission()} style={{ paddingHorizontal: 20, paddingVertical: 15, elevation: 5, borderRadius: 10, backgroundColor: '#fff' }}>
                         <Text style={{ color: '#000', textAlign: 'center', fontWeight: 'bold', textTransform: 'uppercase' }}>Continue </Text>
                     </TouchableOpacity>
                 </View>
