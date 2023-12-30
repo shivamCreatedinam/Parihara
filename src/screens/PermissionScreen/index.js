@@ -1,4 +1,5 @@
-import { Text, View, TouchableOpacity, Image, PermissionsAndroid, BackHandler } from 'react-native'
+import { Text, View, TouchableOpacity, Image, PermissionsAndroid, BackHandler } from 'react-native';
+import notifee, { AndroidImportance, AndroidBadgeIconType, AndroidVisibility, AndroidColor, AndroidCategory } from '@notifee/react-native';
 import React, { Component } from 'react';
 
 export default class PermissionScreenMain extends Component {
@@ -10,6 +11,7 @@ export default class PermissionScreenMain extends Component {
             locationPermission: false,
             locationBackgroundPermission: false,
             filePermission: false,
+            notificationPermission: false
         }
     }
 
@@ -25,9 +27,37 @@ export default class PermissionScreenMain extends Component {
     }
 
     componentDidFocus = () => {
+        this.FilePermission();
         this.CameraPermission();
+        this.PushNotification();
+        this.requestLocationPermission();
+        this.requestLocationBackgroundPermission();
     };
 
+
+    requestLocationBackgroundPermission = async () => {
+        try {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+                {
+                    title: 'Parihara App',
+                    message: 'Parihara App needs to access your Location',
+                    buttonNegative: 'Cancel',
+                    buttonPositive: 'Okay',
+                },
+            );
+
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                console.log('Location permission GRANTED');
+                this.setState({ locationBackgroundPermission: true });
+            } else {
+                console.log('Location permission denied');
+                this.setState({ locationBackgroundPermission: false });
+            }
+        } catch (error) {
+            console.error('Error in location permission:', error);
+        }
+    };
 
     requestLocationPermission = async () => {
         try {
@@ -42,23 +72,11 @@ export default class PermissionScreenMain extends Component {
             );
 
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                Geolocation.getCurrentPosition(
-                    position => {
-                        console.log('position coords', position.coords);
-                        const { latitude, longitude } = position.coords;
-                        console.log('lat and long', latitude, longitude);
-                        this.setState({ locationPermission: true });
-                    },
-                    error => {
-                        console.log('Error getting location:', error.code, error.message);
-                        this.setState({ locationPermission: false });
-                    },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-                );
-
+                console.log('Location permission GRANTED');
+                this.setState({ locationPermission: true });
             } else {
                 console.log('Location permission denied');
-
+                this.setState({ locationPermission: false });
             }
         } catch (error) {
             console.error('Error in location permission:', error);
@@ -87,6 +105,38 @@ export default class PermissionScreenMain extends Component {
         }
     }
 
+    async FilePermission(params) {
+        try {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+                {
+                    'title': 'Cool Photo App Camera Permission',
+                    'message': 'Cool Photo App needs access to your camera ' +
+                        'so you can take awesome pictures.'
+                }
+            )
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                console.log("You can use the file")
+                this.setState({ filePermission: true });
+            } else {
+                console.log("file permission denied")
+                this.setState({ filePermission: false });
+            }
+        } catch (err) {
+            console.warn(err)
+        }
+    }
+
+    async PushNotification() {
+        try {
+            await notifee.requestPermission();
+            console.log('Notification permissions granted');
+            this.setState({ notificationPermission: true });
+        } catch (error) {
+            console.log('POST_NOTIFICATIONS permission denied', error);
+            this.setState({ notificationPermission: false });
+        }
+    }
 
     render() {
         return (
@@ -98,11 +148,11 @@ export default class PermissionScreenMain extends Component {
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Location Permission</Text>
-                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: 'red' }} source={require('../../assets/circle_green.png')} />
+                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.locationPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Location Background Permission</Text>
-                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: 'red' }} source={require('../../assets/circle_green.png')} />
+                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.locationBackgroundPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Camera Permission {this.state.cameraPermission}</Text>
@@ -110,7 +160,11 @@ export default class PermissionScreenMain extends Component {
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
                         <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>File Permission</Text>
-                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: 'red' }} source={require('../../assets/circle_green.png')} />
+                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.filePermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 15 }}>
+                        <Text style={{ fontSize: 14, color: '#fff', flex: 1 }}>Notification Permission</Text>
+                        <Image style={{ height: 20, width: 20, resizeMode: 'contain', alignSelf: 'center', tintColor: this.state.notificationPermission === true ? null : 'red' }} source={require('../../assets/circle_green.png')} />
                     </View>
                 </View>
                 <View>
