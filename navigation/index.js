@@ -48,6 +48,8 @@ import EnterDropLocationScreen from '../src/screens/EnterDropLocationScreen';
 import RatingAndReviewScreen from '../src/screens/RatingAndReviewScreen';
 import SettingScreen from '../src/screens/SettingScreen';
 import ChangeLanguage from '../src/screens/ChnageLanguage';
+// permission screen
+import PermissionScreenMain from '../src/screens/PermissionScreen';
 // change language 
 const coorg = require('../common/coorg.json');
 const eng = require('../common/eng.json');
@@ -649,9 +651,18 @@ function StackNavigation(initialRouts) {
                         headerTintColor: '#fff',
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
+                <Stack.Screen
+                    name="PermissionScreenMain"
+                    component={PermissionScreenMain}
+                    options={{
+                        title: 'PermissionScreenMain',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // ChangeLanguage
+export default StackNavigation; // PermissionScreenMain

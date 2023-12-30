@@ -181,6 +181,68 @@ const UserHomeScreen = () => {
         }
     }
 
+    const generateDynamicLinks = async () => {
+        try {
+            let trip_id = 'par20981';
+            const link = await dynamicLinks().buildLink({
+                link: `https://theparihara.page.link/rniX?trip_id=${trip_id}`,
+                domainUriPrefix: 'https://theparihara.page.link/parihara',
+                android: {
+                    packageName: 'com.mapilocator',
+                },
+                ios: {
+                    appStoreId: '123456789',
+                    bundleId: 'com.mapilocator',
+                },
+            }, dynamicLinks.ShortLinkType.DEFAULT)
+            console.log('link:', link)
+            return link
+        } catch (error) {
+            console.log('Generating Link Error:', error)
+        }
+    }
+
+    const generateLink = async () => {
+        let trip_id = 'par20981';
+        try {
+
+            dynamicLinks().getInitialLink().then((initialLink) => {
+                console.log('initialLink : ', JSON.stringify(initialLink));
+            });
+
+            const generatedDynamicLink = await dynamicLinks().buildLink({
+                link: `https://theparihara.com/?trip_id=${101}`,
+                domainUriPrefix: 'https://theparihara.page.link/rniX',
+                analytics: {
+                    campaign: 'banner',
+                },
+                navigation: {
+                    forcedRedirectEnabled: true,
+                }
+            }, dynamicLinks.ShortLinkType.UNGUESSABLE);
+
+            // const link = await dynamicLinks().buildShortLink({
+            //     link: `https://theparihara.page.link/parihara?trip_id=${trip_id}`,
+            //     domainUriPrefix: 'https://theparihara.page.link',
+            //     ios: {
+            //         bundleId: 'com.mapilocator',
+            //         appStoreId: '34354',
+            //         fallbackUrl: 'https://apps.apple.com/us/app/reelweb-app/id1535962213',
+            //     },
+            //     android: {
+            //         packageName: 'com.mapilocator',
+            //         fallbackUrl: 'https://play.google.com/store/apps/details?id=com.mapilocator',
+            //     },
+            //     navigation: {
+            //         forcedRedirectEnabled: true,
+            //     }
+            // }, dynamicLinks.ShortLinkType.UNGUESSABLE);
+            console.warn('generateDynamicLinks', generatedDynamicLink);
+        } catch (error) {
+            console.warn('error_x', error)
+        }
+    }
+
     const onDisplayNotification = async () => {
         try {
             const links = dynamicLinks();
@@ -539,7 +601,7 @@ const UserHomeScreen = () => {
                     </TouchableOpacity>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
                         <Text style={{ flex: 1, color: '#000', fontWeight: 'bold', }}>{selectedLanguage === 'Coorg' ? coorg.crg.your_last_trip : eng.en.your_last_trip}</Text>
-                        <TouchableOpacity style={{}} onPress={() => onDisplayNotification()}>
+                        <TouchableOpacity style={{}} onPress={() => generateDynamicLinks()}>
                             <Text style={{ fontWeight: 'bold', fontSize: 10, color: '#000' }}>{selectedLanguage === 'Coorg' ? coorg.crg.view_all : eng.en.view_all}</Text>
                         </TouchableOpacity>
                     </View>

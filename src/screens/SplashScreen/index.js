@@ -18,7 +18,9 @@ import {
     PermissionsAndroid
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import dynamicLinks from '@react-native-firebase/dynamic-links';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import crashlytics from '@react-native-firebase/crashlytics';
 import notifee,
 {
     AndroidImportance,
@@ -56,13 +58,33 @@ const SplashAppScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             // whatever
-            getOneTimeLocation();
+            navigation.replace('PermissionScreenMain');
+            // getOneTimeLocation();
             setTimeout(() => {
                 // setTimeout
                 // loadSessionStorage();
             }, 3000);
         }, [])
     );
+
+    const handleDynamicLink = link => {
+        // Handle dynamic link inside your own application
+        console.log('handleDynamicLink-------------->', link);
+    };
+
+    React.useEffect(() => {
+        const unsubscribe = dynamicLinks().onLink(handleDynamicLink);
+        // When the component is unmounted, remove the listener
+        return () => unsubscribe();
+    }, []);
+
+    React.useEffect(() => {
+        dynamicLinks()
+            .getInitialLink()
+            .then(link => {
+                console.log('handleDynamicLink-------------->', link);
+            });
+    }, []);
 
     React.useEffect(() => {
         messageListener();
@@ -85,18 +107,19 @@ const SplashAppScreen = () => {
                 }
             } else if (valueX === 'User') {
                 // updateTokenProfile(); RatingAndReviewScreen
+                checkCurrentTripDetails();
                 // navigation.replace('UserBottomNavigation');
                 // navigation.replace('RatingAndReviewScreen');
-                console.log('addEventListener2', JSON.parse(value));
-                // check current active trip first /// ---><><><<><><><><><><><><><>
-                const valueX = await AsyncStorage.getItem('@saveTripDetails');
-                let data = JSON.parse(valueX);
-                console.log('updateUserTokenProfile', JSON.stringify(data));
-                if (data?.tripEnable === true) {
-                    navigation.replace('DriverTrackToMapsScreen', data?.details);
-                } else {
-                    navigation.replace('UserBottomNavigation');
-                }
+                // console.log('addEventListener2', JSON.parse(value));
+                // // check current active trip first /// ---><><><<><><><><><><><><><>
+                // const valueX = await AsyncStorage.getItem('@saveTripDetails');
+                // let data = JSON.parse(valueX);
+                // console.log('updateUserTokenProfile', JSON.stringify(data));
+                // if (data?.tripEnable === true) {
+                //     navigation.replace('DriverTrackToMapsScreen', data?.details);
+                // } else {
+                //     navigation.replace('UserBottomNavigation');
+                // }
             } else {
                 console.log('loadSessionStorage3', JSON.stringify(value));
                 navigation.replace('ChangeLanguage');
@@ -105,6 +128,45 @@ const SplashAppScreen = () => {
             console.log('addEventListener4', JSON.stringify(e));
             // error reading value
         }
+    }
+
+
+
+    const checkCurrentTripDetails = async () => {
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        const fcmToken = await messaging().getToken();
+        let data = JSON.parse(valueX)?.token;
+        crashlytics().log(data);
+        var formdata = new FormData();
+        formdata.append('token', fcmToken);
+        var requestOptions = {
+            method: 'GET',
+            // body: formdata,
+            redirect: 'follow',
+            headers: {
+                'Authorization': 'Bearer ' + data,
+            }
+        };
+        console.log('checkCurrentTripDetails', JSON.stringify(requestOptions))
+        fetch(Global.API_BASE_URL + 'user-active-trip', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                if (result.status) {
+                    console.log('checkCurrentTripDetailsX', JSON.stringify(result));
+
+                } else {
+                    console.log('checkCurrentTripDetailsY', JSON.stringify(result));
+                    navigation.replace('UserBottomNavigation');
+                }
+            })
+            .catch((error) => {
+                console.log('error', error);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Something went wrong!',
+                    text2: error,
+                });
+            });
     }
 
     const DriverLocationUpdate = async (id, latitude, longitude) => {
@@ -547,7 +609,7 @@ const SplashAppScreen = () => {
             <ActivityIndicator style={{ position: 'absolute', alignItems: 'center', bottom: 160, alignSelf: 'center' }} color={'#FAD323'} size={'large'} />
             <View style={{ marginTop: Dimensions.get('screen').height / 6, alignItems: 'center' }}>
                 <Image style={{ height: 250, width: 250, resizeMode: 'contain' }} source={require('../../assets/ic_launcher_round.jpg')} />
-                <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 11 }} >Go Driving</Text>
+                {/* <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 11 }} >Go Driving</Text> */}
             </View>
         </View>
     );

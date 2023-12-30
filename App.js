@@ -30,7 +30,7 @@ import { TailwindProvider } from 'tailwind-rn';
 import utilities from './tailwind.json';
 import data from './package.json';
 import DeviceInfo from "react-native-device-info";
-import notifee from '@notifee/react-native';
+import notifee from '@notifee/react-native'; 
 import NotificationCenter from './NotificationCenter';
 import BackgroundTimer from "react-native-background-timer";
 import Geolocation from '@react-native-community/geolocation';
@@ -224,6 +224,7 @@ const App = () => {
       console.error('Error checking app version:', error);
     }
   };
+ 
 
   if (isupdated) {
     return <ImageBackground
