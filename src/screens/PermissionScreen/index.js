@@ -6,13 +6,18 @@ export default class PermissionScreenMain extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            cameraPermission: false
+            cameraPermission: false,
+            locationPermission: false,
+            locationBackgroundPermission: false,
+            filePermission: false,
         }
     }
 
     async componentDidMount() {
         BackHandler.addEventListener('hardwareBackPress', this.onBackClick);
-        this.props.navigation.addListener('focus', () => this.componentDidFocus());
+        this.props.navigation.addListener('focus', () => {
+            this.componentDidFocus()
+        });
     }
 
     onBackClick() {
@@ -42,9 +47,11 @@ export default class PermissionScreenMain extends Component {
                         console.log('position coords', position.coords);
                         const { latitude, longitude } = position.coords;
                         console.log('lat and long', latitude, longitude);
+                        this.setState({ locationPermission: true });
                     },
                     error => {
                         console.log('Error getting location:', error.code, error.message);
+                        this.setState({ locationPermission: false });
                     },
                     { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
                 );
