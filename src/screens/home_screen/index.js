@@ -166,7 +166,6 @@ const HomeScreen = () => {
                     getProfileActiveStatus();
                     updateDriverLocation();
                     requestPermission();
-                    checkPreviousDriverActiveTrip();
                     setVisible(false);
                 } else {
                     setVisible(true);
@@ -190,10 +189,10 @@ const HomeScreen = () => {
                 removeCancelTripFromUser();
             } else {
                 onDisplayNotificationx(remoteMessage?.notification?.android?.channelId, remoteMessage?.notification?.title, remoteMessage?.notification?.body);
-                let infoTrip_ = JSON.stringify(remoteMessage);
+                let infoTrip_ = JSON.stringify(remoteMessage.data);
                 AsyncStorage.setItem('@tripAddedKeys', infoTrip_);
-                console.log('trip_saved');
-                navigate.navigate('NotificationCenterScreen', remoteMessage);
+                console.log('trip_saved', JSON.parse(infoTrip_));
+                navigate.navigate('NotificationCenterScreen', remoteMessage.data);
             }
         });
     }
@@ -223,7 +222,7 @@ const HomeScreen = () => {
         const tripAcceptStatusKeys = await AsyncStorage.getItem('@tripAcceptStatusKeys');
         console.warn('tripAcceptStatusKeys', tripAcceptStatusKeys);
         console.warn('tripStartedStatus', tripStartedStatus);
-        console.warn('no_active_trip', JSON.parse(autoDriverActiveTrip));
+        console.warn('no_active_trip------------>', JSON.stringify(autoDriverActiveTrip?.data));
         // @tripAcceptStatusKeys
         if (tripAcceptStatusKeys === 'true') {
             navigate.navigate('NotificationCenterScreen', JSON.parse(autoDriverActiveTrip));
@@ -355,9 +354,10 @@ const HomeScreen = () => {
         };
         axios(authOptions)
             .then((response) => {
-                if (response.data.driver_activated) {
+                console.warn('response.data?.driver_activated', JSON.stringify(response.data))
+                if (response.data?.driver?.duty_status === "On") {
                     setLoading(false); // driver_activated
-                    setDriverActivated(response.data?.driver_activated);
+                    setDriverActivated(true); // response.data?.driver_activated
                     setErrorMessage(response.data?.message);
                 } else {
                     setLoading(false);

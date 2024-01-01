@@ -17,7 +17,7 @@ import {
   ImageBackground,
   Image,
   Linking,
-  Platform
+  Platform,
 } from 'react-native';
 import { MenuProvider } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
@@ -30,7 +30,7 @@ import { TailwindProvider } from 'tailwind-rn';
 import utilities from './tailwind.json';
 import data from './package.json';
 import DeviceInfo from "react-native-device-info";
-import notifee from '@notifee/react-native'; 
+import notifee from '@notifee/react-native';
 import NotificationCenter from './NotificationCenter';
 import BackgroundTimer from "react-native-background-timer";
 import Geolocation from '@react-native-community/geolocation';
@@ -51,6 +51,28 @@ const App = () => {
     setLongRunTimer();
     // checkAppVersion();
   }, []);
+
+  const handleDeepLink = async url => {
+    const newUrl = url.url;
+    const waId = newUrl.slice(newUrl.indexOf('=') + 1);
+
+    var myHeaders = new Headers();
+    myHeaders.append('clientId', strings.clientId);
+    myHeaders.append('clientSecret', strings.clientSecret);
+    myHeaders.append('Content-Type', 'application/json');
+
+    console.log('handleDeepLink', JSON.stringify(myHeaders));
+  };
+
+  React.useEffect(() => {
+    const linkingEvent = Linking.addEventListener('url', handleDeepLink);
+    Linking.getInitialURL().then(url => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+    return () => null;
+  }, [handleDeepLink]);
 
   const checkPermission = async () => {
     const enabled = await messaging().hasPermission();
@@ -225,7 +247,7 @@ const App = () => {
       console.error('Error checking app version:', error);
     }
   };
- 
+
 
   if (isupdated) {
     return <ImageBackground

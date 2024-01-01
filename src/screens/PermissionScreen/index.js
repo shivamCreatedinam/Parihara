@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, Image, PermissionsAndroid, BackHandler } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import notifee from '@notifee/react-native';
 import React, { Component } from 'react';
@@ -27,9 +28,18 @@ export default class PermissionScreenMain extends Component {
         console.log("You can use the camera");
     }
 
-    componentDidFocus = () => {
-        this.FilePermission();
-        this.CameraPermission();
+    componentDidFocus = async () => {
+        try {
+            const value = await AsyncStorage.getItem('@permissioncheck');
+            console.error('componentDidFocus', JSON.stringify(value))
+            if (value === 'true') {
+                this.props.navigation.replace('SplashAppScreen');
+            }
+        } catch (error) {
+            console.error('componentDidFocus', JSON.stringify(error))
+        }
+        // this.FilePermission();
+        // this.CameraPermission();
         // this.PushNotification();
         // this.requestLocationPermission();
         // this.requestLocationBackgroundPermission();
@@ -139,9 +149,11 @@ export default class PermissionScreenMain extends Component {
         }
     }
 
-    checkAllPermission() {
+    async checkAllPermission() {
         if (this.state.cameraPermission === true && this.state.locationBackgroundPermission === true && this.state.locationPermission === true && this.state.notificationPermission === true) {
+            AsyncStorage.setItem('@permissioncheck', 'true');
             this.props.navigation.replace('SplashAppScreen');
+            console.warn('saved')
         } else {
             Toast.show({
                 type: 'error',

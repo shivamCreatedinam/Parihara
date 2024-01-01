@@ -21,6 +21,7 @@ import messaging from '@react-native-firebase/messaging';
 import dynamicLinks from '@react-native-firebase/dynamic-links';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import crashlytics from '@react-native-firebase/crashlytics';
+import GetLocation from 'react-native-get-location';
 import notifee,
 {
     AndroidImportance,
@@ -151,8 +152,8 @@ const SplashAppScreen = () => {
             .then(response => response.json())
             .then(result => {
                 if (result.status) {
-                    console.log('checkCurrentTripDetailsX', JSON.stringify(result));
-
+                    console.log('checkCurrentTripDetailsX', JSON.stringify(result?.data));
+                    navigation.replace('DriverTrackToMapsScreen', result?.data);
                 } else {
                     console.log('checkCurrentTripDetailsY', JSON.stringify(result));
                     navigation.replace('UserBottomNavigation');
@@ -160,11 +161,6 @@ const SplashAppScreen = () => {
             })
             .catch((error) => {
                 console.log('error', error);
-                Toast.show({
-                    type: 'success',
-                    text1: 'Something went wrong!',
-                    text2: error,
-                });
             });
     }
 
@@ -181,10 +177,34 @@ const SplashAppScreen = () => {
                 if (response.data?.status) {
                     console.log(JSON.stringify(response.data?.message));
                     // go with active trip
-                    navigation.replace('HomeScreen');
-                    //         console.log('addEventListener1', JSON.parse(valueXX));
+                    checkCurrentActiveDriverTrip(id)
+                    // navigation.replace('HomeScreen');
+                    // console.log('addEventListener1', JSON.parse(valueXX));
                 } else {
                     console.log('location status update fails' + JSON.stringify(response.data));
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+    const checkCurrentActiveDriverTrip = async (id) => {
+        var authOptions = {
+            method: 'GET',
+            url: Global.API_BASE_URL + `driver-active-trip?driver_id=${id}`,
+            headers: { 'Content-Type': 'application/json' },
+            json: true,
+        };
+        axios(authOptions)
+            .then((response) => {
+                console.log('checkCurrentActiveDriverTrip', response?.data);
+                if (response.data.status) {
+                    // setLoading(false);
+                    navigation.replace('NotificationCenterScreen', response?.data?.data);
+                } else {
+                    console.log('checkCurrentActiveDriverTrip', response?.data?.data);
+                    navigation.replace('HomeScreen');
                 }
             })
             .catch((error) => {
@@ -484,42 +504,57 @@ const SplashAppScreen = () => {
     };
 
     const getOneTimeLocation = async () => {
-        console.log('Getting Location. Please Wait.');
-        Geolocation.getCurrentPosition(
-            //Will give you the current location
-            position => {
-                //getting the Longitude from the location json
-                const currentLongitude = JSON.stringify(position.coords.longitude);
-
-                //getting the Latitude from the location json
-                const currentLatitude = JSON.stringify(position.coords.latitude);
-
-                var region = {
-                    latitudeDelta,
-                    longitudeDelta,
-                    latitude: parseFloat(currentLatitude),
-                    longitude: parseFloat(currentLongitude),
-                };
-                console.log('getOneTimeLocation', JSON.stringify(region));
-                // this.setState({
-                //   showLoading: false,
-                //   region: region,
-                //   forceRefresh: Math.floor(Math.random() * 100),
-                // });
-                getCurrentAddress(currentLatitude, currentLongitude);
-            },
-            error => {
-                console.log('We are not able to find you location, Please Enter Manually');
-                // checkAgainLocationPermission();
-                RNRestart.restart();
-                // console.log('error.message', error.message);
-            },
-            {
+        console.error('getOneTimeLocation')
+        try {
+            GetLocation.getCurrentPosition({
                 enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 10000,
-            },
-        );
+                timeout: 60000,
+            })
+                .then(location => {
+                    getCurrentAddress(location.latitude, location.longitude);
+                })
+                .catch(error => {
+                    const { code, message } = error;
+                    console.warn(code, message);
+                })
+        } catch (error) {
+            console.error('getOneTimeLocationX', JSON.stringify(error))
+        }
+        // Geolocation.getCurrentPosition(
+        //     //Will give you the current location
+        //     position => {
+        //         //getting the Longitude from the location json
+        //         const currentLongitude = JSON.stringify(position.coords.longitude);
+
+        //         //getting the Latitude from the location json
+        //         const currentLatitude = JSON.stringify(position.coords.latitude);
+
+        //         var region = {
+        //             latitudeDelta,
+        //             longitudeDelta,
+        //             latitude: parseFloat(currentLatitude),
+        //             longitude: parseFloat(currentLongitude),
+        //         };
+        //         console.log('getOneTimeLocation', JSON.stringify(region));
+        //         // this.setState({
+        //         //   showLoading: false,
+        //         //   region: region,
+        //         //   forceRefresh: Math.floor(Math.random() * 100),
+        //         // });
+        //         getCurrentAddress(currentLatitude, currentLongitude);
+        //     },
+        //     error => {
+        //         console.log('We are not able to find you location, Please Enter Manually');
+        //         // checkAgainLocationPermission();
+        //         RNRestart.restart();
+        //         // console.log('error.message', error.message);
+        //     },
+        //     {
+        //         enableHighAccuracy: false,
+        //         timeout: 5000,
+        //         maximumAge: 10000,
+        //     },
+        // );
     };
 
     const checkAgainLocationPermission = async () => {

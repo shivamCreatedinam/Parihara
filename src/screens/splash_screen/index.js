@@ -50,21 +50,21 @@ const NotificationCenterScreen = () => {
     const bottomSheet = React.useRef();
     const UserbottomSheet = React.useRef();
     const [loader, serLoader] = React.useState(false);
-    const [RequestId, setTripRequestId] = React.useState(routes.params?.data?.id);
-    const [TripUserId, setTripUserId] = React.useState(routes.params?.data?.user_id);
-    const [FromState, setFromState] = React.useState(routes.params?.data?.from_state);
-    const [FromCity, setFromCity] = React.useState(routes.params?.data?.from_city);
-    const [ToCity, setToCity] = React.useState(routes.params?.data?.to_city);
-    const [ToState, setToState] = React.useState(routes.params?.data?.to_state);
-    const [distance, setDistance] = React.useState(routes.params?.data?.distance);
-    const [from_address, setFaddress] = React.useState(routes.params?.data?.from_address);
-    const [to_address, setTaddress] = React.useState(routes.params?.data?.to_address);
-    const [trip_cost, setTripcost] = React.useState(routes.params?.data?.price);
-    const [tripType, setTripType] = React.useState(routes.params?.data?.trip_type);
-    let [startPoint, setStartPoint] = React.useState({ latitude: routes.params?.data?.from_lat, longitude: routes.params?.data?.from_long, });
-    let [endPoint, setEndPoint] = React.useState({ latitude: routes.params?.data?.to_lat, longitude: routes.params?.data?.to_long, });
+    const [RequestId, setTripRequestId] = React.useState(routes.params?.id);
+    const [TripUserId, setTripUserId] = React.useState(routes.params?.user_id);
+    const [FromState, setFromState] = React.useState(routes.params?.from_state);
+    const [FromCity, setFromCity] = React.useState(routes.params?.from_city);
+    const [ToCity, setToCity] = React.useState(routes.params?.to_city);
+    const [ToState, setToState] = React.useState(routes.params?.to_state);
+    const [distance, setDistance] = React.useState(routes.params?.distance);
+    const [from_address, setFaddress] = React.useState(routes.params?.from_address);
+    const [to_address, setTaddress] = React.useState(routes.params?.to_address);
+    const [trip_cost, setTripcost] = React.useState(routes.params?.price);
+    const [tripType, setTripType] = React.useState(routes.params?.trip_type);
+    let [startPoint, setStartPoint] = React.useState({ latitude: routes.params?.from_lat, longitude: routes.params?.from_long, });
+    let [endPoint, setEndPoint] = React.useState({ latitude: routes.params?.to_lat, longitude: routes.params?.to_long, });
     const [marker, setMarker] = React.useState(false);
-    const [TripStarted, setTripStarted] = React.useState(false);
+    const [TripStarted, setTripStarted] = React.useState(routes.params?.otp_verified);
     const [isTripStartedStatus, setTripStartedStatus] = React.useState(false);
     const [StartTripOTP, setStartTripOTP] = React.useState('');
     const [loading, setLoading] = React.useState(false);
@@ -73,7 +73,8 @@ const NotificationCenterScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             // whatever
-            checkActveTripIsAvailable();
+            // checkActveTripIsAvailable();
+            console.warn('routes-------------------->', JSON.stringify(routes?.params));
             setTimeout(() => {
                 // setTimeout
                 setLoading(true);
@@ -113,7 +114,7 @@ const NotificationCenterScreen = () => {
             console.log(info?.coords?.latitude, info?.coords?.longitude);
             var formdata = new FormData();
             formdata.append('driver_id', data);
-            formdata.append('request_id', routes.params?.data?.id);
+            formdata.append('request_id', routes.params?.id);
             formdata.append('driver_latitude', info?.coords?.latitude);
             formdata.append('driver_longitude', info?.coords?.longitude);
             var requestOptions = {
@@ -164,7 +165,7 @@ const NotificationCenterScreen = () => {
         let data = JSON.parse(valueX)?.id;
         Geolocation.getCurrentPosition(info => {
             var formdata = new FormData();
-            formdata.append('request_id', routes.params?.data?.id);
+            formdata.append('request_id', routes.params?.id);
             var requestOptions = {
                 method: 'POST',
                 body: formdata,
@@ -209,7 +210,7 @@ const NotificationCenterScreen = () => {
         AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
         AsyncStorage.setItem('@tripAcceptStatusKeys', 'true');
         console.log('trip_saved');
-        setTripStarted(true);
+        // setTripStarted(true);
         setLoading(true);
     }
 
@@ -256,7 +257,7 @@ const NotificationCenterScreen = () => {
                     if (response.data.status) {
                         console.log('loggedUsingSubmitMobileIn', response.data);
                         bottomSheet.current.close();
-                        saveTripDetails();
+                        // saveTripDetails();
                     } else {
                         Toast.show({
                             type: 'error',
@@ -301,9 +302,9 @@ const NotificationCenterScreen = () => {
         console.warn('tripAcceptStatusKeysY', tripAcceptStatusKeys);
         console.warn('tripStartedStatusZ', tripStartedStatus);
         if (tripAcceptStatusKeys === null) {
-            setTripStarted(false);
+            // setTripStarted(false);
         } else if (tripAcceptStatusKeys === 'true') {
-            setTripStarted(true);
+            // setTripStarted(true);
             if (tripStartedStatus === 'true') {
                 setTripStartedStatus(true);
             } else {
@@ -518,14 +519,14 @@ const NotificationCenterScreen = () => {
                         <Image style={{ width: 50, height: 50, resizeMode: 'contain' }} source={require('../../assets/greenMarker.png')} />
                     </Marker> : null}
                 </MapView> : <ActivityIndicator style={{ alignItems: 'center', marginTop: width / 2.3 }} size={'large'} color={'red'} />}
-            <View style={{ padding: 20, backgroundColor: '#fdfbf2', position: 'absolute', bottom: 30, left: 20, width: width - 40, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'none' : 'flex' }}>
+            <View style={{ padding: 20, backgroundColor: '#fdfbf2', position: 'absolute', bottom: 30, left: 20, width: width - 40, borderRadius: 10, elevation: 5, display: Number(TripStarted) === 0 || Number(TripStarted) === 1 ? 'none' : 'flex' }}>
                 <View>
                     <Image style={{ height: 50, width: 50, resizeMode: 'contain', alignSelf: 'center', marginBottom: 5 }} source={require('../../assets/auto_icon.png')} />
                     <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 16, textTransform: 'capitalize' }}>{routes.params?.notification?.title}</Text>
                 </View>
                 <View style={{ flexDirection: 'column', alignItems: 'center', alignSelf: 'center', marginBottom: 15, marginTop: 15 }}>
                     <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12 }}>{from_address}</Text>
-                    <Text style={{ fontWeight: 'bold', margin: 10 }}>To </Text>
+                    <Text style={{ fontWeight: 'bold', margin: 10 }}>To {TripStarted}</Text>
                     <Text style={{ fontWeight: 'bold', fontSize: 12 }}>{to_address}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
@@ -608,13 +609,13 @@ const NotificationCenterScreen = () => {
                     </TouchableOpacity>
                 </View>
             </Modal>
-            <View style={{ padding: 20, backgroundColor: '#ffffff', position: 'absolute', bottom: 50, left: 20, right: 20, borderRadius: 10, elevation: 5, display: TripStarted === true ? 'flex' : 'none' }}>
+            <View style={{ padding: 20, backgroundColor: '#ffffff', position: 'absolute', bottom: 50, left: 20, right: 20, borderRadius: 10, elevation: 5, display: Number(TripStarted) === 0 || Number(TripStarted) === 1 ? 'flex' : 'none' }}>
                 <TouchableOpacity onPress={() => UserbottomSheet.current.show()} style={{ flex: 1, alignItems: 'center', padding: 10, marginBottom: 10 }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>Passanger Details ↑</Text>
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 1, marginRight: 15 }}>
-                        {isTripStartedStatus === true ? <TouchableOpacity onPress={() => setTripEnd()} style={{ padding: 15, elevation: 5, backgroundColor: '#913831', borderRadius: 5 }}>
+                        {routes.params?.trip_otp !== null ? <TouchableOpacity onPress={() => setTripEnd()} style={{ padding: 15, elevation: 5, backgroundColor: '#913831', borderRadius: 5 }}>
                             <Text style={{ color: '#fff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>End Trip 🛺</Text>
                         </TouchableOpacity> : <TouchableOpacity onPress={() => bottomSheet.current.show()} style={{ padding: 15, elevation: 5, backgroundColor: '#008000', borderRadius: 5 }}>
                             <Text style={{ color: '#fff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>Start Trip 🛺</Text>

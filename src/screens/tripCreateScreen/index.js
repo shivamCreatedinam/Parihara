@@ -90,7 +90,7 @@ const TripCreateScreen = () => {
         const unsubscribe = messaging().onMessage((remoteMessage) => {
             if (remoteMessage.notification) {
                 setBookingVisible(false);
-                saveOrStartTripTracking(remoteMessage);
+                saveOrStartTripTracking(remoteMessage.data);
                 return () => {
                     setMessage(null);
                 };

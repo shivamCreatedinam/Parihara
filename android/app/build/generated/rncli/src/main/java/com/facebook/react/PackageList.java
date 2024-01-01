@@ -61,6 +61,8 @@ import com.devfd.RNGeocoder.RNGeocoderPackage;
 import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
 // react-native-gesture-handler
 import com.swmansion.gesturehandler.RNGestureHandlerPackage;
+// react-native-get-location
+import com.github.douglasjunior.reactNativeGetLocation.ReactNativeGetLocationPackage;
 // react-native-image-crop-picker
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 // react-native-loader-kit
@@ -163,6 +165,7 @@ public class PackageList {
       new RNGeocoderPackage(),
       new RNFusedLocationPackage(),
       new RNGestureHandlerPackage(),
+      new ReactNativeGetLocationPackage(),
       new PickerPackage(),
       new LoaderKitPackage(),
       new RNLocationPackage(),

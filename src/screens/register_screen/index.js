@@ -153,9 +153,9 @@ const RegisterScreen = () => {
     }
 
     return (
-        <View style={{ padding: 20, flex: 1 }}>
-            <KeyboardAvoidingView style={{ elevation: 5,flex:1, padding: 20, backgroundColor: '#FFEEBB', borderRadius: 10, marginBottom: 90, top: 35 }} behavior='position'>
-               
+        <View style={{ padding: 20, flex: 1, paddingBottom: 20, marginBottom: 20 }}>
+            <ScrollView style={{ flex: 1, marginVertical: 20 }}>
+                <View style={{ elevation: 5, flex: 1, padding: 20, backgroundColor: '#FFEEBB', borderRadius: 10, marginBottom: 0, top: 35 }} behavior='padding'>
                     <View style={{ padding: 20 }}>
                         <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 75, marginBottom: 20, borderRadius: 150 }} source={require('../../assets/ic_launcher_round.jpg')} />
                     </View>
@@ -223,22 +223,16 @@ const RegisterScreen = () => {
                             fontWeight: 'bold',
                             textTransform: 'uppercase',
                             textAlign: 'center',
-                            marginLeft: 120
+                            marginLeft: 120,
+                            fontSize: 14
                         }}>Login</Text>
                         <Image style={{ width: 12, height: 12, resizeMode: 'contain', tintColor: 'white', marginLeft: 10 }} source={require('../../assets/driver_icon.png')} />
                     </TouchableOpacity>
                     <View style={{ marginTop: 20 }}>
                         <Text style={{ color: '#FE0000', fontWeight: 'bold', fontSize: 10 }}>{errors}</Text>
                     </View>
-                    {/* <Pressable onPress={() => logOut()}>
-                    <Text>Logout</Text>
-                </Pressable>
-                <View>
-                    <Text>Welcome {user?.email}</Text>
-                    <Text>Welcome {JSON.stringify(user?.uid)}</Text>
-                </View> */}
-
-            </KeyboardAvoidingView>
+                </View>
+            </ScrollView>
         </View>
     );
 

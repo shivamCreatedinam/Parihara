@@ -52,13 +52,13 @@ const DriverTrackToMapsScreen = () => {
     const [PickupPoint, setPickupPoint] = React.useState(null);
     const [DropPoint, setDropPoint] = React.useState(null);
     // distanceTravelled
-    const [TripID, setTripID] = React.useState(routes?.params?.data?.id);
-    const [driverID, setDriverID] = React.useState(routes?.params?.data?.driver_id);
+    const [TripID, setTripID] = React.useState(routes?.params?.id);
+    const [driverID, setDriverID] = React.useState(routes?.params?.driver_id);
     const [DistanceTravelled, setDistanceTravelled] = React.useState(0);
-    const [TripOtp, setTripOtp] = React.useState(routes?.params?.data?.trip_otp);
-    const [DriverName, setDriverName] = React.useState(routes?.params?.data?.drivername);
-    const [DriverImage, setDriverImage] = React.useState(routes?.params?.data?.drv_image);
-    const [DriverVehicleNo, setDriverVehicleNo] = React.useState(routes?.params?.data?.vehicle_no);
+    const [TripOtp, setTripOtp] = React.useState(routes?.params?.trip_otp);
+    const [DriverName, setDriverName] = React.useState(routes?.params?.drivername);
+    const [DriverImage, setDriverImage] = React.useState(routes?.params?.drv_image);
+    const [DriverVehicleNo, setDriverVehicleNo] = React.useState(routes?.params?.vehicle_no);
     const [Speed, setSpeed] = React.useState(0.0);
     const [Distance, setDistance] = React.useState(null);
     const [Duration, setDuration] = React.useState(null);
@@ -69,7 +69,7 @@ const DriverTrackToMapsScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             // whatever
-            console.error(JSON.stringify(routes?.params?.data?.id))
+            console.error('DriverTrackToMapsScreen', JSON.stringify(routes?.params))
             setTimeout(() => {
                 // setTimeout
                 getTripDetails();
@@ -224,20 +224,13 @@ const DriverTrackToMapsScreen = () => {
     };
 
     const getTripDetails = async () => {
-        console.log('Tracking_Start_New', JSON.stringify(routes?.params?.data?.driver_id));
-        const autoUserGroup = await AsyncStorage.getItem('@autoUserGroup');
-        let data = JSON.parse(autoUserGroup)?.token;
-        const valueX = await AsyncStorage.getItem('@autoEndTrip');
-        const valueXX = await AsyncStorage.getItem('@fromTrip');
-        let to_location = JSON.parse(valueX);
-        let from_location = JSON.parse(valueXX);
         const pickup_point = {
-            latitude: from_location?.latitude,
-            longitude: from_location?.longitude
+            latitude: parseFloat(routes?.params?.from_lat),
+            longitude: parseFloat(routes?.params?.from_long)
         }
         const drop_point = {
-            latitude: to_location?.latitude,
-            longitude: to_location?.longitude
+            latitude: parseFloat(routes?.params?.to_lat),
+            longitude: parseFloat(routes?.params?.to_long)
         }
         console.log('getTripDetails', pickup_point);
         console.log('getTripDetails', drop_point);
@@ -245,20 +238,6 @@ const DriverTrackToMapsScreen = () => {
         setDropPoint(drop_point);
         setLoading(true);
         startTracking();
-        // this.setState({
-        //     latitude: from_location?.latitude,
-        //     longitude: from_location?.longitude,
-        //     tripEndPoint: {
-        //         latitude: to_location?.latitude,
-        //         longitude: to_location?.longitude,
-        //     }, coordinate: new AnimatedRegion({
-        //         latitude: from_location?.latitude,
-        //         longitude: from_location?.longitude,
-        //         latitudeDelta: 0,
-        //         longitudeDelta: 0,
-        //     }),
-        //     loading: false,
-        // })
     }
 
     const handleOnMapsPress = () => {
@@ -296,8 +275,8 @@ const DriverTrackToMapsScreen = () => {
             'Call Driver',
             'Are you sure, you want to call Driver?',
             [
-                { text: 'No', onPress: () => console.log('cancel', JSON.stringify(routes?.params?.data?.mobile)) },
-                { text: 'Yes', onPress: () => Linking.openURL(`tel:${routes?.params?.data?.mobile}`) },
+                { text: 'No', onPress: () => console.log('cancel', JSON.stringify(routes?.params?.mobile)) },
+                { text: 'Yes', onPress: () => Linking.openURL(`tel:${routes?.params?.drivermobile}`) },
             ]
         );
     }
@@ -313,8 +292,8 @@ const DriverTrackToMapsScreen = () => {
                 mapType={MapView.MAP_TYPES.TERRIN}
                 followUserLocation
                 initialRegion={{
-                    latitude: PickupPoint?.latitude,
-                    longitude: PickupPoint?.latitude,
+                    latitude: parseFloat(routes?.params?.from_lat),
+                    longitude: parseFloat(routes?.params?.from_long),
                     latitudeDelta: LATITUDE_DELTA,
                     longitudeDelta: LONGITUDE_DELTA
                 }}>
@@ -366,12 +345,13 @@ const DriverTrackToMapsScreen = () => {
                 </Marker.Animated>
             </MapView> : <ActivityIndicator style={{ alignItems: 'center', marginTop: width / 2.3 }} size={'large'} color={'red'} />}
         <View style={{ position: 'absolute', bottom: 30, left: 20, right: 20, backgroundColor: '#ffffff', borderRadius: 10, elevation: 5 }}>
-            <View style={{ padding: 20, alignItems: 'flex-end', flexDirection: 'row', }}>
-                <Text style={{ flex: 1, alignItems: 'center', marginBottom: 5, fontWeight: 'bold', color: 'grey' }}>SHARE OTP WITH DRIVER TO START TRIP</Text>
-                <Text style={{ fontWeight: 'bold', fontSize: 16, borderColor: 'grey', borderWidth: 1, padding: 7, borderRadius: 5, letterSpacing: 5, elevation: 5, backgroundColor: '#fff' }}>{TripOtp}</Text>
-            </View>
+            {Number(routes?.params?.otp_verified) === 0 ?
+                <View style={{ padding: 20, alignItems: 'flex-end', flexDirection: 'row', }}>
+                    <Text adjustsFontSizeToFit={true} numberOfLines={1} style={{ flex: 1, alignItems: 'center', marginBottom: 10, fontWeight: 'bold', color: 'grey' }}>SHARE OTP WITH DRIVER TO START TRIP</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 16, borderColor: 'grey', borderWidth: 1, padding: 7, borderRadius: 5, letterSpacing: 5, elevation: 5, backgroundColor: '#fff' }}>{TripOtp}</Text>
+                </View> : null}
             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10, marginLeft: 10, marginRight: 10 }}>
-                <View style={{ flex: 1, marginBottom: 2 }}>
+                <View style={{ marginBottom: 2 }}>
                     <Image style={{ height: 50, width: 50, borderRadius: 150, resizeMode: 'contain', marginLeft: 7 }} source={{ uri: globle.IMAGE_BASE_URL + DriverImage }} />
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontWeight: 'bold' }}>{DriverName}</Text>
@@ -382,10 +362,12 @@ const DriverTrackToMapsScreen = () => {
                     </View>
                     <Text style={{ fontWeight: 'bold' }}>{DriverVehicleNo}</Text>
                 </View>
-                {/* <TouchableOpacity onPress={() => handleOnMapsPress()} style={{}}>
-                    <Image style={{ width: 50, height: 50, resizeMode: 'contain' }} source={require('../../assets/map_icon.png')} />
-                    <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'center' }}>Open Map</Text>
-                </TouchableOpacity> */}
+                <View style={{ flex: 1, marginLeft: 20, elevation: 10, backgroundColor: '#fff', padding: 8, borderRadius: 5 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'left' }}>Payment Type: <Text style={{ textTransform: 'uppercase' }}>{routes?.params?.trip_type}</Text></Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'left' }}>Distance: {routes?.params?.distance}Km</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'left' }}>Paid Amount: ₹ {routes?.params?.price}/-</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10, textAlign: 'left' }}>Drop Location: {routes?.params?.to_address}</Text>
+                </View>
             </View>
         </View>
         {/* <TouchableOpacity style={{ position: 'absolute', top: 150, right: 10, backgroundColor: '#fff', padding: 10, borderRadius: 150 }}>
@@ -432,9 +414,10 @@ const DriverTrackToMapsScreen = () => {
                 <Image style={{ width: 30, height: 30, resizeMode: 'contain' }} source={require('../../assets/see_more.png')} />
             </MenuTrigger>
             <MenuOptions>
-                <MenuOption onSelect={() => cancelUserCurrentTrip()} >
-                    <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancel Trip</Text>
-                </MenuOption>
+                {Number(routes?.params?.otp_verified) === 0 ?
+                    <MenuOption onSelect={() => cancelUserCurrentTrip()} >
+                        <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancel Trip</Text>
+                    </MenuOption> : null}
                 <MenuOption onSelect={() => callToDriver()} >
                     <Text style={{ color: 'black' }}>Call Driver</Text>
                 </MenuOption>

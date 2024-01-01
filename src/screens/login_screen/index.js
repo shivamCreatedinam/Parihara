@@ -99,8 +99,7 @@ const LoginScreen = () => {
         axios(authOptions)
             .then((response) => {
                 console.log('loggedUsingMobileIn', JSON.stringify(response.data));
-                if (response.status) {
-                    console.log('loggedUsingMobileIn', response);
+                if (response?.data?.status) { 
                     showSuccessToast(response.data.message);
                     setLoader(false);
                 } else {
