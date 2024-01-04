@@ -67,14 +67,14 @@ const NotificationCenterScreen = () => {
     const [TripStarted, setTripStarted] = React.useState(routes.params?.otp_verified);
     const [isTripStartedStatus, setTripStartedStatus] = React.useState(false);
     const [StartTripOTP, setStartTripOTP] = React.useState('');
+    const [checkTripOtp, setcheckTripOtp] = React.useState(routes.params?.trip_otp);
     const [loading, setLoading] = React.useState(false);
     const [isCancelPopup, setCancelPopup] = React.useState(false);
 
     useFocusEffect(
         React.useCallback(() => {
             // whatever
-            // checkActveTripIsAvailable();
-            console.warn('routes-------------------->', JSON.stringify(routes?.params));
+            // checkActveTripIsAvailable(); 
             setTimeout(() => {
                 // setTimeout
                 setLoading(true);
@@ -104,6 +104,31 @@ const NotificationCenterScreen = () => {
         let data = JSON.parse(autoUserGroup);
         console.log('checkOrBack', JSON.stringify(data));
         navigate.navigate('HomeScreen');
+    }
+
+    const checkCurrentActiveDriverTrip = async () => {
+        const valueX = await AsyncStorage.getItem('@autoDriverGroup');
+        let ids = JSON.parse(valueX)?.id;
+        var authOptions = {
+            method: 'GET',
+            url: globle.API_BASE_URL + `driver-active-trip?driver_id=${ids}`,
+            headers: { 'Content-Type': 'application/json' },
+            json: true,
+        };
+        axios(authOptions)
+            .then((response) => {
+                console.log('checkCurrentActiveDriverTripX', response?.data?.data);
+                if (response.data.status) {
+                    setLoading(true);
+                    setTripStarted(response?.data?.data?.otp_verified);
+                    setcheckTripOtp(response?.data?.data?.trip_otp); 
+                } else {
+                    console.log('checkCurrentActiveDriverTrip', response?.data?.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }
 
     const BookingAccept = async () => {
@@ -137,8 +162,7 @@ const NotificationCenterScreen = () => {
                             text1: 'Status Update Successfully',
                             text2: 'Update Successfully',
                         });
-                        saveBookingAcceptStatus();
-
+                        checkCurrentActiveDriverTrip();
                     } else {
                         Toast.show({
                             type: 'error',
@@ -220,7 +244,7 @@ const NotificationCenterScreen = () => {
             // startTrip();
             // Linking.openURL('https://www.google.com/maps/dir/?api=1&origin=' + startinPointName + '&destination=' + endingPointName + '&travelmode=driving&waypoints=' + 'Office to Home ')
         }
-        if (isTripStartedStatus === true) {
+        if (checkTripOtp !== null) {
             if (Platform.OS === 'android') {
                 // startTrip();
                 // https://www.google.com/maps/dir/Noida,+Uttar+Pradesh/GTB+Nagar,+Delhi/@28.607801,77.2154511,12z/
@@ -257,6 +281,7 @@ const NotificationCenterScreen = () => {
                     if (response.data.status) {
                         console.log('loggedUsingSubmitMobileIn', response.data);
                         bottomSheet.current.close();
+                        checkCurrentActiveDriverTrip();
                         // saveTripDetails();
                     } else {
                         Toast.show({
@@ -458,7 +483,7 @@ const NotificationCenterScreen = () => {
 
     return (
         <View style={styles.container}>
-            {isTripStartedStatus === false ? <TouchableOpacity onPress={() => notifiyUserDriverReached()} style={{ position: 'absolute', top: 30, right: 20, zIndex: 999, backgroundColor: 'black', padding: 5, borderRadius: 10, elevation: 5 }}>
+            {checkTripOtp === null ? <TouchableOpacity onPress={() => notifiyUserDriverReached()} style={{ position: 'absolute', top: 30, right: 20, zIndex: 999, backgroundColor: 'black', padding: 5, borderRadius: 10, elevation: 5 }}>
                 <Image style={{ width: 45, height: 45, resizeMode: 'contain' }} source={require('../../assets/reached_icon.png')} />
             </TouchableOpacity> : null}
             {loading === true ?
@@ -615,7 +640,7 @@ const NotificationCenterScreen = () => {
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 1, marginRight: 15 }}>
-                        {routes.params?.trip_otp !== null ? <TouchableOpacity onPress={() => setTripEnd()} style={{ padding: 15, elevation: 5, backgroundColor: '#913831', borderRadius: 5 }}>
+                        {checkTripOtp !== null ? <TouchableOpacity onPress={() => setTripEnd()} style={{ padding: 15, elevation: 5, backgroundColor: '#913831', borderRadius: 5 }}>
                             <Text style={{ color: '#fff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>End Trip 🛺</Text>
                         </TouchableOpacity> : <TouchableOpacity onPress={() => bottomSheet.current.show()} style={{ padding: 15, elevation: 5, backgroundColor: '#008000', borderRadius: 5 }}>
                             <Text style={{ color: '#fff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>Start Trip 🛺</Text>
@@ -642,9 +667,9 @@ const NotificationCenterScreen = () => {
                         <TouchableOpacity onPress={() => callUserForConformation()} style={{ backgroundColor: '#000000', padding: 15, width: 150, marginTop: 20, borderRadius: 10, marginRight: 10 }}>
                             <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#ffffff' }}>Call Passenger</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => cancelUserCurrentTrip()} style={{ backgroundColor: '#FF0000', padding: 15, width: 150, marginTop: 20, borderRadius: 10 }}>
+                        {checkTripOtp === null ? <TouchableOpacity onPress={() => cancelUserCurrentTrip()} style={{ backgroundColor: '#FF0000', padding: 15, width: 150, marginTop: 20, borderRadius: 10 }}>
                             <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#ffffff' }}>Cancel Trip</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> : null}
                     </View>
                 </View>
             </BottomSheet>

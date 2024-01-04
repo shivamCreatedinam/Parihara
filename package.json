@@ -1,6 +1,6 @@
 {
   "name": "MapiLocator",
-  "version": "1.2.45",
+  "version": "1.2.50",
   "private": true,
   "scripts": {
     "android": "react-native run-android",

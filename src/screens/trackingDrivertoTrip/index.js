@@ -26,6 +26,7 @@ import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import MapViewDirections from 'react-native-maps-directions';
 import BottomSheet from "react-native-gesture-bottom-sheet";
+import messaging from '@react-native-firebase/messaging';
 import database from '@react-native-firebase/database';
 import Toast from 'react-native-toast-message';
 import Modal from "react-native-modal";
@@ -60,6 +61,7 @@ const DriverTrackToMapsScreen = () => {
     const [DriverImage, setDriverImage] = React.useState(routes?.params?.drv_image);
     const [DriverVehicleNo, setDriverVehicleNo] = React.useState(routes?.params?.vehicle_no);
     const [Speed, setSpeed] = React.useState(0.0);
+    const [otpVerified, setOtpVerifyed] = React.useState(routes?.params?.otp_verified);
     const [Distance, setDistance] = React.useState(null);
     const [Duration, setDuration] = React.useState(null);
     const [Headings, setHeadings] = React.useState(0);
@@ -73,7 +75,7 @@ const DriverTrackToMapsScreen = () => {
             setTimeout(() => {
                 // setTimeout
                 getTripDetails();
-            }, 1000);
+            }, 500);
         }, [])
     );
 
@@ -83,6 +85,43 @@ const DriverTrackToMapsScreen = () => {
             BackHandler.removeEventListener("hardwareBackPress", backButtonHandler);
         };
     }, [backButtonHandler]);
+
+    React.useEffect(() => {
+        const unsubscribe = messaging().onMessage((remoteMessage) => {
+            console.error('called...........................................');
+            checkCurrentTripDetails()
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    const checkCurrentTripDetails = async () => {
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        var requestOptions = {
+            method: 'GET',
+            // body: formdata,
+            redirect: 'follow',
+            headers: {
+                'Authorization': 'Bearer ' + data,
+            }
+        };
+        console.log('checkCurrentTripDetails', JSON.stringify(requestOptions))
+        fetch(globle.API_BASE_URL + 'user-active-trip', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                if (result.status) {
+                    console.log('checkCurrentTripDetails', JSON.stringify(result?.data?.otp_verified));
+                    setOtpVerifyed(result?.data?.otp_verified);
+                } else {
+                    console.log('checkCurrentTripDetails', JSON.stringify(result));
+                }
+            })
+            .catch((error) => {
+                console.log('error', error);
+            });
+    }
 
 
     const backButtonHandler = () => {
@@ -126,7 +165,6 @@ const DriverTrackToMapsScreen = () => {
         console.log('cancelUserCurrentTripHit', config);
         axios.request(config)
             .then((response) => {
-                // setLoading(false)
                 console.log('cancelUserCurrentTripHit', response.data);
                 if (response.data?.status === false) {
                     Toast.show({
@@ -224,6 +262,9 @@ const DriverTrackToMapsScreen = () => {
     };
 
     const getTripDetails = async () => {
+        // @tripOtpKeys
+        const trip_otp = await AsyncStorage.getItem('@tripOtpKeys');
+        setTripOtp(trip_otp)
         const pickup_point = {
             latitude: parseFloat(routes?.params?.from_lat),
             longitude: parseFloat(routes?.params?.from_long)
@@ -232,8 +273,6 @@ const DriverTrackToMapsScreen = () => {
             latitude: parseFloat(routes?.params?.to_lat),
             longitude: parseFloat(routes?.params?.to_long)
         }
-        console.log('getTripDetails', pickup_point);
-        console.log('getTripDetails', drop_point);
         setPickupPoint(pickup_point);
         setDropPoint(drop_point);
         setLoading(true);
@@ -345,7 +384,7 @@ const DriverTrackToMapsScreen = () => {
                 </Marker.Animated>
             </MapView> : <ActivityIndicator style={{ alignItems: 'center', marginTop: width / 2.3 }} size={'large'} color={'red'} />}
         <View style={{ position: 'absolute', bottom: 30, left: 20, right: 20, backgroundColor: '#ffffff', borderRadius: 10, elevation: 5 }}>
-            {Number(routes?.params?.otp_verified) === 0 ?
+            {Number(otpVerified) === 0 ?
                 <View style={{ padding: 20, alignItems: 'flex-end', flexDirection: 'row', }}>
                     <Text adjustsFontSizeToFit={true} numberOfLines={1} style={{ flex: 1, alignItems: 'center', marginBottom: 10, fontWeight: 'bold', color: 'grey' }}>SHARE OTP WITH DRIVER TO START TRIP</Text>
                     <Text style={{ fontWeight: 'bold', fontSize: 16, borderColor: 'grey', borderWidth: 1, padding: 7, borderRadius: 5, letterSpacing: 5, elevation: 5, backgroundColor: '#fff' }}>{TripOtp}</Text>
@@ -414,7 +453,7 @@ const DriverTrackToMapsScreen = () => {
                 <Image style={{ width: 30, height: 30, resizeMode: 'contain' }} source={require('../../assets/see_more.png')} />
             </MenuTrigger>
             <MenuOptions>
-                {Number(routes?.params?.otp_verified) === 0 ?
+                {Number(otpVerified) === 0 ?
                     <MenuOption onSelect={() => cancelUserCurrentTrip()} >
                         <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancel Trip</Text>
                     </MenuOption> : null}

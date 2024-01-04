@@ -118,11 +118,11 @@ const UserHomeScreen = () => {
     useFocusEffect(
         React.useCallback(async () => {
             permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-            console.warn('handleLocationPermission.', permissionCheck);
             updateUserTokenProfile();
+            loadProfile();
             if (permissionCheck === RESULTS.GRANTED) {
                 setVisible(false);
-                checkPreviousTrips();
+                // checkPreviousTrips();
             } else {
                 setVisible(true);
             }
@@ -131,6 +131,32 @@ const UserHomeScreen = () => {
             }
         }, [visible])
     );
+
+    const loadProfile = async () => {
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: globle.API_BASE_URL + 'my-profile',
+            headers: {
+                'Authorization': 'Bearer ' + data
+            }
+        };
+        axios.request(config)
+            .then((response) => {
+                if (response.data.status) {
+                    let trip_otp_keys = response.data?.user?.trip_otp;
+                    AsyncStorage.setItem('@tripOtpKeys', String(trip_otp_keys)); // 
+                    console.error('saved')
+                } else {
+
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
 
     const options = {
         taskName: 'Example',
