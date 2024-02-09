@@ -18,7 +18,8 @@ import {
     Platform,
     StyleSheet,
     Pressable,
-    BackHandler
+    BackHandler,
+    NativeModules
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -43,7 +44,11 @@ const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.002;
 const LONGITUDE_DELTA = 0.002;
 
+// PIP Setup
+const { PipModule } = NativeModules;
+
 const DriverTrackToMapsScreen = () => {
+
 
     const navigate = useNavigation();
     const routes = useRoute();
@@ -66,6 +71,11 @@ const DriverTrackToMapsScreen = () => {
     const [Duration, setDuration] = React.useState(null);
     const [Headings, setHeadings] = React.useState(0);
     const [isCancelPopup, setCancelPopup] = React.useState(false);
+
+    // PIP Init
+    const enterPiPMode = () => {
+        PipModule.enterPipMode();
+    };
 
 
     useFocusEffect(
@@ -125,14 +135,7 @@ const DriverTrackToMapsScreen = () => {
 
 
     const backButtonHandler = () => {
-        Alert.alert(
-            'Want To Go Back',
-            'Are you sure, you want to go Back?',
-            [
-                { text: 'Cancel', onPress: () => console.warn('close') },
-                { text: 'OK', onPress: () => BackHandler.exitApp() },
-            ]
-        );
+        PipModule.enterPipMode();
     }
 
     const cancelUserCurrentTrip = () => {
@@ -416,8 +419,8 @@ const DriverTrackToMapsScreen = () => {
         </TouchableOpacity> */}
         <Modal isVisible={isCancelPopup}>
             <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 20 }}>
-                <TouchableOpacity onPress={() => setCancelPopup(!isCancelPopup)} style={{ padding: 5, elevation: 5, backgroundColor: 'red', borderRadius: 150, width: 30, height: 30, position: 'absolute', top: -40, right: 1, }}>
-                    <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold', marginTop: 2 }}>X</Text>
+                <TouchableOpacity onPress={() => setCancelPopup(!isCancelPopup)} style={{ padding: 5, borderRadius: 150, width: 30, height: 30, position: 'absolute', top: -40, right: 1, }}>
+                    <Image style={{ width: 35, height: 35, resizeMode: 'contain' }} source={require('../../assets/close_app.png')} />
                 </TouchableOpacity>
                 <View style={{ alignSelf: 'center', paddingVertical: 15 }}>
                     <Text style={{ textAlign: 'center', fontWeight: '600' }}>Please Choose once of the reason for cancel current trip, you trip deduction amount will be transfer within 12 hours After successfully trip cancel.</Text>
@@ -460,7 +463,7 @@ const DriverTrackToMapsScreen = () => {
                 <MenuOption onSelect={() => callToDriver()} >
                     <Text style={{ color: 'black' }}>Call Driver</Text>
                 </MenuOption>
-                <MenuOption onSelect={() => callToDriver()} >
+                <MenuOption onSelect={() => enterPiPMode()} >
                     <Text style={{ color: 'black', }}>Close App</Text>
                 </MenuOption>
             </MenuOptions>

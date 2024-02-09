@@ -22,6 +22,7 @@ const VehicalDetailsScreen = () => {
     let [Email, setEmail] = React.useState(null);
     let [Mobile, setMobile] = React.useState(null);
     let [AddVehicleNo, setAddVehicleNo] = React.useState(null);
+    let [PollusionNo, setAddPollusionNo] = React.useState(null);
     let [AddAddress, setAddAddress] = React.useState(null);
     let [currentLatitude, setCurrentLatitude] = React.useState(null);
     let [currentLongitude, setCurrentLongitude] = React.useState(null);
@@ -98,6 +99,7 @@ const VehicalDetailsScreen = () => {
                     setEmail(response.data.driver?.drv_licence);
                     setMobile(response.data.driver?.aadhar_back);
                     setAddVehicleNo(response.data.driver?.vehicle_no);
+                    setAddPollusionNo(response.data.driver?.insurance_file);
                     setLoading(false);
                 } else {
                     setLoading(false);
@@ -130,15 +132,21 @@ const VehicalDetailsScreen = () => {
                     <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, padding: 0, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 5, marginTop: 15 }}>
                         <View style={{ padding: 5 }}>
                             <Text style={{ textAlign: 'center', fontWeight: '700', fontSize: 10 }}>Driving Licence</Text>
-                            <Image style={{ height: 110, width: 110, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + Name }} />
+                            <Image style={{ height: 110, width: Dimensions.get('screen').width / 2 - 30, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + Name }} />
                         </View>
                         <View style={{ padding: 5 }}>
                             <Text style={{ textAlign: 'center', fontWeight: '700', fontSize: 10 }}>Vehicle (RC)</Text>
-                            <Image style={{ height: 110, width: 110, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + Mobile }} />
+                            <Image style={{ height: 110, width: Dimensions.get('screen').width / 2 - 30, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + Mobile }} />
+                        </View>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, padding: 0, alignSelf: 'flex-start', elevation: 5, backgroundColor: '#ffffff', width: '100%', borderRadius: 5, marginTop: 15 }}>
+                        <View style={{ padding: 5 }}>
+                            <Text style={{ textAlign: 'center', fontWeight: '700', fontSize: 10 }}>Pollusion Certificate (PC)</Text>
+                            <Image style={{ height: 110, width: Dimensions.get('screen').width / 2 - 30, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + PollusionNo }} />
                         </View>
                         <View style={{ padding: 5 }}>
                             <Text style={{ textAlign: 'center', fontWeight: '700', fontSize: 10 }}>Vehicle Insurance</Text>
-                            <Image style={{ height: 110, width: 110, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + Email }} />
+                            <Image style={{ height: 110, width: Dimensions.get('screen').width / 2 - 30, resizeMode: 'cover' }} source={{ uri: globle.IMAGE_BASE_URL + '' + Email }} />
                         </View>
                     </View>
                     {/* <TouchableOpacity style={[{ width: '100%', borderRadius: 50, marginTop: 15, backgroundColor: '#000', padding: 8 }]} onPress={() => UpdateDriverProfle()}>

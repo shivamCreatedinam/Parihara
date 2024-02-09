@@ -18,6 +18,7 @@ import {
     Linking,
     Platform,
     TextInput,
+    NativeModules
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,6 +37,8 @@ import {
 } from 'react-native-popup-menu';
 import styles from './styles';
 import axios from 'axios';
+// PIP Setup
+const { PipModule } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.012;
@@ -71,6 +74,7 @@ const NotificationCenterScreen = () => {
     const [loading, setLoading] = React.useState(false);
     const [isCancelPopup, setCancelPopup] = React.useState(false);
 
+    console.warn('NotificationCenterScreen____L|', JSON.stringify(routes.params));
     useFocusEffect(
         React.useCallback(() => {
             // whatever
@@ -82,11 +86,6 @@ const NotificationCenterScreen = () => {
             }, 1000);
         }, [])
     );
-
-    const getAddressFromLatLong = async () => {
-        // 
-
-    }
 
     const BookingReject = () => {
         Alert.alert(
@@ -121,7 +120,7 @@ const NotificationCenterScreen = () => {
                 if (response.data.status) {
                     setLoading(true);
                     setTripStarted(response?.data?.data?.otp_verified);
-                    setcheckTripOtp(response?.data?.data?.trip_otp); 
+                    setcheckTripOtp(response?.data?.data?.trip_otp);
                 } else {
                     console.log('checkCurrentActiveDriverTrip', response?.data?.data);
                 }
@@ -229,14 +228,14 @@ const NotificationCenterScreen = () => {
         });
     }
 
-    const saveBookingAcceptStatus = async () => {
-        let infoTrip_ = JSON.stringify(routes.params);
-        AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
-        AsyncStorage.setItem('@tripAcceptStatusKeys', 'true');
-        console.log('trip_saved');
-        // setTripStarted(true);
-        setLoading(true);
-    }
+    // const saveBookingAcceptStatus = async () => {
+    //     let infoTrip_ = JSON.stringify(routes.params);
+    //     AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
+    //     AsyncStorage.setItem('@tripAcceptStatusKeys', 'true');
+    //     console.log('trip_saved');
+    //     // setTripStarted(true);
+    //     setLoading(true);
+    // }
 
     const FolloweOnGoogleMaps = async () => {
         if (Platform.OS === 'ios') {
@@ -307,36 +306,36 @@ const NotificationCenterScreen = () => {
         }
     }
 
-    const saveTripDetails = async () => {
-        let infoTrip_ = JSON.stringify(routes.params);
-        AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
-        AsyncStorage.setItem('@tripStartedStatusKeys', 'true');
-        console.log('trip_saved');
-        Toast.show({
-            type: 'success',
-            text1: 'Trip Start Successfully',
-            text2: 'Your Trip has been started!'
-        });
-        setTripStartedStatus(true);
-        serLoader(false);
-    }
+    // const saveTripDetails = async () => {
+    //     let infoTrip_ = JSON.stringify(routes.params);
+    //     AsyncStorage.setItem('@tripDriverAddedKeys', infoTrip_);
+    //     AsyncStorage.setItem('@tripStartedStatusKeys', 'true');
+    //     console.log('trip_saved');
+    //     Toast.show({
+    //         type: 'success',
+    //         text1: 'Trip Start Successfully',
+    //         text2: 'Your Trip has been started!'
+    //     });
+    //     setTripStartedStatus(true);
+    //     serLoader(false);
+    // }
 
-    const checkActveTripIsAvailable = async () => {
-        const tripStartedStatus = await AsyncStorage.getItem('@tripStartedStatusKeys');
-        const tripAcceptStatusKeys = await AsyncStorage.getItem('@tripAcceptStatusKeys');
-        console.warn('tripAcceptStatusKeysY', tripAcceptStatusKeys);
-        console.warn('tripStartedStatusZ', tripStartedStatus);
-        if (tripAcceptStatusKeys === null) {
-            // setTripStarted(false);
-        } else if (tripAcceptStatusKeys === 'true') {
-            // setTripStarted(true);
-            if (tripStartedStatus === 'true') {
-                setTripStartedStatus(true);
-            } else {
-                setTripStartedStatus(false);
-            }
-        }
-    }
+    // const checkActveTripIsAvailable = async () => {
+    //     const tripStartedStatus = await AsyncStorage.getItem('@tripStartedStatusKeys');
+    //     const tripAcceptStatusKeys = await AsyncStorage.getItem('@tripAcceptStatusKeys');
+    //     console.warn('tripAcceptStatusKeysY', tripAcceptStatusKeys);
+    //     console.warn('tripStartedStatusZ', tripStartedStatus);
+    //     if (tripAcceptStatusKeys === null) {
+    //         // setTripStarted(false);
+    //     } else if (tripAcceptStatusKeys === 'true') {
+    //         // setTripStarted(true);
+    //         if (tripStartedStatus === 'true') {
+    //             setTripStartedStatus(true);
+    //         } else {
+    //             setTripStartedStatus(false);
+    //         }
+    //     }
+    // }
 
     const setTripEnd = async () => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
@@ -356,7 +355,7 @@ const NotificationCenterScreen = () => {
             .then((response) => {
                 if (response.data.status) {
                     console.log('setTripEnd', response.data);
-                    tripEndEventFinish();
+                    navigate.replace('HomeScreen');
                 } else {
                     Toast.show({
                         type: 'error',
@@ -374,23 +373,23 @@ const NotificationCenterScreen = () => {
             });
     }
 
-    const tripEndEventFinish = async () => {
-        const key = '@tripDriverAddedKeys';
-        const key_one = '@tripAcceptStatusKeys';
-        const key_two = '@tripStartedStatusKeys';
-        try {
-            await AsyncStorage.removeItem(key);
-            await AsyncStorage.removeItem(key_one);
-            await AsyncStorage.removeItem(key_two);
-            // move to home after finish the trip
-            navigate.navigate('HomeScreen');
-            return true;
-        }
-        catch (exception) {
-            console.error('tripEndEventFinishX');
-            return false;
-        }
-    }
+    // const tripEndEventFinish = async () => {
+    //     const key = '@tripDriverAddedKeys';
+    //     const key_one = '@tripAcceptStatusKeys';
+    //     const key_two = '@tripStartedStatusKeys';
+    //     try {
+    //         await AsyncStorage.removeItem(key);
+    //         await AsyncStorage.removeItem(key_one);
+    //         await AsyncStorage.removeItem(key_two);
+    //         // move to home after finish the trip
+
+    //         return true;
+    //     }
+    //     catch (exception) {
+    //         console.error('tripEndEventFinishX');
+    //         return false;
+    //     }
+    // }
 
     const cancelUserCurrentTripHit = async () => {
         const valueX = await AsyncStorage.getItem('@autoDriverGroup');
@@ -431,7 +430,7 @@ const NotificationCenterScreen = () => {
                         text1: '"Trip canceled successfully.',
                         text2: response.data?.message,
                     });
-                    removeCancelTripFromUser();
+                    navigate.replace('HomeScreen');
                 }
             })
             .catch((error) => {
@@ -439,24 +438,24 @@ const NotificationCenterScreen = () => {
             });
     }
 
-    const removeCancelTripFromUser = async () => {
-        console.log('removeCancelTripItemValue');
-        let key0 = '@tripAddedKeys';
-        let key1 = '@tripStartedStatusKeys';
-        let key2 = '@tripAcceptStatusKeys';
-        try {
-            await AsyncStorage.removeItem(key0);
-            await AsyncStorage.removeItem(key1);
-            await AsyncStorage.removeItem(key2);
-            navigate.replace('HomeScreen');
-            console.log('DataDeleted');
-            return true;
-        }
-        catch (exception) {
-            console.log('ErrorDataDeleted');
-            return false;
-        }
-    }
+    // const removeCancelTripFromUser = async () => {
+    //     console.log('removeCancelTripItemValue');
+    //     let key0 = '@tripAddedKeys';
+    //     let key1 = '@tripStartedStatusKeys';
+    //     let key2 = '@tripAcceptStatusKeys';
+    //     try {
+    //         await AsyncStorage.removeItem(key0);
+    //         await AsyncStorage.removeItem(key1);
+    //         await AsyncStorage.removeItem(key2);
+
+    //         console.log('DataDeleted');
+    //         return true;
+    //     }
+    //     catch (exception) {
+    //         console.log('ErrorDataDeleted');
+    //         return false;
+    //     }
+    // }
 
     const callUserForConformation = () => {
         Alert.alert(
@@ -503,8 +502,8 @@ const NotificationCenterScreen = () => {
                     showsCompass={false}
                     // showsUserLocation={true}
                     initialRegion={{
-                        latitude: parseFloat(startPoint.latitude),
-                        longitude: parseFloat(startPoint.longitude),
+                        latitude: parseFloat(routes.params?.from_lat),
+                        longitude: parseFloat(routes.params?.from_long),
                         latitudeDelta: LATITUDE_DELTA,
                         longitudeDelta: LONGITUDE_DELTA,
                     }}
@@ -606,8 +605,8 @@ const NotificationCenterScreen = () => {
             </View> */}
             <Modal isVisible={isCancelPopup}>
                 <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 20 }}>
-                    <TouchableOpacity onPress={() => setCancelPopup(!isCancelPopup)} style={{ padding: 5, elevation: 5, backgroundColor: 'red', borderRadius: 150, width: 30, height: 30, position: 'absolute', top: -40, right: 1, }}>
-                        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold', marginTop: 2 }}>X</Text>
+                    <TouchableOpacity onPress={() => setCancelPopup(!isCancelPopup)} style={{ padding: 5, borderRadius: 150, width: 30, height: 30, position: 'absolute', top: -40, right: 1, }}>
+                        <Image style={{ width: 35, height: 35, resizeMode: 'contain' }} source={require('../../assets/close_app.png')} />
                     </TouchableOpacity>
                     <View style={{ alignSelf: 'center', paddingVertical: 15 }}>
                         <Text style={{ textAlign: 'center', fontWeight: '600' }}>Please select desired reason for cancellation of current active trip.</Text>
@@ -657,12 +656,15 @@ const NotificationCenterScreen = () => {
                 ref={UserbottomSheet}
                 height={450} >
                 <View style={{ padding: 20, alignSelf: 'center', alignItems: 'center', width: '100%' }}>
-                    <TouchableOpacity onPress={() => UserbottomSheet.current.close()} style={{ position: 'absolute', top: 10, right: 10, borderRadius: 100, height: 30, width: 30, backgroundColor: 'red' }}>
-                        <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center', marginTop: 7 }}>X</Text>
+                    <TouchableOpacity onPress={() => UserbottomSheet.current.close()} style={{ position: 'absolute', top: 10, right: 15, borderRadius: 100, height: 30, width: 30, }}>
+                        <Image style={{ width: 35, height: 35, resizeMode: 'contain' }} source={require('../../assets/close_app.png')} />
                     </TouchableOpacity>
                     <Image style={{ width: 120, height: 120, resizeMode: 'contain', borderRadius: 150, marginTop: 50 }} source={{ uri: globle.IMAGE_BASE_URL + ToCity }} />
                     <Text style={{ fontWeight: 'bold', marginTop: 10 }}>{FromState}</Text>
-                    <Text>{FromCity}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
+                        <Image style={{ width: 15, height: 15, resizeMode: 'contain' }} source={require('../../assets/gender_icon.png')} />
+                        <Text style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>{FromCity}</Text>
+                    </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity onPress={() => callUserForConformation()} style={{ backgroundColor: '#000000', padding: 15, width: 150, marginTop: 20, borderRadius: 10, marginRight: 10 }}>
                             <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#ffffff' }}>Call Passenger</Text>

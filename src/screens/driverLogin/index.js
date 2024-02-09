@@ -101,13 +101,14 @@ const DriverLoginScreen = () => {
         };
         axios(authOptions)
             .then((response) => {
-                if (response.status) {
+                if (response?.data?.status) {
                     setLoading(false);
                     console.log(response.data);
                     storeData(response.data?.driver);
                     showSuccessToast(response.data.message + '\n your OTP is: ' + response.data.otp);
                 } else {
                     setLoading(false);
+                    showErrorToast(response.data.message);
                     console.log(response.data);
                 }
             })

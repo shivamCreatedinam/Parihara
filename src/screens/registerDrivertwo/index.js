@@ -35,8 +35,10 @@ const RegisterDriverTwoScreen = () => {
     const [AadharNumber, setAadharNumber] = React.useState('');
     const [Address, setAddress] = React.useState();
     const [DrivingLicence, setDrivingLicence] = React.useState('');
+    const [InsuranceLicence, setInsuranceLicence] = React.useState('');
     const [AadharFront, setAadharFront] = React.useState('');
     const [AadharBack, setAadharBack] = React.useState('');
+    const [PollusionCertificate, setPollusionCertificate] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [uploadProfile, setuploadProfile] = React.useState(null);
     const [errors, setErrors] = React.useState('');
@@ -201,7 +203,11 @@ const RegisterDriverTwoScreen = () => {
                 if (AadharBack !== null) {
                     if (AadharFront !== null) {
                         if (DrivingLicence !== null) {
-                            moveToRegister();
+                            if (InsuranceLicence !== null) {
+                                moveToRegister();
+                            } else {
+                                showErrorToast('Upload Correct Insurance Image');
+                            }
                         } else {
                             showErrorToast('Upload Correct Driving Licence Image');
                         }
@@ -283,6 +289,17 @@ const RegisterDriverTwoScreen = () => {
         });
     }
 
+    const uplodPollusionCertificateCard = () => {
+        ImagePicker.openCamera({
+            width: 300,
+            height: 400,
+            cropping: true
+        }).then(image => {
+            console.log(image.path);
+            setPollusionCertificate(image.path);
+        });
+    }
+
     const uplodAadharFrontCard = () => {
         ImagePicker.openCamera({
             width: 300,
@@ -329,7 +346,8 @@ const RegisterDriverTwoScreen = () => {
         formdata.append('password', routes.params.password);
         formdata.append("aadhar_front", { uri: AadharFront, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
         formdata.append("aadhar_back", { uri: AadharBack, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
-        formdata.append("drv_licence", { uri: DrivingLicence, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });
+        formdata.append("drv_licence", { uri: DrivingLicence, name: 'file_aadhar_photo.png', filename: 'file_aadhar_photo.png', type: 'image/png' });// insurence_file
+        formdata.append("insurence_file", { uri: PollusionCertificate, name: 'file_insurence_file.png', filename: 'file_insurence_file.png', type: 'image/png' });
         console.log("formdata", JSON.stringify(formdata))
         var requestOptions = {
             method: 'POST',
@@ -376,15 +394,16 @@ const RegisterDriverTwoScreen = () => {
 
     return (
         <View style={{ padding: 20, flex: 1, marginTop: 20 }}>
-            <View style={{ elevation: 5, flex: 1, padding: 20, backgroundColor: '#FFEEBB', borderRadius: 10, marginBottom: 40 }}>
-                <TouchableOpacity style={{ padding: 20 }} onPress={() => uplodProfilePhotoCard()}>
-                    {uploadProfile !== null ? <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 5, marginBottom: 20, borderRadius: 150 }} source={{ uri: uploadProfile }} /> :
-                        <Image style={{ height: 120, width: 120, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 5, marginBottom: 20, borderRadius: 150 }} source={require('../../assets/profile_man.png')} />}
+            <View style={{ elevation: 5, flex: 1, padding: 20, backgroundColor: '#FFEEBB', borderRadius: 10, marginBottom: 20 }}>
+                <TouchableOpacity style={{ padding: 10 }} onPress={() => uplodProfilePhotoCard()}>
+                    {uploadProfile !== null ?
+                        <Image style={{ height: 110, width: 110, resizeMode: 'cover', alignSelf: 'center', alignItems: 'center', marginLeft: 5, marginBottom: 20, borderRadius: 150 }} source={{ uri: uploadProfile }} /> :
+                        <Image style={{ height: 110, width: 110, resizeMode: 'contain', alignSelf: 'center', alignItems: 'center', marginLeft: 5, marginBottom: 20, borderRadius: 150 }} source={require('../../assets/profile_man.png')} />}
                     <View style={{ position: 'absolute', right: 0 }}>
                         <Image style={{ height: 20, width: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </View>
                 </TouchableOpacity>
-                <View style={{ marginTop: 25 }}>
+                <View style={{ marginTop: 5 }}>
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Vehicle No</Text>
                     <TextInput autoCapitalize='characters' placeholder='XX99XX9999' style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10 }} onChangeText={(e) => setVehicleNumber(e)} />
                 </View>
@@ -407,6 +426,13 @@ const RegisterDriverTwoScreen = () => {
                     <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Vehicle Registration Certificate (VRC)</Text>
                     <TextInput placeholder='Vehicle Registration Certificate (VRC)' defaultValue={AadharFront} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
                     <TouchableOpacity onPress={() => uplodAadharFrontCard()} style={{ position: 'absolute', right: 15, top: 15 }}>
+                        <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
+                    </TouchableOpacity>
+                </View>
+                <View style={{ marginTop: 25 }}>
+                    <Text style={{ fontSize: 10, position: 'absolute', backgroundColor: '#FFEEBB', padding: 3, marginTop: -15, zIndex: 999, left: 2 }}>Pollution Certificate (PC)</Text>
+                    <TextInput placeholder='Pollution Certificate (PC)' defaultValue={PollusionCertificate} style={{ borderWidth: 1, borderColor: '#b4b4b4', borderRadius: 4, padding: 10, paddingRight: 40 }} editable={false} />
+                    <TouchableOpacity onPress={() => uplodPollusionCertificateCard()} style={{ position: 'absolute', right: 15, top: 15 }}>
                         <Image style={{ width: 20, height: 20, resizeMode: 'contain' }} source={require('../../assets/camera.png')} />
                     </TouchableOpacity>
                 </View>

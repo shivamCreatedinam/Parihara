@@ -100,13 +100,13 @@ const styles = StyleSheet.create({
     textInputStyle: {
         height: 45,
         color: 'black',
-        fontSize: 14,
+        fontSize: 12,
         backgroundColor: 'white',
         marginTop: 6,
         fontWeight: 'bold',
         marginLeft: 10,
         borderRadius: 10,
-        elevation: 5,
+        elevation: 5, 
     }
 });
 

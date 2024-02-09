@@ -28,7 +28,8 @@ import notifee,
     AndroidBadgeIconType,
     AndroidVisibility,
     AndroidColor,
-    AndroidCategory
+    AndroidCategory,
+    EventType
 }
     from '@notifee/react-native';
 import {
@@ -215,21 +216,16 @@ const SplashAppScreen = () => {
     const messageListener = async () => {
         // Assume a message-notification contains a "type" property in the data payload of the screen to open
         messaging().onNotificationOpenedApp(remoteMessage => {
-            console.log(
-                'Notification caused app to open from background state:',
-                remoteMessage.notification,
-            );
-            navigation.navigate('NotificationCenterScreen', remoteMessage);
+            console.log('Notification caused app to open from background state_:', remoteMessage.data);
+            navigation.replace('NotificationCenterScreen', remoteMessage.data);
         });
         // Quiet and Background State -> Check whether an initial notification is available
         messaging()
             .getInitialNotification()
             .then(remoteMessage => {
                 if (remoteMessage) {
-                    console.log(
-                        'Notification caused app to open from quit state:',
-                        remoteMessage.notification,
-                    );
+                    console.log('Notification caused app to open from quit state:', remoteMessage.notification,);
+                    navigate.replace('NotificationCenterScreen', remoteMessage.data);
                 }
             })
             .catch(error => console.log('failed', error));
@@ -297,6 +293,7 @@ const SplashAppScreen = () => {
             body: body,
             android: {
                 channelId,
+                categoryId: 'trip_coming',
                 smallIcon: 'ic_stat_directions', // optional, defaults to 'ic_launcher'.
                 color: '#9c27b0',
                 category: AndroidCategory.MESSAGE,
@@ -313,6 +310,12 @@ const SplashAppScreen = () => {
             },
         });
     }
+
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+        if (type === EventType.PRESS) {
+            console.log('User pressed the notification.', detail.pressAction.id);
+        }
+    });
 
     const removeCancelTripItemValue = async (key) => {
         console.log('removeCancelTripItemValue');

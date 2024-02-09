@@ -362,7 +362,7 @@ const StartTripSearchingScreen = () => {
                 </View>
             </View>
             <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 10, flexGrow: 1 }}>
-                <TouchableOpacity onPress={() => navigate.navigate('EnterDropLocationScreen')} style={{ marginTop: 0, width: '100%', height: 45, flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity onPress={() => navigate.replace('EnterDropLocationScreen')} style={{ marginTop: 0, width: '100%', height: 45, flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ left: 25, width: 10, height: 10, backgroundColor: 'red', borderRadius: 150, zIndex: 9999, marginTop: 3 }} />
                     <Text numberOfLines={1} style={{ height: 50, borderRadius: 50, borderWidth: 1, borderColor: '#F1F6F9', paddingLeft: 30, backgroundColor: '#F1F6F9', elevation: 3, paddingTop: 17, fontWeight: 'bold', flex: 1, paddingRight: 40 }}>{toformattedAddress === null ? selectedLanguage === 'Coorg' ? coorg.crg.enter_drop_location : eng.en.enter_drop_location : toformattedAddress}</Text>
                     <View style={{ position: 'absolute', right: 10, top: 12 }}>

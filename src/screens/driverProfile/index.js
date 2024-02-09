@@ -15,7 +15,8 @@ import {
     Image,
     Dimensions,
     Linking,
-    ScrollView
+    ScrollView,
+    StatusBar
 } from 'react-native';
 import axios from 'axios';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
@@ -239,7 +240,7 @@ const DriverProfileScreen = () => {
             contentContainerStyle={{
                 flexGrow: 1,
             }}
-            style={styles.container}>
+            style={[styles.container, { marginTop: StatusBar.currentHeight }]}>
             <Spinner
                 visible={loading}
                 textContent={'Loading...'}

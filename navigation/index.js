@@ -183,6 +183,25 @@ function UserBottomNavigation() {
             labeled={true}
             sceneAnimationEnabled={false} >
             <Tab.Screen
+                name="Super Market"
+                component={FoodHomeScreen}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: () => { return 'Ekart' },
+                    tabBarIcon: ({ size, focused, color }) => {
+                        return (
+                            <View style={{ alignItems: 'center' }}>
+                                <Image
+                                    style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
+                                    source={require('../src/assets/food_icon.png')}
+                                />
+                                <Text numberOfLines={1} style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.food : eng.en.food}</Text>
+                            </View>
+                        );
+                    },
+                }}
+            />
+            <Tab.Screen
                 name="UserHomeScreen"
                 component={UserHomeScreen}
                 options={{
@@ -195,7 +214,7 @@ function UserBottomNavigation() {
                                     style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
                                     source={require('../src/assets/auto_home_icon.png')}
                                 />
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.auto : eng.en.auto}</Text>
+                                <Text numberOfLines={1} style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.auto : eng.en.auto}</Text>
                             </View>
                         );
                     },
@@ -215,9 +234,9 @@ function UserBottomNavigation() {
                                     source={require('../src/assets/pharmacy_icon.png')}
                                 />
                                 <View style={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'orange', height: 18, width: 18, borderRadius: 150 }}>
-                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 12, top: 1 }}>0</Text>
+                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 10, top: 0,bottom:0 }}>0</Text>
                                 </View>
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.phramacy : eng.en.phramacy}</Text>
+                                <Text numberOfLines={1} style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.phramacy : eng.en.phramacy}</Text>
                             </View>
                         );
                     },
@@ -236,7 +255,7 @@ function UserBottomNavigation() {
                                     style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
                                     source={require('../src/assets/hotel_icon.png')}
                                 />
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.hotel : eng.en.hotel}</Text>
+                                <Text numberOfLines={1} style={{ alignItems: 'center', color: '#000', fontSize: 11, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.hotel : eng.en.hotel}</Text>
                             </View>
                         );
                     },
@@ -256,28 +275,9 @@ function UserBottomNavigation() {
                                     source={require('../src/assets/super_market_icon.png')}
                                 />
                                 <View style={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'orange', height: 18, width: 18, borderRadius: 150 }}>
-                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 12, top: 1 }}>0</Text>
+                                <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 10, top: 0,bottom:0 }}>0</Text>
                                 </View>
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.market : eng.en.market}</Text>
-                            </View>
-                        );
-                    },
-                }}
-            />
-            <Tab.Screen
-                name="Super Market"
-                component={FoodHomeScreen}
-                options={{
-                    headerShown: false,
-                    tabBarLabel: () => { return 'Ekart' },
-                    tabBarIcon: ({ size, focused, color }) => {
-                        return (
-                            <View style={{ alignItems: 'center' }}>
-                                <Image
-                                    style={{ width: focused ? 25 : 20, height: focused ? 25 : 20, tintColor: focused ? 'orange' : 'rgb(116,24,28)', resizeMode: 'contain', }}
-                                    source={require('../src/assets/food_icon.png')}
-                                />
-                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.food : eng.en.food}</Text>
+                                <Text style={{ alignItems: 'center', color: '#000', fontSize: 11, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.market : eng.en.market}</Text>
                             </View>
                         );
                     },

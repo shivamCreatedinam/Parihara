@@ -1,19 +1,20 @@
 package com.mapilocator;
 
 import android.app.Application;
-import io.radar.sdk.Radar;
+
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.ocetnik.timer.BackgroundTimerPackage;
-import com.razorpay.rn.RazorpayPackage;
-import io.xogus.reactnative.versioncheck.RNVersionCheckPackage;  // <--- HERE
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
-import androidx.appcompat.app.AppCompatDelegate;
 import com.facebook.soloader.SoLoader;
+
 import java.util.List;
+
+import io.radar.sdk.Radar;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -32,6 +33,7 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be auto linked yet can be added manually here, for example:
 //            packages.add(new RNVersionCheckPackage());
           // packages.add(new MyReactNativePackage());
+          packages.add(new PipPackage());
           return packages;
         }
 

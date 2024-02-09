@@ -1,16 +1,17 @@
 package com.mapilocator;
 
-import com.facebook.react.ReactActivity;
-import com.facebook.react.ReactActivityDelegate;
+import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
-import com.facebook.react.bridge.WritableMap;
+
+import com.facebook.react.ReactActivity;
+import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.bridge.Arguments;
-import com.otplessreactnative.OtplessReactNativeManager;
-import android.content.Intent;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.otplessreactnative.OtplessReactNativeManager;
 
 public class MainActivity extends ReactActivity {
 

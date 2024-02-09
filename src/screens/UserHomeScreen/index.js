@@ -31,6 +31,7 @@ import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import Dialog, { SlideAnimation, DialogTitle, DialogContent, DialogFooter, DialogButton, } from 'react-native-popup-dialog';
 import { showMessage } from "react-native-flash-message";
 import notifee, { AndroidImportance, AndroidBadgeIconType, AndroidVisibility, AndroidColor, AndroidCategory } from '@notifee/react-native';
+import Carousel from 'react-native-reanimated-carousel';
 import Global from '../../../common/env';
 import Toast from 'react-native-toast-message';
 // change language 
@@ -52,9 +53,11 @@ const UserHomeScreen = () => {
     const permModal = React.useRef();
     const navigate = useNavigation();
     let permissionCheck = '';
+    const width = Dimensions.get('window').width;
     const [visible, setVisible] = React.useState(false);
     const [isPreviousTrip, setPreviousTrip] = React.useState(false);
     const [historyData, setHistoryData] = React.useState([]);
+    const [SliderData, setHomeSliderData] = React.useState([]);
     const [PreviousTripData, setPreviousTripData] = React.useState(null);
     const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
     const [location, setLocation] = React.useState({ latitude: 60.1098678, longitude: 24.7385084, });
@@ -120,6 +123,7 @@ const UserHomeScreen = () => {
             permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
             updateUserTokenProfile();
             loadProfile();
+            loadHomeBanners();
             if (permissionCheck === RESULTS.GRANTED) {
                 setVisible(false);
                 // checkPreviousTrips();
@@ -148,7 +152,30 @@ const UserHomeScreen = () => {
                 if (response.data.status) {
                     let trip_otp_keys = response.data?.user?.trip_otp;
                     AsyncStorage.setItem('@tripOtpKeys', String(trip_otp_keys)); // 
-                    console.error('saved')
+                } else {
+
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+    const loadHomeBanners = async () => {
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: globle.API_BASE_URL + 'homepage',
+            headers: {
+                'Authorization': 'Bearer ' + data
+            }
+        };
+        axios.request(config)
+            .then((response) => {
+                if (response.data.status) {
+                    setHomeSliderData(response?.data?.slider);
                 } else {
 
                 }
@@ -351,7 +378,7 @@ const UserHomeScreen = () => {
 
     const startTrip = () => {
         // StartTripSearchingScreen / TripStartScreen
-        navigate.navigate('StartTripSearchingScreen');
+        navigate.replace('StartTripSearchingScreen');
     }
 
     const updateUserTokenProfile = async () => {
@@ -584,6 +611,14 @@ const UserHomeScreen = () => {
             .then(() => console.log('Tracking_User_Location'));
     }
 
+    const _renderItem = ({ item, index }) => {
+        return (
+            <View style={{}}>
+                <Text style={{}}>{item.title}</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={{ flex: 1, marginTop: 25, backgroundColor: '#000' }}>
             <View style={{ padding: 0, backgroundColor: '#000', height: Dimensions.get('screen').height }}>
@@ -600,25 +635,28 @@ const UserHomeScreen = () => {
                 <View
                     contentContainerStyle={{ padding: 5, zIndex: 9999 }}
                     style={{ flex: 1, borderTopLeftRadius: 40, borderTopRightRadius: 40, marginTop: -50, padding: 20, backgroundColor: '#F1F6F9' }}>
-                    {/* <View style={{ borderRadius: 10, borderWidth: 1, borderColor: '#F1F6F9', backgroundColor: '#F1F6F9', elevation: 6, flexDirection: 'row', alignItems: 'center', padding: 20 }}>
-                        <View style={{ flex: 1 }}> onPress={() => navigate.navigate('NotificationScreen')} 
-                            <View>
-                                <Text style={{}}>Cab Pay</Text>
+                    {/* <Carousel
+                        loop
+                        width={width}
+                        height={width / 2}
+                        autoPlay={true}
+                        data={SliderData}
+                        scrollAnimationDuration={1000}
+                        onSnapToItem={(index) => console.log('current index:', index)}
+                        renderItem={({ index }) => (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    borderWidth: 1,
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Text style={{ textAlign: 'center', fontSize: 30 }}>
+                                    {index}
+                                </Text>
                             </View>
-                            <View>
-                                <Text style={{}}>Wallet Balance</Text>
-                                <Text style={{ fontWeight: 'bold', color: '#000' }}>₹ 9,600.00</Text>
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={() => AddWalletPayment()} style={{ width: 30, height: 30, borderRadius: 150, backgroundColor: 'black', alignItems: 'center', marginRight: 20 }}>
-                                <Image style={{ width: 20, height: 20, resizeMode: 'contain', marginTop: 5, tintColor: 'white' }} source={require('../../assets/icons_plus.png')} />
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => downloadHistoryPayment()} style={{ width: 30, height: 30, borderRadius: 150, backgroundColor: 'black', alignItems: 'center' }}>
-                                <Image style={{ width: 20, height: 20, resizeMode: 'contain', marginTop: 5, tintColor: 'white' }} source={require('../../assets/download.png')} />
-                            </TouchableOpacity>
-                        </View>
-                    </View> */}
+                        )}
+                    /> */}
                     <TouchableOpacity onPress={() => startTrip()} style={{ marginTop: 5, width: '100%', height: 50 }}>
                         <Text style={{ height: 50, borderRadius: 50, borderWidth: 1, borderColor: '#F1F6F9', paddingLeft: 20, backgroundColor: '#F1F6F9', elevation: 3, paddingTop: 15, fontWeight: 'bold' }}>{selectedLanguage === 'Coorg' ? coorg.crg.where_are_you_going : eng.en.where_are_you_going}</Text>
                         <View style={{ position: 'absolute', right: 10, top: 15 }}>

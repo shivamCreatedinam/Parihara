@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
     },
     innerContainer: {
         padding: 20,
-        height: 250,
+        height: 280,
         width: Dimensions.get('screen').width,
         backgroundColor: 'white',
         flexGrow: 1,
