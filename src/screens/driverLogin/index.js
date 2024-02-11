@@ -89,7 +89,7 @@ const DriverLoginScreen = () => {
     }
 
     const driverLoginApp = () => {
-        setLoading(true); 
+        setLoading(true);
         var authOptions = {
             method: 'post',
             url: globle.API_BASE_URL + 'driver-login',
@@ -125,7 +125,7 @@ const DriverLoginScreen = () => {
             await AsyncStorage.setItem('@autoDriverGroup', jsonValue);
             navigation.navigate('HomeScreen');
         } catch (e) {
-            // saving error
+            // saving error 
         }
     };
 
@@ -158,6 +158,9 @@ const DriverLoginScreen = () => {
                     <Text
                         style={{ fontSize: 8 }} >by clicking the button you agree with the <Text style={{ fontWeight: 'bold' }}>Terms & Conditions and Privacy Policy</Text></Text>
                 </View>
+                <TouchableOpacity onPress={() => navigation.navigate('DriverForgetPasswordScreen')} style={{ marginTop: 20, alignSelf: 'flex-end', marginRight: 10 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#000000' }}>Forget Password</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                     disabled={loading}
                     style={{

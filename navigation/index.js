@@ -50,6 +50,8 @@ import SettingScreen from '../src/screens/SettingScreen';
 import ChangeLanguage from '../src/screens/ChnageLanguage';
 // permission screen
 import PermissionScreenMain from '../src/screens/PermissionScreen';
+// DriverForgetPasswordScreen
+import DriverForgetPasswordScreen from '../src/screens/DriverForgetPassword';
 // change language 
 const coorg = require('../common/coorg.json');
 const eng = require('../common/eng.json');
@@ -234,7 +236,7 @@ function UserBottomNavigation() {
                                     source={require('../src/assets/pharmacy_icon.png')}
                                 />
                                 <View style={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'orange', height: 18, width: 18, borderRadius: 150 }}>
-                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 10, top: 0,bottom:0 }}>0</Text>
+                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 10, top: 0, bottom: 0 }}>0</Text>
                                 </View>
                                 <Text numberOfLines={1} style={{ alignItems: 'center', color: '#000', fontSize: 12, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.phramacy : eng.en.phramacy}</Text>
                             </View>
@@ -275,7 +277,7 @@ function UserBottomNavigation() {
                                     source={require('../src/assets/super_market_icon.png')}
                                 />
                                 <View style={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'orange', height: 18, width: 18, borderRadius: 150 }}>
-                                <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 10, top: 0,bottom:0 }}>0</Text>
+                                    <Text style={{ fontWeight: 'bold', left: 5, color: '#fff', fontSize: 10, top: 0, bottom: 0 }}>0</Text>
                                 </View>
                                 <Text style={{ alignItems: 'center', color: '#000', fontSize: 11, fontWeight: '700' }}>{selectedLanguage === 'Coorg' ? coorg.crg.market : eng.en.market}</Text>
                             </View>
@@ -660,9 +662,18 @@ function StackNavigation(initialRouts) {
                         headerTintColor: '#fff',
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
+                <Stack.Screen
+                    name="DriverForgetPasswordScreen"
+                    component={DriverForgetPasswordScreen}
+                    options={{
+                        title: 'DriverForgetPasswordScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // PermissionScreenMain
+export default StackNavigation; // DriverForgetPasswordScreen
