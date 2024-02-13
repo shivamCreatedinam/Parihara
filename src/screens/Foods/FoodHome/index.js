@@ -10,9 +10,18 @@ const FoodHomeScreen = () => {
         require('../../../assets/dessert.jpeg'),
         require('../../../assets/easy_bites.jpeg'),
         require('../../../assets/Shawarma.jpeg'),
+        require('../../../assets/easy_bites.jpeg'),
+        require('../../../assets/Shawarma.jpeg'),
         require('../../../assets/drinks.jpeg'),
         require('../../../assets/wrap.jpeg'),
+        require('../../../assets/dessert.jpeg'),
     ]);
+    const [restaurantList, setRestaurantList] = React.useState([
+        require('../../../assets/restaurant_card_3.jpeg'),
+        require('../../../assets/restaurant_card_3.jpeg'),
+        require('../../../assets/restaurant_card_3.jpeg'),
+        require('../../../assets/restaurant_card_4.png'),
+    ])
 
     const renderItemsCard = (item) => {
         return (
@@ -67,13 +76,26 @@ const FoodHomeScreen = () => {
                 />
                 <View style={{ flex: 1, marginBottom: 20 }}>
                     <FlatList
-                        style={{ marginLeft: 20, marginTop: 10 }}
+                        style={{ marginLeft: 20, marginTop: 10, marginRight: 15 }}
                         contentContainerStyle={{ height: 100 }}
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                         data={CategoryList}
                         keyExtractor={(item, index) => index}
                         renderItem={({ item }) => <TouchableOpacity style={{ backgroundColor: '#fff', width: 90, height: 90, borderRadius: 200, margin: 5, elevation: 5 }}><Image style={{ width: 80, height: 80, marginTop: 5, resizeMode: 'cover', alignSelf: 'center', borderRadius: 200 }} source={item} /></TouchableOpacity>}
+                    />
+                </View>
+                <View style={{ flex: 1, marginBottom: 20 }}>
+                    <FlatList
+                        style={{ marginLeft: 20, marginTop: 5, marginRight: 15 }}
+                        contentContainerStyle={{ height: 140 }}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        data={restaurantList}
+                        keyExtractor={(item, index) => index}
+                        renderItem={({ item }) => <TouchableOpacity style={{ backgroundColor: '#fff', width: 190, height: 145, borderRadius: 10, marginRight: 6, elevation: 5 }}>
+                            <Image style={{ width: '100%', height: '100%', resizeMode: 'cover', alignSelf: 'center', borderRadius: 0 }} source={item} />
+                        </TouchableOpacity>}
                     />
                 </View>
                 <FlatList
