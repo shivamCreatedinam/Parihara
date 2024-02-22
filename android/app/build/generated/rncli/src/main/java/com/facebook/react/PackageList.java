@@ -89,6 +89,8 @@ import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 import com.swmansion.rnscreens.RNScreensPackage;
 // react-native-sensors
 import com.sensors.RNSensorsPackage;
+// react-native-shimmer
+import com.oblador.shimmer.RNShimmerPackage;
 // react-native-svg
 import com.horcrux.svg.SvgPackage;
 // react-native-version-check
@@ -179,6 +181,7 @@ public class PackageList {
       new SafeAreaContextPackage(),
       new RNScreensPackage(),
       new RNSensorsPackage(),
+      new RNShimmerPackage(),
       new SvgPackage(),
       new RNVersionCheckPackage(),
       new RNCWebViewPackage()

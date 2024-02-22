@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Image, Text, View, } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import { NavigationContainer, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // firebase 
@@ -52,6 +52,15 @@ import ChangeLanguage from '../src/screens/ChnageLanguage';
 import PermissionScreenMain from '../src/screens/PermissionScreen';
 // DriverForgetPasswordScreen
 import DriverForgetPasswordScreen from '../src/screens/DriverForgetPassword';
+
+// restaurent screen product details
+import ProductDetails from '../src/screens/Foods/ProductDetails';
+import CategoryProductDetails from '../src/screens/Foods/CategoryProductScreen';
+import CartScreenFood from '../src/screens/Foods/CartScreen';
+import FoodNotificationScreen from '../src/screens/Foods/FoodNotificaiton';
+import FoodOrderHistoryScreen from '../src/screens/Foods/OrderHistory';
+import FoodOrderTrackScreen from '../src/screens/Foods/OrderTrackScreen';
+
 // change language 
 const coorg = require('../common/coorg.json');
 const eng = require('../common/eng.json');
@@ -671,9 +680,63 @@ function StackNavigation(initialRouts) {
                         headerTintColor: '#fff',
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
+                <Stack.Screen
+                    name="ProductDetails"
+                    component={ProductDetails}
+                    options={{
+                        title: 'ProductDetails',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="CategoryProductDetails"
+                    component={CategoryProductDetails}
+                    options={{
+                        title: 'CategoryProductDetails',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="CartScreenFood"
+                    component={CartScreenFood}
+                    options={{
+                        title: 'CartScreenFood',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="FoodNotificationScreen"
+                    component={FoodNotificationScreen}
+                    options={{
+                        title: 'FoodNotificationScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="FoodOrderHistoryScreen"
+                    component={FoodOrderHistoryScreen}
+                    options={{
+                        title: 'FoodOrderHistoryScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="FoodOrderTrackScreen"
+                    component={FoodOrderTrackScreen}
+                    options={{
+                        title: 'FoodOrderTrackScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // DriverForgetPasswordScreen
+export default StackNavigation; // FoodOrderTrackScreen

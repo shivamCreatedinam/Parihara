@@ -99,8 +99,8 @@ android {
         applicationId "com.mapilocator"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 53
-        versionName "1.2.53"
+        versionCode 55
+        versionName "1.2.55"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -177,6 +177,7 @@ dependencies {
     implementation 'com.facebook.fresco:webpsupport:2.0.0'
     implementation project(':react-native-maps')
     implementation project(':react-native-sensors')
+    implementation project(':react-native-shimmer')
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation('com.google.android.gms:play-services-plus:17.0.0')
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
