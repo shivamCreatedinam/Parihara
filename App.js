@@ -25,12 +25,12 @@ import PushController from './PushController';
 import messaging from '@react-native-firebase/messaging';
 import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+const Urls = require('./urls.json');
 import StackNavigation from './navigation'
 import { TailwindProvider } from 'tailwind-rn';
 import utilities from './tailwind.json';
 import data from './package.json';
-import DeviceInfo from "react-native-device-info";
-import notifee from '@notifee/react-native';
+import { firebase } from '@react-native-firebase/database';
 import NotificationCenter from './NotificationCenter';
 import BackgroundTimer from "react-native-background-timer";
 import Geolocation from '@react-native-community/geolocation';
@@ -45,6 +45,16 @@ const App = () => {
   // PermissionScreenMain / SplashAppScreen
   const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
   const [authenticated, setAuthenticated] = React.useState(true);
+
+  let config = {
+    apiKey: 'AIzaSyAyvE_mLR_PEBCmlOs4Se-g1NLahX1htLE',
+    appId: '1:1070779167327:android:9df1f76b30ad9f048261ea',
+    messagingSenderId: '1070779167327',
+    databaseURL: Urls.firebaseUrl,
+    projectId: Urls.appID,
+  };
+
+  firebase.initializeApp(config);
 
   React.useEffect(() => {
     // checkPermission();

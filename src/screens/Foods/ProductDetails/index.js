@@ -1,13 +1,20 @@
 import React from 'react';
-import { Text, View, RefreshControl, Image, ActivityIndicator, ScrollView, Dimensions, TextInput, StatusBar, TouchableOpacity, useWindowDimensions, StyleSheet } from 'react-native';
+import { Text, View, RefreshControl, Image, ActivityIndicator, ScrollView, Dimensions, Alert, StatusBar, TouchableOpacity, useWindowDimensions, StyleSheet } from 'react-native';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
-import { decode as atob, encode as btoa } from 'base-64';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Dropdown } from 'react-native-element-dropdown';
+import Toast from 'react-native-toast-message';
+import globle from '../../../../common/env';
 
 export default function ProductDetails() {
 
-    const [productData, setProductData] = React.useState(null);
+    const [productData, setProductData] = React.useState({});
+    const [prodAttributes, setProdAttributes] = React.useState([]);
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [isLoading, setLoading] = React.useState(false);
+    const [Price, setPrice] = React.useState(null);
+    const [value, setValue] = React.useState(null);
+    const [isFocus, setIsFocus] = React.useState(false);
     const navigation = useNavigation();
     const route = useRoute();
 
@@ -27,23 +34,130 @@ export default function ProductDetails() {
 
     const loadProducts = async (id) => {
         setLoading(true);
-        const apiKey = 'ck_f740f56a6ca5bf6083be8fa400b2558cf2e52312';
-        const apiSecret = 'cs_5eefb96bb75f2e4892d240989cbcd4c2fd830138';
-        const productId = 1; // Replace with your actual product ID
-        const apiUrl = `https://restaurant.createdinam.in/wp-json/wc/v3/products/${id}`;
+        console.log(JSON.stringify(id))
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let userId = JSON.parse(valueX)?.id;
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", 'Bearer ' + data);
 
-        fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${btoa(`${apiKey}:${apiSecret}`)}`
-            }
-        })
+        const formdata = new FormData();
+        formdata.append('product_id', route.params?.id);
+        // formdata.append('attributes_id', value);
+        formdata.append('user_id', userId);
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: formdata,
+            redirect: "follow"
+        };
+
+        fetch(globle.API_BASE_URL + 'product-details', requestOptions)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                setLoading(false);
-                setProductData(data);
-                // Handle the product details here
+                console.log('loadProducts', JSON.stringify(data));
+                if (data.status) {
+                    setLoading(false);
+                    setProdAttributes(data.prod_attributes);
+                    setProductData(data?.product_details);
+                }
+            })
+            .catch(error => setLoading(false));
+    }
+
+    const AddToWishlist = async () => {
+        setLoading(true);
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let userId = JSON.parse(valueX)?.id;
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", 'Bearer ' + data);
+        const formdata = new FormData();
+        formdata.append('product_id', route.params?.id);
+        formdata.append('user_id', userId);
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: formdata,
+            redirect: 'follow'
+        };
+        fetch(globle.API_BASE_URL + 'add-to-favourite', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                if (result.status) {
+                    loadProducts(route.params?.id);
+                    setLoading(false);
+                }
+            })
+            .catch(error => setLoading(false));
+    }
+
+    const RemoveToWishlist = async () => {
+        setLoading(true);
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let userId = JSON.parse(valueX)?.id;
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", 'Bearer ' + data);
+        const formdata = new FormData();
+        formdata.append('product_id', route.params?.id);
+        formdata.append('user_id', userId);
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: formdata,
+            redirect: 'follow'
+        };
+        fetch(globle.API_BASE_URL + 'remove-favourite', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                if (result.status) {
+                    loadProducts(route.params?.id);
+                    setLoading(false);
+                }
+            })
+            .catch(error => setLoading(false));
+    }
+
+    const AddToCart = async () => {
+        setLoading(true);
+        const valueX = await AsyncStorage.getItem('@autoUserGroup');
+        let data = JSON.parse(valueX)?.token;
+        let userId = JSON.parse(valueX)?.id;
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", 'Bearer ' + data);
+        const formdata = new FormData();
+        formdata.append('product_id', route.params?.id);
+        formdata.append('attribute_id', value);
+        formdata.append('user_id', userId);
+        formdata.append('qty', 1);
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: formdata,
+            redirect: 'follow'
+        };
+        console.log('loadProducts', JSON.stringify(requestOptions));
+        fetch(globle.API_BASE_URL + 'add-to-cart', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                console.log('loadProducts', JSON.stringify(result));
+                if (result.status) {
+                    Toast.show({
+                        type: 'success',
+                        text1: result?.message,
+                        text2: result?.message,
+                    });
+                    loadProducts(route.params?.id);
+                    setLoading(false);
+                } else {
+                    setLoading(false);
+                    Toast.show({
+                        type: 'error',
+                        text1: result?.error?.attribute_id[0],
+                        text2: result?.error?.attribute_id[0],
+                    });
+                }
             })
             .catch(error => setLoading(false));
     }
@@ -54,7 +168,7 @@ export default function ProductDetails() {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Image style={{ width: 25, height: 25 }} source={require('../../../assets/left_icon.png')} />
                 </TouchableOpacity>
-                <Text style={{ flex: 1, fontWeight: 'bold', marginLeft: 20, fontSize: 16 }}>{productData?.name}</Text>
+                <Text style={{ flex: 1, fontWeight: 'bold', marginLeft: 20, fontSize: 16 }}>{productData?.product_name}</Text>
             </View>
             {isLoading === true ?
                 <ActivityIndicator size="large" color="#0000ff" /> :
@@ -66,37 +180,69 @@ export default function ProductDetails() {
                             tintColor="red"
                         />
                     }
+                    style={{ marginBottom: 50 }}
                 >
                     <View>
-                        <Image style={{ height: 400, width: Dimensions.get('screen').width, resizeMode: 'cover' }} source={{ uri: productData?.acf?.product_images }} />
+                        <Image style={{ height: 400, width: Dimensions.get('screen').width, resizeMode: 'cover' }} source={{ uri: 'https://theparihara.com/Parihara/public/' + productData?.image }} />
                         <View style={{ padding: 20, position: 'absolute', bottom: 5, right: 10 }}>
                             <Image style={{ width: 12, height: 12, resizeMode: 'contain', tintColor: '#ffffff' }} source={require('../../../assets/profile_icon.png')} />
                             <Text style={{ color: '#ffffff', textAlign: 'center', fontWeight: 'bold', fontSize: 14 }}>{JSON.stringify(productData?.rating_count)}</Text>
                         </View>
                     </View>
-                    <View style={{ padding: 20 }}>
+                    <View style={{ padding: 20, marginBottom: 0 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 26, textTransform: 'capitalize' }}>{productData?.name}</Text>
-                            <View>
-                                <Text style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid', fontWeight: 'bold', fontSize: 22, color: '#b4b4b4' }}>₹ {productData?.regular_price === null ? '' : productData?.regular_price}/-</Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: 26 }}>₹ {productData?.sale_price}/-</Text>
+                            <Text numberOfLines={1} adjustsFontSizeToFit={true} style={{ flex: 1, fontWeight: 'bold', fontSize: 26, textTransform: 'capitalize', marginRight: 10 }}>{productData?.product_name}</Text>
+                            <View style={{}}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 26, color: '#000000' }}>{Price === null ? '' : '₹ ' + Price + '/-'}</Text>
                             </View>
                         </View>
-                        <View style={{ paddingVertical: 10 }}>
-                            {productData?.categories.map((items, index) => <Text style={{ paddingVertical: 5, backgroundColor: '#fff', color: '#000000', fontWeight: 'bold', fontSize: 16, textTransform: 'capitalize' }}>{items?.name}</Text>)}
+                        <View style={styles.container}>
+                            <Dropdown
+                                style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+                                placeholderStyle={styles.placeholderStyle}
+                                selectedTextStyle={styles.selectedTextStyle}
+                                inputSearchStyle={styles.inputSearchStyle}
+                                iconStyle={styles.iconStyle}
+                                data={prodAttributes}
+                                search
+                                maxHeight={300}
+                                labelField="attribute_title"
+                                valueField="attributes_id"
+                                placeholder={!isFocus ? 'Select Attribute' : '...'}
+                                searchPlaceholder="Search..."
+                                value={value}
+                                onFocus={() => setIsFocus(true)}
+                                onBlur={() => setIsFocus(false)}
+                                onChange={item => {
+                                    setPrice(item?.saling_price);
+                                    setValue(item?.attributes_id);
+                                    setIsFocus(false);
+                                }}
+                            />
                         </View>
-                        <Text style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>{productData?.short_description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
-                        <Text style={{ fontWeight: '900', fontSize: 16, color: '#b4b4b4' }}>{productData?.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
+                        <View style={{ paddingVertical: 10 }}>
+                            {/* {prodAttributes?.map((items, index) => <Text style={{ paddingVertical: 5, backgroundColor: '#fff', color: '#000000', fontWeight: 'bold', fontSize: 16, textTransform: 'capitalize' }}>{items?.saling_price}</Text>)} */}
+                        </View>
+                        <Text style={{ fontWeight: 'bold', color: '#000000', fontSize: 16, marginBottom: 20 }}>{productData?.category_name}</Text>
+                        <Text style={{ fontWeight: '900', fontSize: 16, color: '#b4b4b4', }}>{productData?.description}</Text>
                     </View>
                     <View style={{ position: 'absolute', top: 20, right: 20 }}>
-                        <Text style={{ fontSize: 14, color: '#ffffff' }}>Rating {productData?.average_rating}</Text>
+                        {/* <Text style={{ fontSize: 14, color: '#ffffff' }}>Rating {productData?.average_rating}</Text> */}
                     </View>
                     <View style={{ padding: 20 }}>
-                        <TouchableOpacity style={{ padding: 20, backgroundColor: '#000000', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                        {productData?.cart_status === 'No' ? <TouchableOpacity onPress={() => AddToCart()} style={{ padding: 20, backgroundColor: '#000000', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                             <Image style={{ width: 25, height: 25, tintColor: '#ffffff' }} source={require('../../../assets/super_market_icon.png')} />
                             <Text style={{ color: '#ffffff', marginLeft: 30, fontWeight: 'bold', fontSize: 16, textTransform: 'uppercase' }}>Order Now</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> :
+                            <TouchableOpacity onPress={() => navigation.navigate('CartScreenFood')} style={{ padding: 20, backgroundColor: '#009900', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                <Image style={{ width: 25, height: 25, tintColor: '#ffffff' }} source={require('../../../assets/super_market_icon.png')} />
+                                <Text style={{ color: '#ffffff', marginLeft: 30, fontWeight: 'bold', fontSize: 16, textTransform: 'uppercase' }}>View Cart</Text>
+                            </TouchableOpacity>}
                     </View>
+                    <TouchableOpacity onPress={() => productData?.wishstatus === 'No' ? AddToWishlist() : RemoveToWishlist()} style={{ position: 'absolute', top: 10, right: 10, backgroundColor: '#fff', borderRadius: 100, elevation: 5, marginBottom: 100 }}>
+                        <Image style={{ width: 25, height: 25, }} source={productData?.wishstatus === 'No' ? require('../../../assets/wishlist_no.png') : require('../../../assets/wishlist.png')} />
+                    </TouchableOpacity>
+                    <View style={{ marginBottom: 120 }} />
                 </ScrollView>}
         </View>
     )
@@ -106,5 +252,44 @@ const styles = StyleSheet.create({
     a: {
         fontWeight: '300',
         color: '#FF3366', // make links coloured pink
+    },
+    container: {
+        backgroundColor: 'white',
+        padding: 0,
+        marginTop: 20,
+        marginBottom: 10
+    },
+    dropdown: {
+        height: 50,
+        borderColor: 'gray',
+        borderWidth: 0.5,
+        borderRadius: 8,
+        paddingHorizontal: 8,
+    },
+    icon: {
+        marginRight: 5,
+    },
+    label: {
+        position: 'absolute',
+        backgroundColor: 'white',
+        left: 22,
+        top: 8,
+        zIndex: 999,
+        paddingHorizontal: 8,
+        fontSize: 14,
+    },
+    placeholderStyle: {
+        fontSize: 16,
+    },
+    selectedTextStyle: {
+        fontSize: 16,
+    },
+    iconStyle: {
+        width: 20,
+        height: 20,
+    },
+    inputSearchStyle: {
+        height: 40,
+        fontSize: 16,
     },
 })

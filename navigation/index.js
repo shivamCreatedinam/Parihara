@@ -60,7 +60,9 @@ import CartScreenFood from '../src/screens/Foods/CartScreen';
 import FoodNotificationScreen from '../src/screens/Foods/FoodNotificaiton';
 import FoodOrderHistoryScreen from '../src/screens/Foods/OrderHistory';
 import FoodOrderTrackScreen from '../src/screens/Foods/OrderTrackScreen';
-
+import AddAddressScreen from '../src/screens/Foods/AddAddressScreen';
+import OrderDetailsSingleProduct from '../src/screens/Foods/OrderItemDetails';
+import PaymentGalewayScreen from '../src/screens/Foods/PaymentScreen';
 // change language 
 const coorg = require('../common/coorg.json');
 const eng = require('../common/eng.json');
@@ -734,9 +736,36 @@ function StackNavigation(initialRouts) {
                         headerTintColor: '#fff',
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
+                <Stack.Screen
+                    name="AddAddressScreen"
+                    component={AddAddressScreen}
+                    options={{
+                        title: 'AddAddressScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="OrderDetailsSingleProduct"
+                    component={OrderDetailsSingleProduct}
+                    options={{
+                        title: 'OrderDetailsSingleProduct',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
+                <Stack.Screen
+                    name="PaymentGalewayScreen"
+                    component={PaymentGalewayScreen}
+                    options={{
+                        title: 'PaymentGalewayScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // FoodOrderTrackScreen
+export default StackNavigation; // PaymentGalewayScreen
