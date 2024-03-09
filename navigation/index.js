@@ -63,6 +63,9 @@ import FoodOrderTrackScreen from '../src/screens/Foods/OrderTrackScreen';
 import AddAddressScreen from '../src/screens/Foods/AddAddressScreen';
 import OrderDetailsSingleProduct from '../src/screens/Foods/OrderItemDetails';
 import PaymentGalewayScreen from '../src/screens/Foods/PaymentScreen';
+// comming soon page
+import CommingSoonScreen from '../src/screens/ComingSoonScreen';
+
 // change language 
 const coorg = require('../common/coorg.json');
 const eng = require('../common/eng.json');
@@ -235,7 +238,7 @@ function UserBottomNavigation() {
             />
             <Tab.Screen
                 name="Parhmacy"
-                component={FoodHomeScreen}
+                component={CommingSoonScreen}
                 options={{
                     headerShown: false,
                     tabBarLabel: () => { return 'Ekart' },
@@ -257,7 +260,7 @@ function UserBottomNavigation() {
             />
             <Tab.Screen
                 name="Hotel"
-                component={FoodHomeScreen}
+                component={CommingSoonScreen}
                 options={{
                     headerShown: false,
                     tabBarLabel: () => { return 'Ekart' },
@@ -276,7 +279,7 @@ function UserBottomNavigation() {
             />
             <Tab.Screen
                 name="Vegitables"
-                component={FoodHomeScreen}
+                component={CommingSoonScreen}
                 options={{
                     headerShown: false,
                     tabBarLabel: () => { return 'Ekart' },
@@ -763,9 +766,18 @@ function StackNavigation(initialRouts) {
                         headerTintColor: '#fff',
                         headerTitleStyle: { fontWeight: 'bold', },
                     }} />
+                <Stack.Screen
+                    name="CommingSoonScreen"
+                    component={CommingSoonScreen}
+                    options={{
+                        title: 'CommingSoonScreen',
+                        headerStyle: { backgroundColor: 'black', },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: { fontWeight: 'bold', },
+                    }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
-export default StackNavigation; // PaymentGalewayScreen
+export default StackNavigation; // CommingSoonScreen

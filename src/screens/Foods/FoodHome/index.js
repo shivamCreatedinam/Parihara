@@ -55,10 +55,11 @@ const FoodHomeScreen = () => {
         axios.request(config)
             .then((response) => {
                 if (response.data.status) {
+                    console.log(JSON.stringify(response.data));
                     setLoading(false)
                     setProductData(response.data?.popular);
                     setOfferBannerImages(response.data?.slider);
-                    setRestaurantList(response.data?.featured);
+                    setRestaurantList(response.data?.restaurant);
                     setDealsOfWeek(response.data?.deals_of_week);
                 }
             })
@@ -105,14 +106,14 @@ const FoodHomeScreen = () => {
                 <TouchableOpacity onPress={() => GoToProductDetails(item)}>
                     <Image style={{ width: '100%', height: 160, resizeMode: 'cover', alignSelf: 'center', borderTopLeftRadius: 20, borderTopRightRadius: 20 }} source={{ uri: 'https://theparihara.com/Parihara/public/' + item?.image }} />
                 </TouchableOpacity>
-                <View style={{ marginTop: 5 }}>
+                <View style={{ marginTop: 5, minHeight: 30, }}>
                     <Text adjustsFontSizeToFit={false} numberOfLines={2} style={{ paddingHorizontal: 10, paddingHorizontal: 5, fontWeight: 'bold', textAlign: 'auto' }}>{item?.description}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 10, paddingRight: 5, marginTop: 5 }}>
                     <View style={{ flex: 1 }}>
                         <Text numberOfLines={1} style={{ paddingLeft: 10, color: '#000000', fontWeight: '900', flex: 1, fontSize: 22 }}>₹ {item?.sale_price}</Text>
                     </View>
-                    <TouchableOpacity style={{ paddingHorizontal: 15, paddingVertical: 2, backgroundColor: '#000', borderRadius: 55 }}>
+                    <TouchableOpacity onPress={() => GoToProductDetails(item)} style={{ paddingHorizontal: 15, paddingVertical: 2, backgroundColor: '#000', borderRadius: 55 }}>
                         <Text style={{ color: '#ffffff', fontWeight: 'bold', paddingVertical: 5, paddingHorizontal: 5 }}>View Item</Text>
                     </TouchableOpacity>
                 </View>
@@ -125,7 +126,7 @@ const FoodHomeScreen = () => {
             source={require('../../../assets/background_images.gif')}
             style={{ width: '100%', height: '100%' }}>
             <View style={{ marginTop: StatusBar.currentHeight + 20, paddingLeft: 20, paddingRight: 20, flexDirection: 'row', alignItems: 'center' }}>
-                <TextInput style={{ color: '#fff', backgroundColor: '#fff', borderRadius: 20, paddingLeft: 20, elevation: 5, flex: 1 }} placeholder='Find for food or restaurant' />
+                <TextInput editable={false} style={{ color: '#fff', backgroundColor: '#fff', borderRadius: 20, paddingLeft: 20, elevation: 5, flex: 1 }} placeholder='Find for food or restaurant' />
                 <TouchableOpacity onPress={() => navigation.navigate('CartScreenFood')} style={{ padding: 10, backgroundColor: '#fff', borderRadius: 15, marginLeft: 10 }}>
                     <Image style={{ width: 25, height: 25, resizeMode: 'contain' }} source={require('../../../assets/shoppingbag.png')} />
                 </TouchableOpacity>
@@ -176,7 +177,9 @@ const FoodHomeScreen = () => {
                         showsHorizontalScrollIndicator={false}
                         data={CategoryData}
                         keyExtractor={(item, index) => index}
-                        renderItem={({ item }) => <TouchableOpacity onPress={() => navigation.navigate('CategoryProductDetails', item)} style={{ backgroundColor: '#fff', width: 90, height: 90, borderRadius: 200, margin: 5, elevation: 5 }}><Image style={{ width: 80, height: 80, marginTop: 5, resizeMode: 'cover', alignSelf: 'center', borderRadius: 200 }} source={{ uri: 'https://theparihara.com/Parihara/public/' + item?.image }} /></TouchableOpacity>}
+                        renderItem={({ item }) => <TouchableOpacity onPress={() => navigation.navigate('CategoryProductDetails', item)} style={{ backgroundColor: '#fff', width: 90, height: 90, borderRadius: 200, margin: 5, elevation: 5 }}>
+                            <Image style={{ width: 80, height: 80, marginTop: 5, resizeMode: 'cover', alignSelf: 'center', borderRadius: 200 }} source={{ uri: 'https://theparihara.com/Parihara/public/' + item?.image }} />
+                        </TouchableOpacity>}
                     />
                 </View>
                 <View style={{ flex: 1, marginBottom: 20 }}>

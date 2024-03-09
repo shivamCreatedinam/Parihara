@@ -18,6 +18,9 @@ const FoodOrderTrackScreen = () => {
     const markerRef = React.useRef();
     const mapRef = React.useRef();
 
+
+    console.log(JSON.stringify(routes.params?.order_id));
+
     const showErrorToast = (msg, orderReciptId) => {
         Toast.show({
             type: 'success',
@@ -34,11 +37,11 @@ const FoodOrderTrackScreen = () => {
                 </TouchableOpacity>
                 <View>
                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Track Order</Text>
-                    <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#b4b4b4' }}>#092302912PLOK</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#b4b4b4' }}>#{routes.params?.order_id}</Text>
                 </View>
             </View>
             <View
-                style={{ flex: 1, backgroundColor: '#ffffff'}} >
+                style={{ flex: 1, backgroundColor: '#ffffff' }} >
                 <View style={{ flexGrow: 1 }} >
                     <MapView
                         ref={mapRef}
@@ -54,15 +57,15 @@ const FoodOrderTrackScreen = () => {
                         showsBuildings={false}
                         showsCompass={false}
                         initialRegion={{
-                            latitude: parseFloat('28.7520436'),
-                            longitude: parseFloat('77.2008686'),
+                            latitude: parseFloat(routes.params?.latitude),
+                            longitude: parseFloat(routes.params?.longitude),
                             latitudeDelta: LATITUDE_DELTA,
                             longitudeDelta: LONGITUDE_DELTA,
                         }}
                     >
                         <MapViewDirections
-                            origin={{ latitude: parseFloat('28.7520436'), longitude: parseFloat('77.2008686') }}
-                            destination={{ latitude: parseFloat('28.7092385'), longitude: parseFloat('77.1870097') }}
+                            origin={{ latitude: parseFloat(routes.params?.latitude), longitude: parseFloat(routes.params?.longitude) }}
+                            destination={{ latitude: parseFloat(routes.params?.restaurent_latitude), longitude: parseFloat(routes.params?.restaurent_longitude) }}
                             apikey={globle.GOOGLE_MAPS_APIKEY_V2}
                             mode={'DRIVING'}
                             strokeWidth={6}
@@ -82,7 +85,7 @@ const FoodOrderTrackScreen = () => {
                         />
                         <Marker
                             ref={markerRef}
-                            coordinate={{ latitude: parseFloat('28.7092385'), longitude: parseFloat('77.1870097') }}
+                            coordinate={{ latitude: parseFloat(routes.params?.latitude), longitude: parseFloat(routes.params?.longitude) }}
                             title={'title'}
                             description={'description'}
                         >
@@ -90,7 +93,7 @@ const FoodOrderTrackScreen = () => {
                         </Marker>
                         <Marker
                             ref={markerRef}
-                            coordinate={{ latitude: parseFloat('28.7520436'), longitude: parseFloat('77.2008686') }}
+                            coordinate={{ latitude:parseFloat(routes.params?.restaurent_latitude), longitude: parseFloat(routes.params?.restaurent_longitude) }}
                             title={'title'}
                             description={'description'}
                         >

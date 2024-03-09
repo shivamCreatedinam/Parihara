@@ -318,7 +318,7 @@ const CartScreenFood = () => {
                             <Text style={{ color: '#ffffff', fontSize: 22, fontWeight: 'bold' }}>₹ {TotalPrice}</Text>
                         </View>
                         <TouchableOpacity onPress={() => CheckAddressAvailable()} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }} style={{ paddingVertical: 18, backgroundColor: '#3b8132', borderRadius: 6, paddingHorizontal: 15, elevation: 5 }}>
-                            <Text style={{ color: '#ffffff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>Proceed To Pay {PaymentMode}</Text>
+                            <Text style={{ color: '#ffffff', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center' }}>Proceed To Pay {'- ' + PaymentMode}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -38,7 +38,7 @@ const FoodNotificationScreen = () => {
                         <Text numberOfLines={2} style={{ fontWeight: 'bold', fontSize: 14, color: '#b4b4b4' }}>Fries, nuggets & poppers to calm your hunger, quick solution to hunger pangs. Never compromise on the taste.</Text>
                         <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#b4b4b4' }}>EASY BITES</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 18 }}>₹ 99</Text> 
+                            <Text style={{ fontWeight: 'bold', fontSize: 18 }}>₹ 99</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: '#3b8132', borderRadius: 5, marginRight: 5, backgroundColor: '#3b8132', elevation: 5 }} />
@@ -56,19 +56,20 @@ const FoodNotificationScreen = () => {
                 <TouchableOpacity hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }} onPress={() => navigation.goBack()} style={{ padding: 10 }}>
                     <Image style={{ height: 20, width: 20, resizeMode: 'contain', marginRight: 10 }} source={require('../../../assets/left_icon.png')} />
                 </TouchableOpacity>
-                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Orders</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Notifications</Text>
             </View>
             <View
                 style={{ flex: 1, padding: 5, backgroundColor: '#ffffff', marginTop: 1, }} >
                 <View
                     style={{ flexGrow: 1, marginTop: 2, }} >
-                    <FlatList
+                    <Text style={{ fontWeight: 'bold', fontSize: 18, marginTop: Dimensions.get('screen').height / 2.5, textAlign: 'center', color: '#b4b4b4' }}>No Upcoming Notification</Text>
+                    {/* <FlatList
                         style={{  }}
                         data={DataCart}
                         keyExtractor={(id) => id}
                         renderItem={({ item }) => renderItemsCard(item)}
                         showsVerticalScrollIndicator={false}
-                    />
+                    /> */}
                 </View>
             </View>
         </View>

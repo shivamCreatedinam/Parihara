@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import globle from '../../../../common/env';
 import React from 'react';
+import { ActivityIndicator } from 'react-native';
 
 const FoodOrderHistoryScreen = () => {
 
@@ -90,10 +91,16 @@ const FoodOrderHistoryScreen = () => {
                             <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{item?.payment_mode}</Text>
                             <Text style={{ fontWeight: 'bold', fontSize: 18 }}>  ₹ {item?.sub_total}</Text>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginBottom: 5 }}>
+                                <Image style={{ width: 15, height: 15, resizeMode: 'contain', marginRight: 5 }} source={require('../../../assets/restaurant_icon.png')} />
                                 <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: '#3b8132', borderRadius: 5, marginRight: 5, backgroundColor: '#3b8132', elevation: 5 }} />
-                                <Text style={{ fontWeight: 'bold', color: '#3b8132' }}>{item?.order_status}</Text>
+                                <Text adjustsFontSizeToFit={true} style={{ fontWeight: 'bold', color: '#3b8132' }}>{item?.order_status}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <Image style={{ width: 15, height: 15, resizeMode: 'contain', marginRight: 5 }} source={require('../../../assets/payment_method.png')} />
+                                <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: '#3b8132', borderRadius: 5, marginRight: 5, backgroundColor: '#3b8132', elevation: 5 }} />
+                                <Text style={{ fontWeight: 'bold', color: '#3b8132' }}>{item?.payment_status}</Text>
                             </View>
                             {item.id === 2 ?
                                 <TouchableOpacity onPress={() => navigation.navigate('FoodOrderTrackScreen')} style={{ borderRadius: 1, borderWidth: 1, paddingVertical: 5, paddingHorizontal: 15, borderRadius: 5, backgroundColor: '#000000', elevation: 5 }}>
@@ -116,18 +123,20 @@ const FoodOrderHistoryScreen = () => {
             </View>
             <View
                 style={{ flex: 1, padding: 5, backgroundColor: '#ffffff', marginTop: 1, }} >
-                <View
-                    style={{ flexGrow: 1, marginTop: 2, }} >
-                    <FlatList
-                        style={{}}
-                        data={DataCart}
-                        keyExtractor={(id) => id}
-                        refreshing={isRefreshing}
-                        onRefresh={() => onRefresh()}
-                        renderItem={({ item }) => renderItemsCard(item)}
-                        showsVerticalScrollIndicator={false}
-                    />
-                </View>
+                {isLoading === true ? <ActivityIndicator style={{ marginTop: Dimensions.get('screen').height / 2.5 }} size={'large'} color={'#000000'} /> :
+                    <View
+                        style={{ flexGrow: 1, marginTop: 2, }} >
+                        {DataCart.length === 0 ? <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>No Order Found</Text> :
+                            <FlatList
+                                style={{}}
+                                data={DataCart.slice(0, 10)}
+                                keyExtractor={(id) => id}
+                                refreshing={isRefreshing}
+                                onRefresh={() => onRefresh()}
+                                renderItem={({ item }) => renderItemsCard(item)}
+                                showsVerticalScrollIndicator={false}
+                            />}
+                    </View>}
             </View>
         </View>
     )
